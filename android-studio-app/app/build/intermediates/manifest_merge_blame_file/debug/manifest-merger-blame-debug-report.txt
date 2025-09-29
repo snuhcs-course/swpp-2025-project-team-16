@@ -1,0 +1,511 @@
+1<?xml version="1.0" encoding="utf-8"?>
+2<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+3    package="com.aisportspt.app"
+4    android:versionCode="1"
+5    android:versionName="1.0" >
+6
+7    <uses-sdk
+8        android:minSdkVersion="24"
+9        android:targetSdkVersion="34" />
+10
+11    <uses-permission android:name="android.permission.INTERNET" />
+11-->/Users/iseonjae/Desktop/testing/android-studio-app/app/src/main/AndroidManifest.xml:5:5-67
+11-->/Users/iseonjae/Desktop/testing/android-studio-app/app/src/main/AndroidManifest.xml:5:22-64
+12    <uses-permission android:name="android.permission.CAMERA" />
+12-->/Users/iseonjae/Desktop/testing/android-studio-app/app/src/main/AndroidManifest.xml:6:5-65
+12-->/Users/iseonjae/Desktop/testing/android-studio-app/app/src/main/AndroidManifest.xml:6:22-62
+13
+14    <queries>
+14-->[androidx.camera:camera-extensions:1.3.1] /Users/iseonjae/.gradle/caches/9.0-milestone-1/transforms/a56a762bd7985d5a574cb198540be082/transformed/camera-extensions-1.3.1/AndroidManifest.xml:22:5-26:15
+15        <intent>
+15-->[androidx.camera:camera-extensions:1.3.1] /Users/iseonjae/.gradle/caches/9.0-milestone-1/transforms/a56a762bd7985d5a574cb198540be082/transformed/camera-extensions-1.3.1/AndroidManifest.xml:23:9-25:18
+16            <action android:name="androidx.camera.extensions.action.VENDOR_ACTION" />
+16-->[androidx.camera:camera-extensions:1.3.1] /Users/iseonjae/.gradle/caches/9.0-milestone-1/transforms/a56a762bd7985d5a574cb198540be082/transformed/camera-extensions-1.3.1/AndroidManifest.xml:24:13-86
+16-->[androidx.camera:camera-extensions:1.3.1] /Users/iseonjae/.gradle/caches/9.0-milestone-1/transforms/a56a762bd7985d5a574cb198540be082/transformed/camera-extensions-1.3.1/AndroidManifest.xml:24:21-83
+17        </intent>
+18    </queries> <!-- For remote config -->
+19    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+19-->[com.google.mlkit:pose-detection-common:18.0.0-beta3] /Users/iseonjae/.gradle/caches/9.0-milestone-1/transforms/07a25e526350fb33e12d47c3bba61f00/transformed/pose-detection-common-18.0.0-beta3/AndroidManifest.xml:7:5-79
+19-->[com.google.mlkit:pose-detection-common:18.0.0-beta3] /Users/iseonjae/.gradle/caches/9.0-milestone-1/transforms/07a25e526350fb33e12d47c3bba61f00/transformed/pose-detection-common-18.0.0-beta3/AndroidManifest.xml:7:22-76
+20    <uses-permission android:name="android.permission.WAKE_LOCK" />
+20-->[androidx.work:work-runtime:2.7.0] /Users/iseonjae/.gradle/caches/9.0-milestone-1/transforms/0b731dcd941bcda1933a37074857f1d1/transformed/work-runtime-2.7.0/AndroidManifest.xml:25:5-68
+20-->[androidx.work:work-runtime:2.7.0] /Users/iseonjae/.gradle/caches/9.0-milestone-1/transforms/0b731dcd941bcda1933a37074857f1d1/transformed/work-runtime-2.7.0/AndroidManifest.xml:25:22-65
+21    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+21-->[androidx.work:work-runtime:2.7.0] /Users/iseonjae/.gradle/caches/9.0-milestone-1/transforms/0b731dcd941bcda1933a37074857f1d1/transformed/work-runtime-2.7.0/AndroidManifest.xml:27:5-81
+21-->[androidx.work:work-runtime:2.7.0] /Users/iseonjae/.gradle/caches/9.0-milestone-1/transforms/0b731dcd941bcda1933a37074857f1d1/transformed/work-runtime-2.7.0/AndroidManifest.xml:27:22-78
+22    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+22-->[androidx.work:work-runtime:2.7.0] /Users/iseonjae/.gradle/caches/9.0-milestone-1/transforms/0b731dcd941bcda1933a37074857f1d1/transformed/work-runtime-2.7.0/AndroidManifest.xml:28:5-77
+22-->[androidx.work:work-runtime:2.7.0] /Users/iseonjae/.gradle/caches/9.0-milestone-1/transforms/0b731dcd941bcda1933a37074857f1d1/transformed/work-runtime-2.7.0/AndroidManifest.xml:28:22-74
+23
+24    <permission
+24-->[androidx.core:core:1.12.0] /Users/iseonjae/.gradle/caches/9.0-milestone-1/transforms/e0262fa3e419f14efd5d60dfe18a49e2/transformed/core-1.12.0/AndroidManifest.xml:22:5-24:47
+25        android:name="com.aisportspt.app.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION"
+25-->[androidx.core:core:1.12.0] /Users/iseonjae/.gradle/caches/9.0-milestone-1/transforms/e0262fa3e419f14efd5d60dfe18a49e2/transformed/core-1.12.0/AndroidManifest.xml:23:9-81
+26        android:protectionLevel="signature" />
+26-->[androidx.core:core:1.12.0] /Users/iseonjae/.gradle/caches/9.0-milestone-1/transforms/e0262fa3e419f14efd5d60dfe18a49e2/transformed/core-1.12.0/AndroidManifest.xml:24:9-44
+27
+28    <uses-permission android:name="com.aisportspt.app.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION" />
+28-->[androidx.core:core:1.12.0] /Users/iseonjae/.gradle/caches/9.0-milestone-1/transforms/e0262fa3e419f14efd5d60dfe18a49e2/transformed/core-1.12.0/AndroidManifest.xml:26:5-97
+28-->[androidx.core:core:1.12.0] /Users/iseonjae/.gradle/caches/9.0-milestone-1/transforms/e0262fa3e419f14efd5d60dfe18a49e2/transformed/core-1.12.0/AndroidManifest.xml:26:22-94
+29
+30    <application
+30-->/Users/iseonjae/Desktop/testing/android-studio-app/app/src/main/AndroidManifest.xml:8:5-28:19
+31        android:allowBackup="true"
+31-->/Users/iseonjae/Desktop/testing/android-studio-app/app/src/main/AndroidManifest.xml:9:9-35
+32        android:appComponentFactory="androidx.core.app.CoreComponentFactory"
+32-->[androidx.core:core:1.12.0] /Users/iseonjae/.gradle/caches/9.0-milestone-1/transforms/e0262fa3e419f14efd5d60dfe18a49e2/transformed/core-1.12.0/AndroidManifest.xml:28:18-86
+33        android:dataExtractionRules="@xml/data_extraction_rules"
+33-->/Users/iseonjae/Desktop/testing/android-studio-app/app/src/main/AndroidManifest.xml:10:9-65
+34        android:debuggable="true"
+35        android:extractNativeLibs="false"
+36        android:fullBackupContent="@xml/backup_rules"
+36-->/Users/iseonjae/Desktop/testing/android-studio-app/app/src/main/AndroidManifest.xml:11:9-54
+37        android:icon="@mipmap/ic_launcher"
+37-->/Users/iseonjae/Desktop/testing/android-studio-app/app/src/main/AndroidManifest.xml:12:9-43
+38        android:label="@string/app_name"
+38-->/Users/iseonjae/Desktop/testing/android-studio-app/app/src/main/AndroidManifest.xml:13:9-41
+39        android:roundIcon="@mipmap/ic_launcher_round"
+39-->/Users/iseonjae/Desktop/testing/android-studio-app/app/src/main/AndroidManifest.xml:14:9-54
+40        android:supportsRtl="true"
+40-->/Users/iseonjae/Desktop/testing/android-studio-app/app/src/main/AndroidManifest.xml:15:9-35
+41        android:testOnly="true"
+42        android:theme="@style/Theme.AISportsPT" >
+42-->/Users/iseonjae/Desktop/testing/android-studio-app/app/src/main/AndroidManifest.xml:16:9-48
+43        <activity
+43-->/Users/iseonjae/Desktop/testing/android-studio-app/app/src/main/AndroidManifest.xml:19:9-27:20
+44            android:name="com.aisportspt.app.MainActivity"
+44-->/Users/iseonjae/Desktop/testing/android-studio-app/app/src/main/AndroidManifest.xml:20:13-41
+45            android:exported="true"
+45-->/Users/iseonjae/Desktop/testing/android-studio-app/app/src/main/AndroidManifest.xml:21:13-36
+46            android:theme="@style/Theme.AISportsPT" >
+46-->/Users/iseonjae/Desktop/testing/android-studio-app/app/src/main/AndroidManifest.xml:22:13-52
+47            <intent-filter>
+47-->/Users/iseonjae/Desktop/testing/android-studio-app/app/src/main/AndroidManifest.xml:23:13-26:29
+48                <action android:name="android.intent.action.MAIN" />
+48-->/Users/iseonjae/Desktop/testing/android-studio-app/app/src/main/AndroidManifest.xml:24:17-69
+48-->/Users/iseonjae/Desktop/testing/android-studio-app/app/src/main/AndroidManifest.xml:24:25-66
+49
+50                <category android:name="android.intent.category.LAUNCHER" />
+50-->/Users/iseonjae/Desktop/testing/android-studio-app/app/src/main/AndroidManifest.xml:25:17-77
+50-->/Users/iseonjae/Desktop/testing/android-studio-app/app/src/main/AndroidManifest.xml:25:27-74
+51            </intent-filter>
+52        </activity>
+53
+54        <uses-library
+54-->[androidx.camera:camera-extensions:1.3.1] /Users/iseonjae/.gradle/caches/9.0-milestone-1/transforms/a56a762bd7985d5a574cb198540be082/transformed/camera-extensions-1.3.1/AndroidManifest.xml:29:9-31:40
+55            android:name="androidx.camera.extensions.impl"
+55-->[androidx.camera:camera-extensions:1.3.1] /Users/iseonjae/.gradle/caches/9.0-milestone-1/transforms/a56a762bd7985d5a574cb198540be082/transformed/camera-extensions-1.3.1/AndroidManifest.xml:30:13-59
+56            android:required="false" />
+56-->[androidx.camera:camera-extensions:1.3.1] /Users/iseonjae/.gradle/caches/9.0-milestone-1/transforms/a56a762bd7985d5a574cb198540be082/transformed/camera-extensions-1.3.1/AndroidManifest.xml:31:13-37
+57
+58        <service
+58-->[androidx.camera:camera-camera2:1.3.1] /Users/iseonjae/.gradle/caches/9.0-milestone-1/transforms/6f0f99d5afd353796eb553de5405e828/transformed/camera-camera2-1.3.1/AndroidManifest.xml:24:9-33:19
+59            android:name="androidx.camera.core.impl.MetadataHolderService"
+59-->[androidx.camera:camera-camera2:1.3.1] /Users/iseonjae/.gradle/caches/9.0-milestone-1/transforms/6f0f99d5afd353796eb553de5405e828/transformed/camera-camera2-1.3.1/AndroidManifest.xml:25:13-75
+60            android:enabled="false"
+60-->[androidx.camera:camera-camera2:1.3.1] /Users/iseonjae/.gradle/caches/9.0-milestone-1/transforms/6f0f99d5afd353796eb553de5405e828/transformed/camera-camera2-1.3.1/AndroidManifest.xml:26:13-36
+61            android:exported="false" >
+61-->[androidx.camera:camera-camera2:1.3.1] /Users/iseonjae/.gradle/caches/9.0-milestone-1/transforms/6f0f99d5afd353796eb553de5405e828/transformed/camera-camera2-1.3.1/AndroidManifest.xml:27:13-37
+62            <meta-data
+62-->[androidx.camera:camera-camera2:1.3.1] /Users/iseonjae/.gradle/caches/9.0-milestone-1/transforms/6f0f99d5afd353796eb553de5405e828/transformed/camera-camera2-1.3.1/AndroidManifest.xml:30:13-32:89
+63                android:name="androidx.camera.core.impl.MetadataHolderService.DEFAULT_CONFIG_PROVIDER"
+63-->[androidx.camera:camera-camera2:1.3.1] /Users/iseonjae/.gradle/caches/9.0-milestone-1/transforms/6f0f99d5afd353796eb553de5405e828/transformed/camera-camera2-1.3.1/AndroidManifest.xml:31:17-103
+64                android:value="androidx.camera.camera2.Camera2Config$DefaultProvider" />
+64-->[androidx.camera:camera-camera2:1.3.1] /Users/iseonjae/.gradle/caches/9.0-milestone-1/transforms/6f0f99d5afd353796eb553de5405e828/transformed/camera-camera2-1.3.1/AndroidManifest.xml:32:17-86
+65        </service>
+66        <!--
+67             Required for ML Kit Pose Detection GPU acceleration. Applications that target Android
+68             S+ require explicit declaration of any referenced vendor-provided libraries.
+69        -->
+70        <uses-native-library
+70-->[com.google.mlkit:pose-detection-common:18.0.0-beta3] /Users/iseonjae/.gradle/caches/9.0-milestone-1/transforms/07a25e526350fb33e12d47c3bba61f00/transformed/pose-detection-common-18.0.0-beta3/AndroidManifest.xml:16:9-18:40
+71            android:name="libOpenCL.so"
+71-->[com.google.mlkit:pose-detection-common:18.0.0-beta3] /Users/iseonjae/.gradle/caches/9.0-milestone-1/transforms/07a25e526350fb33e12d47c3bba61f00/transformed/pose-detection-common-18.0.0-beta3/AndroidManifest.xml:17:13-40
+72            android:required="false" />
+72-->[com.google.mlkit:pose-detection-common:18.0.0-beta3] /Users/iseonjae/.gradle/caches/9.0-milestone-1/transforms/07a25e526350fb33e12d47c3bba61f00/transformed/pose-detection-common-18.0.0-beta3/AndroidManifest.xml:18:13-37
+73        <uses-native-library
+73-->[com.google.mlkit:pose-detection-common:18.0.0-beta3] /Users/iseonjae/.gradle/caches/9.0-milestone-1/transforms/07a25e526350fb33e12d47c3bba61f00/transformed/pose-detection-common-18.0.0-beta3/AndroidManifest.xml:16:9-18:40
+74            android:name="libOpenCL-car.so"
+74-->[com.google.mlkit:pose-detection-common:18.0.0-beta3] /Users/iseonjae/.gradle/caches/9.0-milestone-1/transforms/07a25e526350fb33e12d47c3bba61f00/transformed/pose-detection-common-18.0.0-beta3/AndroidManifest.xml:17:13-40
+75            android:required="false" />
+75-->[com.google.mlkit:pose-detection-common:18.0.0-beta3] /Users/iseonjae/.gradle/caches/9.0-milestone-1/transforms/07a25e526350fb33e12d47c3bba61f00/transformed/pose-detection-common-18.0.0-beta3/AndroidManifest.xml:18:13-37
+76        <uses-native-library
+76-->[com.google.mlkit:pose-detection-common:18.0.0-beta3] /Users/iseonjae/.gradle/caches/9.0-milestone-1/transforms/07a25e526350fb33e12d47c3bba61f00/transformed/pose-detection-common-18.0.0-beta3/AndroidManifest.xml:16:9-18:40
+77            android:name="libOpenCL-pixel.so"
+77-->[com.google.mlkit:pose-detection-common:18.0.0-beta3] /Users/iseonjae/.gradle/caches/9.0-milestone-1/transforms/07a25e526350fb33e12d47c3bba61f00/transformed/pose-detection-common-18.0.0-beta3/AndroidManifest.xml:17:13-40
+78            android:required="false" />
+78-->[com.google.mlkit:pose-detection-common:18.0.0-beta3] /Users/iseonjae/.gradle/caches/9.0-milestone-1/transforms/07a25e526350fb33e12d47c3bba61f00/transformed/pose-detection-common-18.0.0-beta3/AndroidManifest.xml:18:13-37
+79
+80        <service
+80-->[com.google.mlkit:pose-detection-common:18.0.0-beta3] /Users/iseonjae/.gradle/caches/9.0-milestone-1/transforms/07a25e526350fb33e12d47c3bba61f00/transformed/pose-detection-common-18.0.0-beta3/AndroidManifest.xml:26:9-32:19
+81            android:name="com.google.mlkit.common.internal.MlKitComponentDiscoveryService"
+81-->[com.google.mlkit:pose-detection-common:18.0.0-beta3] /Users/iseonjae/.gradle/caches/9.0-milestone-1/transforms/07a25e526350fb33e12d47c3bba61f00/transformed/pose-detection-common-18.0.0-beta3/AndroidManifest.xml:27:13-91
+82            android:directBootAware="true"
+82-->[com.google.mlkit:common:18.5.0] /Users/iseonjae/.gradle/caches/9.0-milestone-1/transforms/e58f32b731e133b3f79f3715471f3617/transformed/common-18.5.0/AndroidManifest.xml:17:13-43
+83            android:exported="false" >
+83-->[com.google.mlkit:pose-detection-common:18.0.0-beta3] /Users/iseonjae/.gradle/caches/9.0-milestone-1/transforms/07a25e526350fb33e12d47c3bba61f00/transformed/pose-detection-common-18.0.0-beta3/AndroidManifest.xml:28:13-37
+84            <meta-data
+84-->[com.google.mlkit:pose-detection-common:18.0.0-beta3] /Users/iseonjae/.gradle/caches/9.0-milestone-1/transforms/07a25e526350fb33e12d47c3bba61f00/transformed/pose-detection-common-18.0.0-beta3/AndroidManifest.xml:29:13-31:85
+85                android:name="com.google.firebase.components:com.google.mlkit.vision.pose.internal.PoseRegistrar"
+85-->[com.google.mlkit:pose-detection-common:18.0.0-beta3] /Users/iseonjae/.gradle/caches/9.0-milestone-1/transforms/07a25e526350fb33e12d47c3bba61f00/transformed/pose-detection-common-18.0.0-beta3/AndroidManifest.xml:30:17-114
+86                android:value="com.google.firebase.components.ComponentRegistrar" />
+86-->[com.google.mlkit:pose-detection-common:18.0.0-beta3] /Users/iseonjae/.gradle/caches/9.0-milestone-1/transforms/07a25e526350fb33e12d47c3bba61f00/transformed/pose-detection-common-18.0.0-beta3/AndroidManifest.xml:31:17-82
+87            <meta-data
+87-->[com.google.mlkit:vision-common:17.2.1] /Users/iseonjae/.gradle/caches/9.0-milestone-1/transforms/6487a1f840b4d2f955052b65db0aadc2/transformed/vision-common-17.2.1/AndroidManifest.xml:12:13-14:85
+88                android:name="com.google.firebase.components:com.google.mlkit.vision.common.internal.VisionCommonRegistrar"
+88-->[com.google.mlkit:vision-common:17.2.1] /Users/iseonjae/.gradle/caches/9.0-milestone-1/transforms/6487a1f840b4d2f955052b65db0aadc2/transformed/vision-common-17.2.1/AndroidManifest.xml:13:17-124
+89                android:value="com.google.firebase.components.ComponentRegistrar" />
+89-->[com.google.mlkit:vision-common:17.2.1] /Users/iseonjae/.gradle/caches/9.0-milestone-1/transforms/6487a1f840b4d2f955052b65db0aadc2/transformed/vision-common-17.2.1/AndroidManifest.xml:14:17-82
+90            <meta-data
+90-->[com.google.mlkit:common:18.5.0] /Users/iseonjae/.gradle/caches/9.0-milestone-1/transforms/e58f32b731e133b3f79f3715471f3617/transformed/common-18.5.0/AndroidManifest.xml:20:13-22:85
+91                android:name="com.google.firebase.components:com.google.mlkit.common.internal.CommonComponentRegistrar"
+91-->[com.google.mlkit:common:18.5.0] /Users/iseonjae/.gradle/caches/9.0-milestone-1/transforms/e58f32b731e133b3f79f3715471f3617/transformed/common-18.5.0/AndroidManifest.xml:21:17-120
+92                android:value="com.google.firebase.components.ComponentRegistrar" />
+92-->[com.google.mlkit:common:18.5.0] /Users/iseonjae/.gradle/caches/9.0-milestone-1/transforms/e58f32b731e133b3f79f3715471f3617/transformed/common-18.5.0/AndroidManifest.xml:22:17-82
+93        </service>
+94        <service
+94-->[com.google.mlkit:acceleration:16.0.0-beta1] /Users/iseonjae/.gradle/caches/9.0-milestone-1/transforms/da090da934d9f9456a257f5567a9fb79/transformed/acceleration-16.0.0-beta1/AndroidManifest.xml:8:9-11:68
+95            android:name="com.google.mlkit.acceleration.internal.MlKitRemoteWorkerService"
+95-->[com.google.mlkit:acceleration:16.0.0-beta1] /Users/iseonjae/.gradle/caches/9.0-milestone-1/transforms/da090da934d9f9456a257f5567a9fb79/transformed/acceleration-16.0.0-beta1/AndroidManifest.xml:9:13-91
+96            android:exported="false"
+96-->[com.google.mlkit:acceleration:16.0.0-beta1] /Users/iseonjae/.gradle/caches/9.0-milestone-1/transforms/da090da934d9f9456a257f5567a9fb79/transformed/acceleration-16.0.0-beta1/AndroidManifest.xml:10:13-37
+97            android:process=":mlkit_acceleration_mini_benchmark" />
+97-->[com.google.mlkit:acceleration:16.0.0-beta1] /Users/iseonjae/.gradle/caches/9.0-milestone-1/transforms/da090da934d9f9456a257f5567a9fb79/transformed/acceleration-16.0.0-beta1/AndroidManifest.xml:11:13-65
+98
+99        <provider
+99-->[com.google.mlkit:common:18.5.0] /Users/iseonjae/.gradle/caches/9.0-milestone-1/transforms/e58f32b731e133b3f79f3715471f3617/transformed/common-18.5.0/AndroidManifest.xml:9:9-13:38
+100            android:name="com.google.mlkit.common.internal.MlKitInitProvider"
+100-->[com.google.mlkit:common:18.5.0] /Users/iseonjae/.gradle/caches/9.0-milestone-1/transforms/e58f32b731e133b3f79f3715471f3617/transformed/common-18.5.0/AndroidManifest.xml:10:13-78
+101            android:authorities="com.aisportspt.app.mlkitinitprovider"
+101-->[com.google.mlkit:common:18.5.0] /Users/iseonjae/.gradle/caches/9.0-milestone-1/transforms/e58f32b731e133b3f79f3715471f3617/transformed/common-18.5.0/AndroidManifest.xml:11:13-69
+102            android:exported="false"
+102-->[com.google.mlkit:common:18.5.0] /Users/iseonjae/.gradle/caches/9.0-milestone-1/transforms/e58f32b731e133b3f79f3715471f3617/transformed/common-18.5.0/AndroidManifest.xml:12:13-37
+103            android:initOrder="99" />
+103-->[com.google.mlkit:common:18.5.0] /Users/iseonjae/.gradle/caches/9.0-milestone-1/transforms/e58f32b731e133b3f79f3715471f3617/transformed/common-18.5.0/AndroidManifest.xml:13:13-35
+104
+105        <activity
+105-->[com.google.android.gms:play-services-base:18.1.0] /Users/iseonjae/.gradle/caches/9.0-milestone-1/transforms/60c04e16813641051c540a505da4ce25/transformed/play-services-base-18.1.0/AndroidManifest.xml:20:9-22:45
+106            android:name="com.google.android.gms.common.api.GoogleApiActivity"
+106-->[com.google.android.gms:play-services-base:18.1.0] /Users/iseonjae/.gradle/caches/9.0-milestone-1/transforms/60c04e16813641051c540a505da4ce25/transformed/play-services-base-18.1.0/AndroidManifest.xml:20:19-85
+107            android:exported="false"
+107-->[com.google.android.gms:play-services-base:18.1.0] /Users/iseonjae/.gradle/caches/9.0-milestone-1/transforms/60c04e16813641051c540a505da4ce25/transformed/play-services-base-18.1.0/AndroidManifest.xml:22:19-43
+108            android:theme="@android:style/Theme.Translucent.NoTitleBar" />
+108-->[com.google.android.gms:play-services-base:18.1.0] /Users/iseonjae/.gradle/caches/9.0-milestone-1/transforms/60c04e16813641051c540a505da4ce25/transformed/play-services-base-18.1.0/AndroidManifest.xml:21:19-78
+109
+110        <meta-data
+110-->[com.google.android.gms:play-services-basement:18.1.0] /Users/iseonjae/.gradle/caches/9.0-milestone-1/transforms/b2f64483d6b2c98a6b079fa257613776/transformed/play-services-basement-18.1.0/AndroidManifest.xml:21:9-23:69
+111            android:name="com.google.android.gms.version"
+111-->[com.google.android.gms:play-services-basement:18.1.0] /Users/iseonjae/.gradle/caches/9.0-milestone-1/transforms/b2f64483d6b2c98a6b079fa257613776/transformed/play-services-basement-18.1.0/AndroidManifest.xml:22:13-58
+112            android:value="@integer/google_play_services_version" />
+112-->[com.google.android.gms:play-services-basement:18.1.0] /Users/iseonjae/.gradle/caches/9.0-milestone-1/transforms/b2f64483d6b2c98a6b079fa257613776/transformed/play-services-basement-18.1.0/AndroidManifest.xml:23:13-66
+113
+114        <provider
+114-->[androidx.emoji2:emoji2:1.2.0] /Users/iseonjae/.gradle/caches/9.0-milestone-1/transforms/2573e6ff9d5af80c0a7f6c6ea12f3ee0/transformed/emoji2-1.2.0/AndroidManifest.xml:24:9-32:20
+115            android:name="androidx.startup.InitializationProvider"
+115-->[androidx.emoji2:emoji2:1.2.0] /Users/iseonjae/.gradle/caches/9.0-milestone-1/transforms/2573e6ff9d5af80c0a7f6c6ea12f3ee0/transformed/emoji2-1.2.0/AndroidManifest.xml:25:13-67
+116            android:authorities="com.aisportspt.app.androidx-startup"
+116-->[androidx.emoji2:emoji2:1.2.0] /Users/iseonjae/.gradle/caches/9.0-milestone-1/transforms/2573e6ff9d5af80c0a7f6c6ea12f3ee0/transformed/emoji2-1.2.0/AndroidManifest.xml:26:13-68
+117            android:exported="false" >
+117-->[androidx.emoji2:emoji2:1.2.0] /Users/iseonjae/.gradle/caches/9.0-milestone-1/transforms/2573e6ff9d5af80c0a7f6c6ea12f3ee0/transformed/emoji2-1.2.0/AndroidManifest.xml:27:13-37
+118            <meta-data
+118-->[androidx.emoji2:emoji2:1.2.0] /Users/iseonjae/.gradle/caches/9.0-milestone-1/transforms/2573e6ff9d5af80c0a7f6c6ea12f3ee0/transformed/emoji2-1.2.0/AndroidManifest.xml:29:13-31:52
+119                android:name="androidx.emoji2.text.EmojiCompatInitializer"
+119-->[androidx.emoji2:emoji2:1.2.0] /Users/iseonjae/.gradle/caches/9.0-milestone-1/transforms/2573e6ff9d5af80c0a7f6c6ea12f3ee0/transformed/emoji2-1.2.0/AndroidManifest.xml:30:17-75
+120                android:value="androidx.startup" />
+120-->[androidx.emoji2:emoji2:1.2.0] /Users/iseonjae/.gradle/caches/9.0-milestone-1/transforms/2573e6ff9d5af80c0a7f6c6ea12f3ee0/transformed/emoji2-1.2.0/AndroidManifest.xml:31:17-49
+121            <meta-data
+121-->[androidx.work:work-runtime:2.7.0] /Users/iseonjae/.gradle/caches/9.0-milestone-1/transforms/0b731dcd941bcda1933a37074857f1d1/transformed/work-runtime-2.7.0/AndroidManifest.xml:36:13-38:52
+122                android:name="androidx.work.WorkManagerInitializer"
+122-->[androidx.work:work-runtime:2.7.0] /Users/iseonjae/.gradle/caches/9.0-milestone-1/transforms/0b731dcd941bcda1933a37074857f1d1/transformed/work-runtime-2.7.0/AndroidManifest.xml:37:17-68
+123                android:value="androidx.startup" />
+123-->[androidx.work:work-runtime:2.7.0] /Users/iseonjae/.gradle/caches/9.0-milestone-1/transforms/0b731dcd941bcda1933a37074857f1d1/transformed/work-runtime-2.7.0/AndroidManifest.xml:38:17-49
+124            <meta-data
+124-->[androidx.lifecycle:lifecycle-process:2.7.0] /Users/iseonjae/.gradle/caches/9.0-milestone-1/transforms/096eb7f7c056822feb39d30d7fe3ef92/transformed/lifecycle-process-2.7.0/AndroidManifest.xml:29:13-31:52
+125                android:name="androidx.lifecycle.ProcessLifecycleInitializer"
+125-->[androidx.lifecycle:lifecycle-process:2.7.0] /Users/iseonjae/.gradle/caches/9.0-milestone-1/transforms/096eb7f7c056822feb39d30d7fe3ef92/transformed/lifecycle-process-2.7.0/AndroidManifest.xml:30:17-78
+126                android:value="androidx.startup" />
+126-->[androidx.lifecycle:lifecycle-process:2.7.0] /Users/iseonjae/.gradle/caches/9.0-milestone-1/transforms/096eb7f7c056822feb39d30d7fe3ef92/transformed/lifecycle-process-2.7.0/AndroidManifest.xml:31:17-49
+127            <meta-data
+127-->[androidx.profileinstaller:profileinstaller:1.3.0] /Users/iseonjae/.gradle/caches/9.0-milestone-1/transforms/72e271cc7c7703f54f7c41325574f370/transformed/profileinstaller-1.3.0/AndroidManifest.xml:29:13-31:52
+128                android:name="androidx.profileinstaller.ProfileInstallerInitializer"
+128-->[androidx.profileinstaller:profileinstaller:1.3.0] /Users/iseonjae/.gradle/caches/9.0-milestone-1/transforms/72e271cc7c7703f54f7c41325574f370/transformed/profileinstaller-1.3.0/AndroidManifest.xml:30:17-85
+129                android:value="androidx.startup" />
+129-->[androidx.profileinstaller:profileinstaller:1.3.0] /Users/iseonjae/.gradle/caches/9.0-milestone-1/transforms/72e271cc7c7703f54f7c41325574f370/transformed/profileinstaller-1.3.0/AndroidManifest.xml:31:17-49
+130        </provider>
+131
+132        <uses-library
+132-->[androidx.window:window:1.0.0] /Users/iseonjae/.gradle/caches/9.0-milestone-1/transforms/8a6cfaa8e10edb13952b64e92e9bbde1/transformed/window-1.0.0/AndroidManifest.xml:25:9-27:40
+133            android:name="androidx.window.extensions"
+133-->[androidx.window:window:1.0.0] /Users/iseonjae/.gradle/caches/9.0-milestone-1/transforms/8a6cfaa8e10edb13952b64e92e9bbde1/transformed/window-1.0.0/AndroidManifest.xml:26:13-54
+134            android:required="false" />
+134-->[androidx.window:window:1.0.0] /Users/iseonjae/.gradle/caches/9.0-milestone-1/transforms/8a6cfaa8e10edb13952b64e92e9bbde1/transformed/window-1.0.0/AndroidManifest.xml:27:13-37
+135        <uses-library
+135-->[androidx.window:window:1.0.0] /Users/iseonjae/.gradle/caches/9.0-milestone-1/transforms/8a6cfaa8e10edb13952b64e92e9bbde1/transformed/window-1.0.0/AndroidManifest.xml:28:9-30:40
+136            android:name="androidx.window.sidecar"
+136-->[androidx.window:window:1.0.0] /Users/iseonjae/.gradle/caches/9.0-milestone-1/transforms/8a6cfaa8e10edb13952b64e92e9bbde1/transformed/window-1.0.0/AndroidManifest.xml:29:13-51
+137            android:required="false" />
+137-->[androidx.window:window:1.0.0] /Users/iseonjae/.gradle/caches/9.0-milestone-1/transforms/8a6cfaa8e10edb13952b64e92e9bbde1/transformed/window-1.0.0/AndroidManifest.xml:30:13-37
+138
+139        <service
+139-->[androidx.work:work-multiprocess:2.7.0] /Users/iseonjae/.gradle/caches/9.0-milestone-1/transforms/34a94d10f1e600681aa9964abede083f/transformed/work-multiprocess-2.7.0/AndroidManifest.xml:25:9-27:40
+140            android:name="androidx.work.multiprocess.RemoteWorkManagerService"
+140-->[androidx.work:work-multiprocess:2.7.0] /Users/iseonjae/.gradle/caches/9.0-milestone-1/transforms/34a94d10f1e600681aa9964abede083f/transformed/work-multiprocess-2.7.0/AndroidManifest.xml:26:13-79
+141            android:exported="false" />
+141-->[androidx.work:work-multiprocess:2.7.0] /Users/iseonjae/.gradle/caches/9.0-milestone-1/transforms/34a94d10f1e600681aa9964abede083f/transformed/work-multiprocess-2.7.0/AndroidManifest.xml:27:13-37
+142        <service
+142-->[androidx.work:work-runtime:2.7.0] /Users/iseonjae/.gradle/caches/9.0-milestone-1/transforms/0b731dcd941bcda1933a37074857f1d1/transformed/work-runtime-2.7.0/AndroidManifest.xml:41:9-46:35
+143            android:name="androidx.work.impl.background.systemalarm.SystemAlarmService"
+143-->[androidx.work:work-runtime:2.7.0] /Users/iseonjae/.gradle/caches/9.0-milestone-1/transforms/0b731dcd941bcda1933a37074857f1d1/transformed/work-runtime-2.7.0/AndroidManifest.xml:42:13-88
+144            android:directBootAware="false"
+144-->[androidx.work:work-runtime:2.7.0] /Users/iseonjae/.gradle/caches/9.0-milestone-1/transforms/0b731dcd941bcda1933a37074857f1d1/transformed/work-runtime-2.7.0/AndroidManifest.xml:43:13-44
+145            android:enabled="@bool/enable_system_alarm_service_default"
+145-->[androidx.work:work-runtime:2.7.0] /Users/iseonjae/.gradle/caches/9.0-milestone-1/transforms/0b731dcd941bcda1933a37074857f1d1/transformed/work-runtime-2.7.0/AndroidManifest.xml:44:13-72
+146            android:exported="false" />
+146-->[androidx.work:work-runtime:2.7.0] /Users/iseonjae/.gradle/caches/9.0-milestone-1/transforms/0b731dcd941bcda1933a37074857f1d1/transformed/work-runtime-2.7.0/AndroidManifest.xml:45:13-37
+147        <service
+147-->[androidx.work:work-runtime:2.7.0] /Users/iseonjae/.gradle/caches/9.0-milestone-1/transforms/0b731dcd941bcda1933a37074857f1d1/transformed/work-runtime-2.7.0/AndroidManifest.xml:47:9-53:35
+148            android:name="androidx.work.impl.background.systemjob.SystemJobService"
+148-->[androidx.work:work-runtime:2.7.0] /Users/iseonjae/.gradle/caches/9.0-milestone-1/transforms/0b731dcd941bcda1933a37074857f1d1/transformed/work-runtime-2.7.0/AndroidManifest.xml:48:13-84
+149            android:directBootAware="false"
+149-->[androidx.work:work-runtime:2.7.0] /Users/iseonjae/.gradle/caches/9.0-milestone-1/transforms/0b731dcd941bcda1933a37074857f1d1/transformed/work-runtime-2.7.0/AndroidManifest.xml:49:13-44
+150            android:enabled="@bool/enable_system_job_service_default"
+150-->[androidx.work:work-runtime:2.7.0] /Users/iseonjae/.gradle/caches/9.0-milestone-1/transforms/0b731dcd941bcda1933a37074857f1d1/transformed/work-runtime-2.7.0/AndroidManifest.xml:50:13-70
+151            android:exported="true"
+151-->[androidx.work:work-runtime:2.7.0] /Users/iseonjae/.gradle/caches/9.0-milestone-1/transforms/0b731dcd941bcda1933a37074857f1d1/transformed/work-runtime-2.7.0/AndroidManifest.xml:51:13-36
+152            android:permission="android.permission.BIND_JOB_SERVICE" />
+152-->[androidx.work:work-runtime:2.7.0] /Users/iseonjae/.gradle/caches/9.0-milestone-1/transforms/0b731dcd941bcda1933a37074857f1d1/transformed/work-runtime-2.7.0/AndroidManifest.xml:52:13-69
+153        <service
+153-->[androidx.work:work-runtime:2.7.0] /Users/iseonjae/.gradle/caches/9.0-milestone-1/transforms/0b731dcd941bcda1933a37074857f1d1/transformed/work-runtime-2.7.0/AndroidManifest.xml:54:9-59:35
+154            android:name="androidx.work.impl.foreground.SystemForegroundService"
+154-->[androidx.work:work-runtime:2.7.0] /Users/iseonjae/.gradle/caches/9.0-milestone-1/transforms/0b731dcd941bcda1933a37074857f1d1/transformed/work-runtime-2.7.0/AndroidManifest.xml:55:13-81
+155            android:directBootAware="false"
+155-->[androidx.work:work-runtime:2.7.0] /Users/iseonjae/.gradle/caches/9.0-milestone-1/transforms/0b731dcd941bcda1933a37074857f1d1/transformed/work-runtime-2.7.0/AndroidManifest.xml:56:13-44
+156            android:enabled="@bool/enable_system_foreground_service_default"
+156-->[androidx.work:work-runtime:2.7.0] /Users/iseonjae/.gradle/caches/9.0-milestone-1/transforms/0b731dcd941bcda1933a37074857f1d1/transformed/work-runtime-2.7.0/AndroidManifest.xml:57:13-77
+157            android:exported="false" />
+157-->[androidx.work:work-runtime:2.7.0] /Users/iseonjae/.gradle/caches/9.0-milestone-1/transforms/0b731dcd941bcda1933a37074857f1d1/transformed/work-runtime-2.7.0/AndroidManifest.xml:58:13-37
+158
+159        <receiver
+159-->[androidx.work:work-runtime:2.7.0] /Users/iseonjae/.gradle/caches/9.0-milestone-1/transforms/0b731dcd941bcda1933a37074857f1d1/transformed/work-runtime-2.7.0/AndroidManifest.xml:61:9-66:35
+160            android:name="androidx.work.impl.utils.ForceStopRunnable$BroadcastReceiver"
+160-->[androidx.work:work-runtime:2.7.0] /Users/iseonjae/.gradle/caches/9.0-milestone-1/transforms/0b731dcd941bcda1933a37074857f1d1/transformed/work-runtime-2.7.0/AndroidManifest.xml:62:13-88
+161            android:directBootAware="false"
+161-->[androidx.work:work-runtime:2.7.0] /Users/iseonjae/.gradle/caches/9.0-milestone-1/transforms/0b731dcd941bcda1933a37074857f1d1/transformed/work-runtime-2.7.0/AndroidManifest.xml:63:13-44
+162            android:enabled="true"
+162-->[androidx.work:work-runtime:2.7.0] /Users/iseonjae/.gradle/caches/9.0-milestone-1/transforms/0b731dcd941bcda1933a37074857f1d1/transformed/work-runtime-2.7.0/AndroidManifest.xml:64:13-35
+163            android:exported="false" />
+163-->[androidx.work:work-runtime:2.7.0] /Users/iseonjae/.gradle/caches/9.0-milestone-1/transforms/0b731dcd941bcda1933a37074857f1d1/transformed/work-runtime-2.7.0/AndroidManifest.xml:65:13-37
+164        <receiver
+164-->[androidx.work:work-runtime:2.7.0] /Users/iseonjae/.gradle/caches/9.0-milestone-1/transforms/0b731dcd941bcda1933a37074857f1d1/transformed/work-runtime-2.7.0/AndroidManifest.xml:67:9-77:20
+165            android:name="androidx.work.impl.background.systemalarm.ConstraintProxy$BatteryChargingProxy"
+165-->[androidx.work:work-runtime:2.7.0] /Users/iseonjae/.gradle/caches/9.0-milestone-1/transforms/0b731dcd941bcda1933a37074857f1d1/transformed/work-runtime-2.7.0/AndroidManifest.xml:68:13-106
+166            android:directBootAware="false"
+166-->[androidx.work:work-runtime:2.7.0] /Users/iseonjae/.gradle/caches/9.0-milestone-1/transforms/0b731dcd941bcda1933a37074857f1d1/transformed/work-runtime-2.7.0/AndroidManifest.xml:69:13-44
+167            android:enabled="false"
+167-->[androidx.work:work-runtime:2.7.0] /Users/iseonjae/.gradle/caches/9.0-milestone-1/transforms/0b731dcd941bcda1933a37074857f1d1/transformed/work-runtime-2.7.0/AndroidManifest.xml:70:13-36
+168            android:exported="false" >
+168-->[androidx.work:work-runtime:2.7.0] /Users/iseonjae/.gradle/caches/9.0-milestone-1/transforms/0b731dcd941bcda1933a37074857f1d1/transformed/work-runtime-2.7.0/AndroidManifest.xml:71:13-37
+169            <intent-filter>
+169-->[androidx.work:work-runtime:2.7.0] /Users/iseonjae/.gradle/caches/9.0-milestone-1/transforms/0b731dcd941bcda1933a37074857f1d1/transformed/work-runtime-2.7.0/AndroidManifest.xml:73:13-76:29
+170                <action android:name="android.intent.action.ACTION_POWER_CONNECTED" />
+170-->[androidx.work:work-runtime:2.7.0] /Users/iseonjae/.gradle/caches/9.0-milestone-1/transforms/0b731dcd941bcda1933a37074857f1d1/transformed/work-runtime-2.7.0/AndroidManifest.xml:74:17-87
+170-->[androidx.work:work-runtime:2.7.0] /Users/iseonjae/.gradle/caches/9.0-milestone-1/transforms/0b731dcd941bcda1933a37074857f1d1/transformed/work-runtime-2.7.0/AndroidManifest.xml:74:25-84
+171                <action android:name="android.intent.action.ACTION_POWER_DISCONNECTED" />
+171-->[androidx.work:work-runtime:2.7.0] /Users/iseonjae/.gradle/caches/9.0-milestone-1/transforms/0b731dcd941bcda1933a37074857f1d1/transformed/work-runtime-2.7.0/AndroidManifest.xml:75:17-90
+171-->[androidx.work:work-runtime:2.7.0] /Users/iseonjae/.gradle/caches/9.0-milestone-1/transforms/0b731dcd941bcda1933a37074857f1d1/transformed/work-runtime-2.7.0/AndroidManifest.xml:75:25-87
+172            </intent-filter>
+173        </receiver>
+174        <receiver
+174-->[androidx.work:work-runtime:2.7.0] /Users/iseonjae/.gradle/caches/9.0-milestone-1/transforms/0b731dcd941bcda1933a37074857f1d1/transformed/work-runtime-2.7.0/AndroidManifest.xml:78:9-88:20
+175            android:name="androidx.work.impl.background.systemalarm.ConstraintProxy$BatteryNotLowProxy"
+175-->[androidx.work:work-runtime:2.7.0] /Users/iseonjae/.gradle/caches/9.0-milestone-1/transforms/0b731dcd941bcda1933a37074857f1d1/transformed/work-runtime-2.7.0/AndroidManifest.xml:79:13-104
+176            android:directBootAware="false"
+176-->[androidx.work:work-runtime:2.7.0] /Users/iseonjae/.gradle/caches/9.0-milestone-1/transforms/0b731dcd941bcda1933a37074857f1d1/transformed/work-runtime-2.7.0/AndroidManifest.xml:80:13-44
+177            android:enabled="false"
+177-->[androidx.work:work-runtime:2.7.0] /Users/iseonjae/.gradle/caches/9.0-milestone-1/transforms/0b731dcd941bcda1933a37074857f1d1/transformed/work-runtime-2.7.0/AndroidManifest.xml:81:13-36
+178            android:exported="false" >
+178-->[androidx.work:work-runtime:2.7.0] /Users/iseonjae/.gradle/caches/9.0-milestone-1/transforms/0b731dcd941bcda1933a37074857f1d1/transformed/work-runtime-2.7.0/AndroidManifest.xml:82:13-37
+179            <intent-filter>
+179-->[androidx.work:work-runtime:2.7.0] /Users/iseonjae/.gradle/caches/9.0-milestone-1/transforms/0b731dcd941bcda1933a37074857f1d1/transformed/work-runtime-2.7.0/AndroidManifest.xml:84:13-87:29
+180                <action android:name="android.intent.action.BATTERY_OKAY" />
+180-->[androidx.work:work-runtime:2.7.0] /Users/iseonjae/.gradle/caches/9.0-milestone-1/transforms/0b731dcd941bcda1933a37074857f1d1/transformed/work-runtime-2.7.0/AndroidManifest.xml:85:17-77
+180-->[androidx.work:work-runtime:2.7.0] /Users/iseonjae/.gradle/caches/9.0-milestone-1/transforms/0b731dcd941bcda1933a37074857f1d1/transformed/work-runtime-2.7.0/AndroidManifest.xml:85:25-74
+181                <action android:name="android.intent.action.BATTERY_LOW" />
+181-->[androidx.work:work-runtime:2.7.0] /Users/iseonjae/.gradle/caches/9.0-milestone-1/transforms/0b731dcd941bcda1933a37074857f1d1/transformed/work-runtime-2.7.0/AndroidManifest.xml:86:17-76
+181-->[androidx.work:work-runtime:2.7.0] /Users/iseonjae/.gradle/caches/9.0-milestone-1/transforms/0b731dcd941bcda1933a37074857f1d1/transformed/work-runtime-2.7.0/AndroidManifest.xml:86:25-73
+182            </intent-filter>
+183        </receiver>
+184        <receiver
+184-->[androidx.work:work-runtime:2.7.0] /Users/iseonjae/.gradle/caches/9.0-milestone-1/transforms/0b731dcd941bcda1933a37074857f1d1/transformed/work-runtime-2.7.0/AndroidManifest.xml:89:9-99:20
+185            android:name="androidx.work.impl.background.systemalarm.ConstraintProxy$StorageNotLowProxy"
+185-->[androidx.work:work-runtime:2.7.0] /Users/iseonjae/.gradle/caches/9.0-milestone-1/transforms/0b731dcd941bcda1933a37074857f1d1/transformed/work-runtime-2.7.0/AndroidManifest.xml:90:13-104
+186            android:directBootAware="false"
+186-->[androidx.work:work-runtime:2.7.0] /Users/iseonjae/.gradle/caches/9.0-milestone-1/transforms/0b731dcd941bcda1933a37074857f1d1/transformed/work-runtime-2.7.0/AndroidManifest.xml:91:13-44
+187            android:enabled="false"
+187-->[androidx.work:work-runtime:2.7.0] /Users/iseonjae/.gradle/caches/9.0-milestone-1/transforms/0b731dcd941bcda1933a37074857f1d1/transformed/work-runtime-2.7.0/AndroidManifest.xml:92:13-36
+188            android:exported="false" >
+188-->[androidx.work:work-runtime:2.7.0] /Users/iseonjae/.gradle/caches/9.0-milestone-1/transforms/0b731dcd941bcda1933a37074857f1d1/transformed/work-runtime-2.7.0/AndroidManifest.xml:93:13-37
+189            <intent-filter>
+189-->[androidx.work:work-runtime:2.7.0] /Users/iseonjae/.gradle/caches/9.0-milestone-1/transforms/0b731dcd941bcda1933a37074857f1d1/transformed/work-runtime-2.7.0/AndroidManifest.xml:95:13-98:29
+190                <action android:name="android.intent.action.DEVICE_STORAGE_LOW" />
+190-->[androidx.work:work-runtime:2.7.0] /Users/iseonjae/.gradle/caches/9.0-milestone-1/transforms/0b731dcd941bcda1933a37074857f1d1/transformed/work-runtime-2.7.0/AndroidManifest.xml:96:17-83
+190-->[androidx.work:work-runtime:2.7.0] /Users/iseonjae/.gradle/caches/9.0-milestone-1/transforms/0b731dcd941bcda1933a37074857f1d1/transformed/work-runtime-2.7.0/AndroidManifest.xml:96:25-80
+191                <action android:name="android.intent.action.DEVICE_STORAGE_OK" />
+191-->[androidx.work:work-runtime:2.7.0] /Users/iseonjae/.gradle/caches/9.0-milestone-1/transforms/0b731dcd941bcda1933a37074857f1d1/transformed/work-runtime-2.7.0/AndroidManifest.xml:97:17-82
+191-->[androidx.work:work-runtime:2.7.0] /Users/iseonjae/.gradle/caches/9.0-milestone-1/transforms/0b731dcd941bcda1933a37074857f1d1/transformed/work-runtime-2.7.0/AndroidManifest.xml:97:25-79
+192            </intent-filter>
+193        </receiver>
+194        <receiver
+194-->[androidx.work:work-runtime:2.7.0] /Users/iseonjae/.gradle/caches/9.0-milestone-1/transforms/0b731dcd941bcda1933a37074857f1d1/transformed/work-runtime-2.7.0/AndroidManifest.xml:100:9-109:20
+195            android:name="androidx.work.impl.background.systemalarm.ConstraintProxy$NetworkStateProxy"
+195-->[androidx.work:work-runtime:2.7.0] /Users/iseonjae/.gradle/caches/9.0-milestone-1/transforms/0b731dcd941bcda1933a37074857f1d1/transformed/work-runtime-2.7.0/AndroidManifest.xml:101:13-103
+196            android:directBootAware="false"
+196-->[androidx.work:work-runtime:2.7.0] /Users/iseonjae/.gradle/caches/9.0-milestone-1/transforms/0b731dcd941bcda1933a37074857f1d1/transformed/work-runtime-2.7.0/AndroidManifest.xml:102:13-44
+197            android:enabled="false"
+197-->[androidx.work:work-runtime:2.7.0] /Users/iseonjae/.gradle/caches/9.0-milestone-1/transforms/0b731dcd941bcda1933a37074857f1d1/transformed/work-runtime-2.7.0/AndroidManifest.xml:103:13-36
+198            android:exported="false" >
+198-->[androidx.work:work-runtime:2.7.0] /Users/iseonjae/.gradle/caches/9.0-milestone-1/transforms/0b731dcd941bcda1933a37074857f1d1/transformed/work-runtime-2.7.0/AndroidManifest.xml:104:13-37
+199            <intent-filter>
+199-->[androidx.work:work-runtime:2.7.0] /Users/iseonjae/.gradle/caches/9.0-milestone-1/transforms/0b731dcd941bcda1933a37074857f1d1/transformed/work-runtime-2.7.0/AndroidManifest.xml:106:13-108:29
+200                <action android:name="android.net.conn.CONNECTIVITY_CHANGE" />
+200-->[androidx.work:work-runtime:2.7.0] /Users/iseonjae/.gradle/caches/9.0-milestone-1/transforms/0b731dcd941bcda1933a37074857f1d1/transformed/work-runtime-2.7.0/AndroidManifest.xml:107:17-79
+200-->[androidx.work:work-runtime:2.7.0] /Users/iseonjae/.gradle/caches/9.0-milestone-1/transforms/0b731dcd941bcda1933a37074857f1d1/transformed/work-runtime-2.7.0/AndroidManifest.xml:107:25-76
+201            </intent-filter>
+202        </receiver>
+203        <receiver
+203-->[androidx.work:work-runtime:2.7.0] /Users/iseonjae/.gradle/caches/9.0-milestone-1/transforms/0b731dcd941bcda1933a37074857f1d1/transformed/work-runtime-2.7.0/AndroidManifest.xml:110:9-121:20
+204            android:name="androidx.work.impl.background.systemalarm.RescheduleReceiver"
+204-->[androidx.work:work-runtime:2.7.0] /Users/iseonjae/.gradle/caches/9.0-milestone-1/transforms/0b731dcd941bcda1933a37074857f1d1/transformed/work-runtime-2.7.0/AndroidManifest.xml:111:13-88
+205            android:directBootAware="false"
+205-->[androidx.work:work-runtime:2.7.0] /Users/iseonjae/.gradle/caches/9.0-milestone-1/transforms/0b731dcd941bcda1933a37074857f1d1/transformed/work-runtime-2.7.0/AndroidManifest.xml:112:13-44
+206            android:enabled="false"
+206-->[androidx.work:work-runtime:2.7.0] /Users/iseonjae/.gradle/caches/9.0-milestone-1/transforms/0b731dcd941bcda1933a37074857f1d1/transformed/work-runtime-2.7.0/AndroidManifest.xml:113:13-36
+207            android:exported="false" >
+207-->[androidx.work:work-runtime:2.7.0] /Users/iseonjae/.gradle/caches/9.0-milestone-1/transforms/0b731dcd941bcda1933a37074857f1d1/transformed/work-runtime-2.7.0/AndroidManifest.xml:114:13-37
+208            <intent-filter>
+208-->[androidx.work:work-runtime:2.7.0] /Users/iseonjae/.gradle/caches/9.0-milestone-1/transforms/0b731dcd941bcda1933a37074857f1d1/transformed/work-runtime-2.7.0/AndroidManifest.xml:116:13-120:29
+209                <action android:name="android.intent.action.BOOT_COMPLETED" />
+209-->[androidx.work:work-runtime:2.7.0] /Users/iseonjae/.gradle/caches/9.0-milestone-1/transforms/0b731dcd941bcda1933a37074857f1d1/transformed/work-runtime-2.7.0/AndroidManifest.xml:117:17-79
+209-->[androidx.work:work-runtime:2.7.0] /Users/iseonjae/.gradle/caches/9.0-milestone-1/transforms/0b731dcd941bcda1933a37074857f1d1/transformed/work-runtime-2.7.0/AndroidManifest.xml:117:25-76
+210                <action android:name="android.intent.action.TIME_SET" />
+210-->[androidx.work:work-runtime:2.7.0] /Users/iseonjae/.gradle/caches/9.0-milestone-1/transforms/0b731dcd941bcda1933a37074857f1d1/transformed/work-runtime-2.7.0/AndroidManifest.xml:118:17-73
+210-->[androidx.work:work-runtime:2.7.0] /Users/iseonjae/.gradle/caches/9.0-milestone-1/transforms/0b731dcd941bcda1933a37074857f1d1/transformed/work-runtime-2.7.0/AndroidManifest.xml:118:25-70
+211                <action android:name="android.intent.action.TIMEZONE_CHANGED" />
+211-->[androidx.work:work-runtime:2.7.0] /Users/iseonjae/.gradle/caches/9.0-milestone-1/transforms/0b731dcd941bcda1933a37074857f1d1/transformed/work-runtime-2.7.0/AndroidManifest.xml:119:17-81
+211-->[androidx.work:work-runtime:2.7.0] /Users/iseonjae/.gradle/caches/9.0-milestone-1/transforms/0b731dcd941bcda1933a37074857f1d1/transformed/work-runtime-2.7.0/AndroidManifest.xml:119:25-78
+212            </intent-filter>
+213        </receiver>
+214        <receiver
+214-->[androidx.work:work-runtime:2.7.0] /Users/iseonjae/.gradle/caches/9.0-milestone-1/transforms/0b731dcd941bcda1933a37074857f1d1/transformed/work-runtime-2.7.0/AndroidManifest.xml:122:9-131:20
+215            android:name="androidx.work.impl.background.systemalarm.ConstraintProxyUpdateReceiver"
+215-->[androidx.work:work-runtime:2.7.0] /Users/iseonjae/.gradle/caches/9.0-milestone-1/transforms/0b731dcd941bcda1933a37074857f1d1/transformed/work-runtime-2.7.0/AndroidManifest.xml:123:13-99
+216            android:directBootAware="false"
+216-->[androidx.work:work-runtime:2.7.0] /Users/iseonjae/.gradle/caches/9.0-milestone-1/transforms/0b731dcd941bcda1933a37074857f1d1/transformed/work-runtime-2.7.0/AndroidManifest.xml:124:13-44
+217            android:enabled="@bool/enable_system_alarm_service_default"
+217-->[androidx.work:work-runtime:2.7.0] /Users/iseonjae/.gradle/caches/9.0-milestone-1/transforms/0b731dcd941bcda1933a37074857f1d1/transformed/work-runtime-2.7.0/AndroidManifest.xml:125:13-72
+218            android:exported="false" >
+218-->[androidx.work:work-runtime:2.7.0] /Users/iseonjae/.gradle/caches/9.0-milestone-1/transforms/0b731dcd941bcda1933a37074857f1d1/transformed/work-runtime-2.7.0/AndroidManifest.xml:126:13-37
+219            <intent-filter>
+219-->[androidx.work:work-runtime:2.7.0] /Users/iseonjae/.gradle/caches/9.0-milestone-1/transforms/0b731dcd941bcda1933a37074857f1d1/transformed/work-runtime-2.7.0/AndroidManifest.xml:128:13-130:29
+220                <action android:name="androidx.work.impl.background.systemalarm.UpdateProxies" />
+220-->[androidx.work:work-runtime:2.7.0] /Users/iseonjae/.gradle/caches/9.0-milestone-1/transforms/0b731dcd941bcda1933a37074857f1d1/transformed/work-runtime-2.7.0/AndroidManifest.xml:129:17-98
+220-->[androidx.work:work-runtime:2.7.0] /Users/iseonjae/.gradle/caches/9.0-milestone-1/transforms/0b731dcd941bcda1933a37074857f1d1/transformed/work-runtime-2.7.0/AndroidManifest.xml:129:25-95
+221            </intent-filter>
+222        </receiver>
+223        <receiver
+223-->[androidx.work:work-runtime:2.7.0] /Users/iseonjae/.gradle/caches/9.0-milestone-1/transforms/0b731dcd941bcda1933a37074857f1d1/transformed/work-runtime-2.7.0/AndroidManifest.xml:132:9-142:20
+224            android:name="androidx.work.impl.diagnostics.DiagnosticsReceiver"
+224-->[androidx.work:work-runtime:2.7.0] /Users/iseonjae/.gradle/caches/9.0-milestone-1/transforms/0b731dcd941bcda1933a37074857f1d1/transformed/work-runtime-2.7.0/AndroidManifest.xml:133:13-78
+225            android:directBootAware="false"
+225-->[androidx.work:work-runtime:2.7.0] /Users/iseonjae/.gradle/caches/9.0-milestone-1/transforms/0b731dcd941bcda1933a37074857f1d1/transformed/work-runtime-2.7.0/AndroidManifest.xml:134:13-44
+226            android:enabled="true"
+226-->[androidx.work:work-runtime:2.7.0] /Users/iseonjae/.gradle/caches/9.0-milestone-1/transforms/0b731dcd941bcda1933a37074857f1d1/transformed/work-runtime-2.7.0/AndroidManifest.xml:135:13-35
+227            android:exported="true"
+227-->[androidx.work:work-runtime:2.7.0] /Users/iseonjae/.gradle/caches/9.0-milestone-1/transforms/0b731dcd941bcda1933a37074857f1d1/transformed/work-runtime-2.7.0/AndroidManifest.xml:136:13-36
+228            android:permission="android.permission.DUMP" >
+228-->[androidx.work:work-runtime:2.7.0] /Users/iseonjae/.gradle/caches/9.0-milestone-1/transforms/0b731dcd941bcda1933a37074857f1d1/transformed/work-runtime-2.7.0/AndroidManifest.xml:137:13-57
+229            <intent-filter>
+229-->[androidx.work:work-runtime:2.7.0] /Users/iseonjae/.gradle/caches/9.0-milestone-1/transforms/0b731dcd941bcda1933a37074857f1d1/transformed/work-runtime-2.7.0/AndroidManifest.xml:139:13-141:29
+230                <action android:name="androidx.work.diagnostics.REQUEST_DIAGNOSTICS" />
+230-->[androidx.work:work-runtime:2.7.0] /Users/iseonjae/.gradle/caches/9.0-milestone-1/transforms/0b731dcd941bcda1933a37074857f1d1/transformed/work-runtime-2.7.0/AndroidManifest.xml:140:17-88
+230-->[androidx.work:work-runtime:2.7.0] /Users/iseonjae/.gradle/caches/9.0-milestone-1/transforms/0b731dcd941bcda1933a37074857f1d1/transformed/work-runtime-2.7.0/AndroidManifest.xml:140:25-85
+231            </intent-filter>
+232        </receiver>
+233        <receiver
+233-->[androidx.profileinstaller:profileinstaller:1.3.0] /Users/iseonjae/.gradle/caches/9.0-milestone-1/transforms/72e271cc7c7703f54f7c41325574f370/transformed/profileinstaller-1.3.0/AndroidManifest.xml:34:9-52:20
+234            android:name="androidx.profileinstaller.ProfileInstallReceiver"
+234-->[androidx.profileinstaller:profileinstaller:1.3.0] /Users/iseonjae/.gradle/caches/9.0-milestone-1/transforms/72e271cc7c7703f54f7c41325574f370/transformed/profileinstaller-1.3.0/AndroidManifest.xml:35:13-76
+235            android:directBootAware="false"
+235-->[androidx.profileinstaller:profileinstaller:1.3.0] /Users/iseonjae/.gradle/caches/9.0-milestone-1/transforms/72e271cc7c7703f54f7c41325574f370/transformed/profileinstaller-1.3.0/AndroidManifest.xml:36:13-44
+236            android:enabled="true"
+236-->[androidx.profileinstaller:profileinstaller:1.3.0] /Users/iseonjae/.gradle/caches/9.0-milestone-1/transforms/72e271cc7c7703f54f7c41325574f370/transformed/profileinstaller-1.3.0/AndroidManifest.xml:37:13-35
+237            android:exported="true"
+237-->[androidx.profileinstaller:profileinstaller:1.3.0] /Users/iseonjae/.gradle/caches/9.0-milestone-1/transforms/72e271cc7c7703f54f7c41325574f370/transformed/profileinstaller-1.3.0/AndroidManifest.xml:38:13-36
+238            android:permission="android.permission.DUMP" >
+238-->[androidx.profileinstaller:profileinstaller:1.3.0] /Users/iseonjae/.gradle/caches/9.0-milestone-1/transforms/72e271cc7c7703f54f7c41325574f370/transformed/profileinstaller-1.3.0/AndroidManifest.xml:39:13-57
+239            <intent-filter>
+239-->[androidx.profileinstaller:profileinstaller:1.3.0] /Users/iseonjae/.gradle/caches/9.0-milestone-1/transforms/72e271cc7c7703f54f7c41325574f370/transformed/profileinstaller-1.3.0/AndroidManifest.xml:40:13-42:29
+240                <action android:name="androidx.profileinstaller.action.INSTALL_PROFILE" />
+240-->[androidx.profileinstaller:profileinstaller:1.3.0] /Users/iseonjae/.gradle/caches/9.0-milestone-1/transforms/72e271cc7c7703f54f7c41325574f370/transformed/profileinstaller-1.3.0/AndroidManifest.xml:41:17-91
+240-->[androidx.profileinstaller:profileinstaller:1.3.0] /Users/iseonjae/.gradle/caches/9.0-milestone-1/transforms/72e271cc7c7703f54f7c41325574f370/transformed/profileinstaller-1.3.0/AndroidManifest.xml:41:25-88
+241            </intent-filter>
+242            <intent-filter>
+242-->[androidx.profileinstaller:profileinstaller:1.3.0] /Users/iseonjae/.gradle/caches/9.0-milestone-1/transforms/72e271cc7c7703f54f7c41325574f370/transformed/profileinstaller-1.3.0/AndroidManifest.xml:43:13-45:29
+243                <action android:name="androidx.profileinstaller.action.SKIP_FILE" />
+243-->[androidx.profileinstaller:profileinstaller:1.3.0] /Users/iseonjae/.gradle/caches/9.0-milestone-1/transforms/72e271cc7c7703f54f7c41325574f370/transformed/profileinstaller-1.3.0/AndroidManifest.xml:44:17-85
+243-->[androidx.profileinstaller:profileinstaller:1.3.0] /Users/iseonjae/.gradle/caches/9.0-milestone-1/transforms/72e271cc7c7703f54f7c41325574f370/transformed/profileinstaller-1.3.0/AndroidManifest.xml:44:25-82
+244            </intent-filter>
+245            <intent-filter>
+245-->[androidx.profileinstaller:profileinstaller:1.3.0] /Users/iseonjae/.gradle/caches/9.0-milestone-1/transforms/72e271cc7c7703f54f7c41325574f370/transformed/profileinstaller-1.3.0/AndroidManifest.xml:46:13-48:29
+246                <action android:name="androidx.profileinstaller.action.SAVE_PROFILE" />
+246-->[androidx.profileinstaller:profileinstaller:1.3.0] /Users/iseonjae/.gradle/caches/9.0-milestone-1/transforms/72e271cc7c7703f54f7c41325574f370/transformed/profileinstaller-1.3.0/AndroidManifest.xml:47:17-88
+246-->[androidx.profileinstaller:profileinstaller:1.3.0] /Users/iseonjae/.gradle/caches/9.0-milestone-1/transforms/72e271cc7c7703f54f7c41325574f370/transformed/profileinstaller-1.3.0/AndroidManifest.xml:47:25-85
+247            </intent-filter>
+248            <intent-filter>
+248-->[androidx.profileinstaller:profileinstaller:1.3.0] /Users/iseonjae/.gradle/caches/9.0-milestone-1/transforms/72e271cc7c7703f54f7c41325574f370/transformed/profileinstaller-1.3.0/AndroidManifest.xml:49:13-51:29
+249                <action android:name="androidx.profileinstaller.action.BENCHMARK_OPERATION" />
+249-->[androidx.profileinstaller:profileinstaller:1.3.0] /Users/iseonjae/.gradle/caches/9.0-milestone-1/transforms/72e271cc7c7703f54f7c41325574f370/transformed/profileinstaller-1.3.0/AndroidManifest.xml:50:17-95
+249-->[androidx.profileinstaller:profileinstaller:1.3.0] /Users/iseonjae/.gradle/caches/9.0-milestone-1/transforms/72e271cc7c7703f54f7c41325574f370/transformed/profileinstaller-1.3.0/AndroidManifest.xml:50:25-92
+250            </intent-filter>
+251        </receiver>
+252
+253        <service
+253-->[androidx.room:room-runtime:2.2.5] /Users/iseonjae/.gradle/caches/9.0-milestone-1/transforms/f697fd91a6f77db7aea934740b3ed43e/transformed/room-runtime-2.2.5/AndroidManifest.xml:25:9-28:40
+254            android:name="androidx.room.MultiInstanceInvalidationService"
+254-->[androidx.room:room-runtime:2.2.5] /Users/iseonjae/.gradle/caches/9.0-milestone-1/transforms/f697fd91a6f77db7aea934740b3ed43e/transformed/room-runtime-2.2.5/AndroidManifest.xml:26:13-74
+255            android:directBootAware="true"
+255-->[androidx.room:room-runtime:2.2.5] /Users/iseonjae/.gradle/caches/9.0-milestone-1/transforms/f697fd91a6f77db7aea934740b3ed43e/transformed/room-runtime-2.2.5/AndroidManifest.xml:27:13-43
+256            android:exported="false" />
+256-->[androidx.room:room-runtime:2.2.5] /Users/iseonjae/.gradle/caches/9.0-milestone-1/transforms/f697fd91a6f77db7aea934740b3ed43e/transformed/room-runtime-2.2.5/AndroidManifest.xml:28:13-37
+257        <service
+257-->[com.google.android.datatransport:transport-backend-cct:2.3.3] /Users/iseonjae/.gradle/caches/9.0-milestone-1/transforms/e431ee513086c4d8b46965dd03ac0b6b/transformed/transport-backend-cct-2.3.3/AndroidManifest.xml:29:9-35:19
+258            android:name="com.google.android.datatransport.runtime.backends.TransportBackendDiscovery"
+258-->[com.google.android.datatransport:transport-backend-cct:2.3.3] /Users/iseonjae/.gradle/caches/9.0-milestone-1/transforms/e431ee513086c4d8b46965dd03ac0b6b/transformed/transport-backend-cct-2.3.3/AndroidManifest.xml:30:13-103
+259            android:exported="false" >
+259-->[com.google.android.datatransport:transport-backend-cct:2.3.3] /Users/iseonjae/.gradle/caches/9.0-milestone-1/transforms/e431ee513086c4d8b46965dd03ac0b6b/transformed/transport-backend-cct-2.3.3/AndroidManifest.xml:31:13-37
+260            <meta-data
+260-->[com.google.android.datatransport:transport-backend-cct:2.3.3] /Users/iseonjae/.gradle/caches/9.0-milestone-1/transforms/e431ee513086c4d8b46965dd03ac0b6b/transformed/transport-backend-cct-2.3.3/AndroidManifest.xml:32:13-34:39
+261                android:name="backend:com.google.android.datatransport.cct.CctBackendFactory"
+261-->[com.google.android.datatransport:transport-backend-cct:2.3.3] /Users/iseonjae/.gradle/caches/9.0-milestone-1/transforms/e431ee513086c4d8b46965dd03ac0b6b/transformed/transport-backend-cct-2.3.3/AndroidManifest.xml:33:17-94
+262                android:value="cct" />
+262-->[com.google.android.datatransport:transport-backend-cct:2.3.3] /Users/iseonjae/.gradle/caches/9.0-milestone-1/transforms/e431ee513086c4d8b46965dd03ac0b6b/transformed/transport-backend-cct-2.3.3/AndroidManifest.xml:34:17-36
+263        </service>
+264        <service
+264-->[com.google.android.datatransport:transport-runtime:2.2.6] /Users/iseonjae/.gradle/caches/9.0-milestone-1/transforms/8992a9166cc5eb72c67b0ed601943c72/transformed/transport-runtime-2.2.6/AndroidManifest.xml:26:9-30:19
+265            android:name="com.google.android.datatransport.runtime.scheduling.jobscheduling.JobInfoSchedulerService"
+265-->[com.google.android.datatransport:transport-runtime:2.2.6] /Users/iseonjae/.gradle/caches/9.0-milestone-1/transforms/8992a9166cc5eb72c67b0ed601943c72/transformed/transport-runtime-2.2.6/AndroidManifest.xml:27:13-117
+266            android:exported="false"
+266-->[com.google.android.datatransport:transport-runtime:2.2.6] /Users/iseonjae/.gradle/caches/9.0-milestone-1/transforms/8992a9166cc5eb72c67b0ed601943c72/transformed/transport-runtime-2.2.6/AndroidManifest.xml:28:13-37
+267            android:permission="android.permission.BIND_JOB_SERVICE" >
+267-->[com.google.android.datatransport:transport-runtime:2.2.6] /Users/iseonjae/.gradle/caches/9.0-milestone-1/transforms/8992a9166cc5eb72c67b0ed601943c72/transformed/transport-runtime-2.2.6/AndroidManifest.xml:29:13-69
+268        </service>
+269
+270        <receiver
+270-->[com.google.android.datatransport:transport-runtime:2.2.6] /Users/iseonjae/.gradle/caches/9.0-milestone-1/transforms/8992a9166cc5eb72c67b0ed601943c72/transformed/transport-runtime-2.2.6/AndroidManifest.xml:32:9-34:40
+271            android:name="com.google.android.datatransport.runtime.scheduling.jobscheduling.AlarmManagerSchedulerBroadcastReceiver"
+271-->[com.google.android.datatransport:transport-runtime:2.2.6] /Users/iseonjae/.gradle/caches/9.0-milestone-1/transforms/8992a9166cc5eb72c67b0ed601943c72/transformed/transport-runtime-2.2.6/AndroidManifest.xml:33:13-132
+272            android:exported="false" />
+272-->[com.google.android.datatransport:transport-runtime:2.2.6] /Users/iseonjae/.gradle/caches/9.0-milestone-1/transforms/8992a9166cc5eb72c67b0ed601943c72/transformed/transport-runtime-2.2.6/AndroidManifest.xml:34:13-37
+273    </application>
+274
+275</manifest>

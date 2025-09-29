@@ -368,7 +368,7 @@
             </LinearLayout>
 
             <!-- TODO: 실제 피드백 리스트 RecyclerView 추가 -->
-            <!-- 
+            <!--
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/recycler_view_feedback"
                 android:layout_width="match_parent"

@@ -1,10 +1,10 @@
 {
     "logs": [
         {
-            "outputFile": "com.aisportspt.app-mergeDebugResources-60:/values-w320dp-land-v13/values-w320dp-land-v13.xml",
+            "outputFile": "com.aisportspt.app-mergeDebugResources-62:/values-w320dp-land-v13/values-w320dp-land-v13.xml",
             "map": [
                 {
-                    "source": "/Users/iseonjae/.gradle/caches/9.0-milestone-1/transforms/008d01164374447819e63c0abe94cd70/transformed/material-1.11.0/res/values-w320dp-land-v13/values-w320dp-land-v13.xml",
+                    "source": "/Users/iseonjae/.gradle/caches/9.0-milestone-1/transforms/5f28036798feb7e205a5375c3bee4169/transformed/material-1.11.0/res/values-w320dp-land-v13/values-w320dp-land-v13.xml",
                     "from": {
                         "startLines": "2,3",
                         "startColumns": "4,4",

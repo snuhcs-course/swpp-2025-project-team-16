@@ -1,190 +1,194 @@
 [
     {
-        "merged": "com.aisportspt.app-debug-62:/drawable_bg_user_badge.xml.flat",
-        "source": "com.aisportspt.app-main-64:/drawable/bg_user_badge.xml"
+        "merged": "/Users/iseonjae/.gradle/daemon/9.0-milestone-1/com.aisportspt.app-debug-64:/layout_fragment_ai_coach.xml.flat",
+        "source": "/Users/iseonjae/.gradle/daemon/9.0-milestone-1/com.aisportspt.app-main-66:/layout/fragment_ai_coach.xml"
     },
     {
-        "merged": "com.aisportspt.app-debug-62:/drawable_ic_calendar.xml.flat",
-        "source": "com.aisportspt.app-main-64:/drawable/ic_calendar.xml"
+        "merged": "/Users/iseonjae/.gradle/daemon/9.0-milestone-1/com.aisportspt.app-debug-64:/layout_item_sport_card.xml.flat",
+        "source": "/Users/iseonjae/.gradle/daemon/9.0-milestone-1/com.aisportspt.app-main-66:/layout/item_sport_card.xml"
     },
     {
-        "merged": "com.aisportspt.app-debug-62:/drawable_ic_camera.xml.flat",
-        "source": "com.aisportspt.app-main-64:/drawable/ic_camera.xml"
+        "merged": "/Users/iseonjae/.gradle/daemon/9.0-milestone-1/com.aisportspt.app-debug-64:/xml_data_extraction_rules.xml.flat",
+        "source": "/Users/iseonjae/.gradle/daemon/9.0-milestone-1/com.aisportspt.app-main-66:/xml/data_extraction_rules.xml"
     },
     {
-        "merged": "com.aisportspt.app-debug-62:/layout_dialog_create_training_plan.xml.flat",
-        "source": "com.aisportspt.app-main-64:/layout/dialog_create_training_plan.xml"
+        "merged": "/Users/iseonjae/.gradle/daemon/9.0-milestone-1/com.aisportspt.app-debug-64:/drawable_ic_search.xml.flat",
+        "source": "/Users/iseonjae/.gradle/daemon/9.0-milestone-1/com.aisportspt.app-main-66:/drawable/ic_search.xml"
     },
     {
-        "merged": "com.aisportspt.app-debug-62:/drawable_ic_user.xml.flat",
-        "source": "com.aisportspt.app-main-64:/drawable/ic_user.xml"
+        "merged": "/Users/iseonjae/.gradle/daemon/9.0-milestone-1/com.aisportspt.app-debug-64:/drawable_feedback_background.xml.flat",
+        "source": "/Users/iseonjae/.gradle/daemon/9.0-milestone-1/com.aisportspt.app-main-66:/drawable/feedback_background.xml"
     },
     {
-        "merged": "com.aisportspt.app-debug-62:/drawable_ic_clock.xml.flat",
-        "source": "com.aisportspt.app-main-64:/drawable/ic_clock.xml"
+        "merged": "/Users/iseonjae/.gradle/daemon/9.0-milestone-1/com.aisportspt.app-debug-64:/xml_backup_rules.xml.flat",
+        "source": "/Users/iseonjae/.gradle/daemon/9.0-milestone-1/com.aisportspt.app-main-66:/xml/backup_rules.xml"
     },
     {
-        "merged": "com.aisportspt.app-debug-62:/layout_fragment_training.xml.flat",
-        "source": "com.aisportspt.app-main-64:/layout/fragment_training.xml"
+        "merged": "/Users/iseonjae/.gradle/daemon/9.0-milestone-1/com.aisportspt.app-debug-64:/drawable_ic_flip_camera.xml.flat",
+        "source": "/Users/iseonjae/.gradle/daemon/9.0-milestone-1/com.aisportspt.app-main-66:/drawable/ic_flip_camera.xml"
     },
     {
-        "merged": "com.aisportspt.app-debug-62:/layout_fragment_sports.xml.flat",
-        "source": "com.aisportspt.app-main-64:/layout/fragment_sports.xml"
+        "merged": "/Users/iseonjae/.gradle/daemon/9.0-milestone-1/com.aisportspt.app-debug-64:/layout_dialog_add_session.xml.flat",
+        "source": "/Users/iseonjae/.gradle/daemon/9.0-milestone-1/com.aisportspt.app-main-66:/layout/dialog_add_session.xml"
     },
     {
-        "merged": "com.aisportspt.app-debug-62:/mipmap_ic_launcher_round.webp.flat",
-        "source": "com.aisportspt.app-main-64:/mipmap/ic_launcher_round.webp"
+        "merged": "/Users/iseonjae/.gradle/daemon/9.0-milestone-1/com.aisportspt.app-debug-64:/drawable_sample_sport_image.xml.flat",
+        "source": "/Users/iseonjae/.gradle/daemon/9.0-milestone-1/com.aisportspt.app-main-66:/drawable/sample_sport_image.xml"
     },
     {
-        "merged": "com.aisportspt.app-debug-62:/layout_item_sport_card.xml.flat",
-        "source": "com.aisportspt.app-main-64:/layout/item_sport_card.xml"
+        "merged": "/Users/iseonjae/.gradle/daemon/9.0-milestone-1/com.aisportspt.app-debug-64:/drawable_ic_refresh.xml.flat",
+        "source": "/Users/iseonjae/.gradle/daemon/9.0-milestone-1/com.aisportspt.app-main-66:/drawable/ic_refresh.xml"
     },
     {
-        "merged": "com.aisportspt.app-debug-62:/drawable_bg_phase_indicator.xml.flat",
-        "source": "com.aisportspt.app-main-64:/drawable/bg_phase_indicator.xml"
+        "merged": "/Users/iseonjae/.gradle/daemon/9.0-milestone-1/com.aisportspt.app-debug-64:/drawable_ic_camera.xml.flat",
+        "source": "/Users/iseonjae/.gradle/daemon/9.0-milestone-1/com.aisportspt.app-main-66:/drawable/ic_camera.xml"
     },
     {
-        "merged": "com.aisportspt.app-debug-62:/layout_fragment_achievement.xml.flat",
-        "source": "com.aisportspt.app-main-64:/layout/fragment_achievement.xml"
+        "merged": "/Users/iseonjae/.gradle/daemon/9.0-milestone-1/com.aisportspt.app-debug-64:/drawable_ic_clock.xml.flat",
+        "source": "/Users/iseonjae/.gradle/daemon/9.0-milestone-1/com.aisportspt.app-main-66:/drawable/ic_clock.xml"
     },
     {
-        "merged": "com.aisportspt.app-debug-62:/drawable_bg_recording_badge.xml.flat",
-        "source": "com.aisportspt.app-main-64:/drawable/bg_recording_badge.xml"
+        "merged": "/Users/iseonjae/.gradle/daemon/9.0-milestone-1/com.aisportspt.app-debug-64:/drawable_ic_award.xml.flat",
+        "source": "/Users/iseonjae/.gradle/daemon/9.0-milestone-1/com.aisportspt.app-main-66:/drawable/ic_award.xml"
     },
     {
-        "merged": "com.aisportspt.app-debug-62:/drawable_bg_score_badge.xml.flat",
-        "source": "com.aisportspt.app-main-64:/drawable/bg_score_badge.xml"
+        "merged": "/Users/iseonjae/.gradle/daemon/9.0-milestone-1/com.aisportspt.app-debug-64:/mipmap_ic_launcher_round.webp.flat",
+        "source": "/Users/iseonjae/.gradle/daemon/9.0-milestone-1/com.aisportspt.app-main-66:/mipmap/ic_launcher_round.webp"
     },
     {
-        "merged": "com.aisportspt.app-debug-62:/drawable_feedback_background.xml.flat",
-        "source": "com.aisportspt.app-main-64:/drawable/feedback_background.xml"
+        "merged": "/Users/iseonjae/.gradle/daemon/9.0-milestone-1/com.aisportspt.app-debug-64:/layout_fragment_sports.xml.flat",
+        "source": "/Users/iseonjae/.gradle/daemon/9.0-milestone-1/com.aisportspt.app-main-66:/layout/fragment_sports.xml"
     },
     {
-        "merged": "com.aisportspt.app-debug-62:/xml_backup_rules.xml.flat",
-        "source": "com.aisportspt.app-main-64:/xml/backup_rules.xml"
+        "merged": "/Users/iseonjae/.gradle/daemon/9.0-milestone-1/com.aisportspt.app-debug-64:/drawable_ic_launcher_foreground.xml.flat",
+        "source": "/Users/iseonjae/.gradle/daemon/9.0-milestone-1/com.aisportspt.app-main-66:/drawable/ic_launcher_foreground.xml"
     },
     {
-        "merged": "com.aisportspt.app-debug-62:/layout_item_training_plan.xml.flat",
-        "source": "com.aisportspt.app-main-64:/layout/item_training_plan.xml"
+        "merged": "/Users/iseonjae/.gradle/daemon/9.0-milestone-1/com.aisportspt.app-debug-64:/drawable_bg_ai_badge.xml.flat",
+        "source": "/Users/iseonjae/.gradle/daemon/9.0-milestone-1/com.aisportspt.app-main-66:/drawable/bg_ai_badge.xml"
     },
     {
-        "merged": "com.aisportspt.app-debug-62:/drawable_ic_award.xml.flat",
-        "source": "com.aisportspt.app-main-64:/drawable/ic_award.xml"
+        "merged": "/Users/iseonjae/.gradle/daemon/9.0-milestone-1/com.aisportspt.app-debug-64:/drawable_ic_play.xml.flat",
+        "source": "/Users/iseonjae/.gradle/daemon/9.0-milestone-1/com.aisportspt.app-main-66:/drawable/ic_play.xml"
     },
     {
-        "merged": "com.aisportspt.app-debug-62:/drawable_ic_trophy.xml.flat",
-        "source": "com.aisportspt.app-main-64:/drawable/ic_trophy.xml"
+        "merged": "/Users/iseonjae/.gradle/daemon/9.0-milestone-1/com.aisportspt.app-debug-64:/color_nav_text_selector.xml.flat",
+        "source": "/Users/iseonjae/.gradle/daemon/9.0-milestone-1/com.aisportspt.app-main-66:/color/nav_text_selector.xml"
     },
     {
-        "merged": "com.aisportspt.app-debug-62:/drawable_level_badge_background.xml.flat",
-        "source": "com.aisportspt.app-main-64:/drawable/level_badge_background.xml"
+        "merged": "/Users/iseonjae/.gradle/daemon/9.0-milestone-1/com.aisportspt.app-debug-64:/drawable_bg_recording_badge.xml.flat",
+        "source": "/Users/iseonjae/.gradle/daemon/9.0-milestone-1/com.aisportspt.app-main-66:/drawable/bg_recording_badge.xml"
     },
     {
-        "merged": "com.aisportspt.app-debug-62:/drawable_ic_auto_awesome.xml.flat",
-        "source": "com.aisportspt.app-main-64:/drawable/ic_auto_awesome.xml"
+        "merged": "com.aisportspt.app-debug-64:/layout_fragment_ai_coach.xml.flat",
+        "source": "com.aisportspt.app-main-66:/layout/fragment_ai_coach.xml"
     },
     {
-        "merged": "com.aisportspt.app-debug-62:/xml_data_extraction_rules.xml.flat",
-        "source": "com.aisportspt.app-main-64:/xml/data_extraction_rules.xml"
+        "merged": "/Users/iseonjae/.gradle/daemon/9.0-milestone-1/com.aisportspt.app-debug-64:/layout_activity_main.xml.flat",
+        "source": "/Users/iseonjae/.gradle/daemon/9.0-milestone-1/com.aisportspt.app-main-66:/layout/activity_main.xml"
     },
     {
-        "merged": "com.aisportspt.app-debug-62:/menu_bottom_navigation.xml.flat",
-        "source": "com.aisportspt.app-main-64:/menu/bottom_navigation.xml"
+        "merged": "/Users/iseonjae/.gradle/daemon/9.0-milestone-1/com.aisportspt.app-debug-64:/drawable_ic_user.xml.flat",
+        "source": "/Users/iseonjae/.gradle/daemon/9.0-milestone-1/com.aisportspt.app-main-66:/drawable/ic_user.xml"
     },
     {
-        "merged": "com.aisportspt.app-debug-62:/drawable_bg_recording_dot.xml.flat",
-        "source": "com.aisportspt.app-main-64:/drawable/bg_recording_dot.xml"
+        "merged": "/Users/iseonjae/.gradle/daemon/9.0-milestone-1/com.aisportspt.app-debug-64:/drawable_ic_auto_awesome.xml.flat",
+        "source": "/Users/iseonjae/.gradle/daemon/9.0-milestone-1/com.aisportspt.app-main-66:/drawable/ic_auto_awesome.xml"
     },
     {
-        "merged": "com.aisportspt.app-debug-62:/layout_dialog_add_sport.xml.flat",
-        "source": "com.aisportspt.app-main-64:/layout/dialog_add_sport.xml"
+        "merged": "/Users/iseonjae/.gradle/daemon/9.0-milestone-1/com.aisportspt.app-debug-64:/layout_fragment_achievement.xml.flat",
+        "source": "/Users/iseonjae/.gradle/daemon/9.0-milestone-1/com.aisportspt.app-main-66:/layout/fragment_achievement.xml"
     },
     {
-        "merged": "com.aisportspt.app-debug-62:/drawable_ic_search.xml.flat",
-        "source": "com.aisportspt.app-main-64:/drawable/ic_search.xml"
+        "merged": "/Users/iseonjae/.gradle/daemon/9.0-milestone-1/com.aisportspt.app-debug-64:/layout_fragment_training.xml.flat",
+        "source": "/Users/iseonjae/.gradle/daemon/9.0-milestone-1/com.aisportspt.app-main-66:/layout/fragment_training.xml"
     },
     {
-        "merged": "com.aisportspt.app-debug-62:/drawable_ic_flip_camera.xml.flat",
-        "source": "com.aisportspt.app-main-64:/drawable/ic_flip_camera.xml"
+        "merged": "/Users/iseonjae/.gradle/daemon/9.0-milestone-1/com.aisportspt.app-debug-64:/drawable_ic_launcher_background.xml.flat",
+        "source": "/Users/iseonjae/.gradle/daemon/9.0-milestone-1/com.aisportspt.app-main-66:/drawable/ic_launcher_background.xml"
     },
     {
-        "merged": "com.aisportspt.app-debug-62:/drawable_ic_target.xml.flat",
-        "source": "com.aisportspt.app-main-64:/drawable/ic_target.xml"
+        "merged": "/Users/iseonjae/.gradle/daemon/9.0-milestone-1/com.aisportspt.app-debug-64:/layout_dialog_add_sport.xml.flat",
+        "source": "/Users/iseonjae/.gradle/daemon/9.0-milestone-1/com.aisportspt.app-main-66:/layout/dialog_add_sport.xml"
     },
     {
-        "merged": "com.aisportspt.app-debug-62:/color_nav_icon_selector.xml.flat",
-        "source": "com.aisportspt.app-main-64:/color/nav_icon_selector.xml"
+        "merged": "/Users/iseonjae/.gradle/daemon/9.0-milestone-1/com.aisportspt.app-debug-64:/layout_dialog_create_training_plan.xml.flat",
+        "source": "/Users/iseonjae/.gradle/daemon/9.0-milestone-1/com.aisportspt.app-main-66:/layout/dialog_create_training_plan.xml"
     },
     {
-        "merged": "com.aisportspt.app-debug-62:/layout_activity_main.xml.flat",
-        "source": "com.aisportspt.app-main-64:/layout/activity_main.xml"
+        "merged": "/Users/iseonjae/.gradle/daemon/9.0-milestone-1/com.aisportspt.app-debug-64:/drawable_logo_gradient_background.xml.flat",
+        "source": "/Users/iseonjae/.gradle/daemon/9.0-milestone-1/com.aisportspt.app-main-66:/drawable/logo_gradient_background.xml"
     },
     {
-        "merged": "com.aisportspt.app-debug-62:/drawable_ic_play.xml.flat",
-        "source": "com.aisportspt.app-main-64:/drawable/ic_play.xml"
+        "merged": "/Users/iseonjae/.gradle/daemon/9.0-milestone-1/com.aisportspt.app-debug-64:/menu_bottom_navigation.xml.flat",
+        "source": "/Users/iseonjae/.gradle/daemon/9.0-milestone-1/com.aisportspt.app-main-66:/menu/bottom_navigation.xml"
     },
     {
-        "merged": "com.aisportspt.app-debug-62:/drawable_ic_refresh.xml.flat",
-        "source": "com.aisportspt.app-main-64:/drawable/ic_refresh.xml"
+        "merged": "/Users/iseonjae/.gradle/daemon/9.0-milestone-1/com.aisportspt.app-debug-64:/mipmap_ic_launcher.webp.flat",
+        "source": "/Users/iseonjae/.gradle/daemon/9.0-milestone-1/com.aisportspt.app-main-66:/mipmap/ic_launcher.webp"
     },
     {
-        "merged": "com.aisportspt.app-debug-62:/mipmap_ic_launcher.webp.flat",
-        "source": "com.aisportspt.app-main-64:/mipmap/ic_launcher.webp"
+        "merged": "/Users/iseonjae/.gradle/daemon/9.0-milestone-1/com.aisportspt.app-debug-64:/layout_item_achievement.xml.flat",
+        "source": "/Users/iseonjae/.gradle/daemon/9.0-milestone-1/com.aisportspt.app-main-66:/layout/item_achievement.xml"
     },
     {
-        "merged": "com.aisportspt.app-debug-62:/drawable_bg_phase_badge.xml.flat",
-        "source": "com.aisportspt.app-main-64:/drawable/bg_phase_badge.xml"
+        "merged": "/Users/iseonjae/.gradle/daemon/9.0-milestone-1/com.aisportspt.app-debug-64:/drawable_bg_phase_badge.xml.flat",
+        "source": "/Users/iseonjae/.gradle/daemon/9.0-milestone-1/com.aisportspt.app-main-66:/drawable/bg_phase_badge.xml"
     },
     {
-        "merged": "com.aisportspt.app-debug-62:/layout_item_feedback.xml.flat",
-        "source": "com.aisportspt.app-main-64:/layout/item_feedback.xml"
+        "merged": "/Users/iseonjae/.gradle/daemon/9.0-milestone-1/com.aisportspt.app-debug-64:/drawable_level_badge_background.xml.flat",
+        "source": "/Users/iseonjae/.gradle/daemon/9.0-milestone-1/com.aisportspt.app-main-66:/drawable/level_badge_background.xml"
     },
     {
-        "merged": "com.aisportspt.app-debug-62:/drawable_ic_launcher_foreground.xml.flat",
-        "source": "com.aisportspt.app-main-64:/drawable/ic_launcher_foreground.xml"
+        "merged": "/Users/iseonjae/.gradle/daemon/9.0-milestone-1/com.aisportspt.app-debug-64:/color_nav_icon_selector.xml.flat",
+        "source": "/Users/iseonjae/.gradle/daemon/9.0-milestone-1/com.aisportspt.app-main-66:/color/nav_icon_selector.xml"
     },
     {
-        "merged": "com.aisportspt.app-debug-62:/drawable_ic_add.xml.flat",
-        "source": "com.aisportspt.app-main-64:/drawable/ic_add.xml"
+        "merged": "/Users/iseonjae/.gradle/daemon/9.0-milestone-1/com.aisportspt.app-debug-64:/layout_item_feedback.xml.flat",
+        "source": "/Users/iseonjae/.gradle/daemon/9.0-milestone-1/com.aisportspt.app-main-66:/layout/item_feedback.xml"
     },
     {
-        "merged": "com.aisportspt.app-debug-62:/layout_fragment_ai_coach.xml.flat",
-        "source": "com.aisportspt.app-main-64:/layout/fragment_ai_coach.xml"
+        "merged": "/Users/iseonjae/.gradle/daemon/9.0-milestone-1/com.aisportspt.app-debug-64:/drawable_bg_recording_dot.xml.flat",
+        "source": "/Users/iseonjae/.gradle/daemon/9.0-milestone-1/com.aisportspt.app-main-66:/drawable/bg_recording_dot.xml"
     },
     {
-        "merged": "com.aisportspt.app-debug-62:/layout_item_achievement.xml.flat",
-        "source": "com.aisportspt.app-main-64:/layout/item_achievement.xml"
+        "merged": "/Users/iseonjae/.gradle/daemon/9.0-milestone-1/com.aisportspt.app-debug-64:/drawable_bg_user_badge.xml.flat",
+        "source": "/Users/iseonjae/.gradle/daemon/9.0-milestone-1/com.aisportspt.app-main-66:/drawable/bg_user_badge.xml"
     },
     {
-        "merged": "com.aisportspt.app-debug-62:/drawable_sample_sport_image.xml.flat",
-        "source": "com.aisportspt.app-main-64:/drawable/sample_sport_image.xml"
+        "merged": "/Users/iseonjae/.gradle/daemon/9.0-milestone-1/com.aisportspt.app-debug-64:/drawable_ic_zap.xml.flat",
+        "source": "/Users/iseonjae/.gradle/daemon/9.0-milestone-1/com.aisportspt.app-main-66:/drawable/ic_zap.xml"
     },
     {
-        "merged": "com.aisportspt.app-debug-62:/drawable_logo_gradient_background.xml.flat",
-        "source": "com.aisportspt.app-main-64:/drawable/logo_gradient_background.xml"
+        "merged": "/Users/iseonjae/.gradle/daemon/9.0-milestone-1/com.aisportspt.app-debug-64:/drawable_bg_score_badge.xml.flat",
+        "source": "/Users/iseonjae/.gradle/daemon/9.0-milestone-1/com.aisportspt.app-main-66:/drawable/bg_score_badge.xml"
     },
     {
-        "merged": "com.aisportspt.app-debug-62:/drawable_ic_zap.xml.flat",
-        "source": "com.aisportspt.app-main-64:/drawable/ic_zap.xml"
+        "merged": "/Users/iseonjae/.gradle/daemon/9.0-milestone-1/com.aisportspt.app-debug-64:/drawable_ic_target.xml.flat",
+        "source": "/Users/iseonjae/.gradle/daemon/9.0-milestone-1/com.aisportspt.app-main-66:/drawable/ic_target.xml"
     },
     {
-        "merged": "com.aisportspt.app-debug-62:/color_nav_text_selector.xml.flat",
-        "source": "com.aisportspt.app-main-64:/color/nav_text_selector.xml"
+        "merged": "/Users/iseonjae/.gradle/daemon/9.0-milestone-1/com.aisportspt.app-debug-64:/drawable_ic_trophy.xml.flat",
+        "source": "/Users/iseonjae/.gradle/daemon/9.0-milestone-1/com.aisportspt.app-main-66:/drawable/ic_trophy.xml"
     },
     {
-        "merged": "com.aisportspt.app-debug-62:/drawable_ic_launcher_background.xml.flat",
-        "source": "com.aisportspt.app-main-64:/drawable/ic_launcher_background.xml"
+        "merged": "/Users/iseonjae/.gradle/daemon/9.0-milestone-1/com.aisportspt.app-debug-64:/drawable_bg_phase_indicator.xml.flat",
+        "source": "/Users/iseonjae/.gradle/daemon/9.0-milestone-1/com.aisportspt.app-main-66:/drawable/bg_phase_indicator.xml"
     },
     {
-        "merged": "com.aisportspt.app-debug-62:/drawable_bg_ai_badge.xml.flat",
-        "source": "com.aisportspt.app-main-64:/drawable/bg_ai_badge.xml"
+        "merged": "/Users/iseonjae/.gradle/daemon/9.0-milestone-1/com.aisportspt.app-debug-64:/layout_item_training_plan.xml.flat",
+        "source": "/Users/iseonjae/.gradle/daemon/9.0-milestone-1/com.aisportspt.app-main-66:/layout/item_training_plan.xml"
     },
     {
-        "merged": "com.aisportspt.app-debug-62:/drawable_ic_bar_chart.xml.flat",
-        "source": "com.aisportspt.app-main-64:/drawable/ic_bar_chart.xml"
+        "merged": "/Users/iseonjae/.gradle/daemon/9.0-milestone-1/com.aisportspt.app-debug-64:/drawable_ic_bar_chart.xml.flat",
+        "source": "/Users/iseonjae/.gradle/daemon/9.0-milestone-1/com.aisportspt.app-main-66:/drawable/ic_bar_chart.xml"
     },
     {
-        "merged": "com.aisportspt.app-debug-62:/layout_dialog_add_session.xml.flat",
-        "source": "com.aisportspt.app-main-64:/layout/dialog_add_session.xml"
+        "merged": "/Users/iseonjae/.gradle/daemon/9.0-milestone-1/com.aisportspt.app-debug-64:/drawable_ic_add.xml.flat",
+        "source": "/Users/iseonjae/.gradle/daemon/9.0-milestone-1/com.aisportspt.app-main-66:/drawable/ic_add.xml"
+    },
+    {
+        "merged": "/Users/iseonjae/.gradle/daemon/9.0-milestone-1/com.aisportspt.app-debug-64:/drawable_ic_calendar.xml.flat",
+        "source": "/Users/iseonjae/.gradle/daemon/9.0-milestone-1/com.aisportspt.app-main-66:/drawable/ic_calendar.xml"
     }
 ]

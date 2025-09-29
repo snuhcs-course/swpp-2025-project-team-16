@@ -1,10 +1,10 @@
 {
     "logs": [
         {
-            "outputFile": "com.aisportspt.app-mergeDebugResources-60:/values-watch-v21/values-watch-v21.xml",
+            "outputFile": "com.aisportspt.app-mergeDebugResources-62:/values-watch-v21/values-watch-v21.xml",
             "map": [
                 {
-                    "source": "/Users/iseonjae/.gradle/caches/9.0-milestone-1/transforms/ba54f074e93d1501e5fd39e03df3a603/transformed/appcompat-1.6.1/res/values-watch-v21/values-watch-v21.xml",
+                    "source": "/Users/iseonjae/.gradle/caches/9.0-milestone-1/transforms/d747b682e903c4624760feaa4254e34a/transformed/appcompat-1.6.1/res/values-watch-v21/values-watch-v21.xml",
                     "from": {
                         "startLines": "2,6,10",
                         "startColumns": "4,4,4",

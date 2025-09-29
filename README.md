@@ -1,21 +1,31 @@
-# SNU-SWPP-Template
+# Sportify
+## Overview
+Problem: In many sports, unlike gyms with personal trainers, there is no one-on-one guidance to
+help beginners. This creates high entry barriers—learning proper form requires professional coaching,
+and even selecting the right beginner equipment can be confusing, often leading to loss of motivation.
 
-You can use the README file to showcase and promote your mobile app. The template provided below is just a starting point. Feel free to craft your README as you see fit. 
+New Feature in Market: Our system introduces AI-based posture correction, personalized training
+plans, and smart equipment recommendations, delivering the role of a virtual sports PT that tradi-
+tional sports apps do not provide.
 
-Please note that the README doesn't affect your grade and is not included in documentation(Wiki).
-
-# [Your Application Name]
-
-[Short application description here]
+Why Important & Exciting: It lowers the barrier to sports participation, prevents “three-day res-
+olutions” by offering structured guidance, and makes training more enjoyable through gamification
+and sports-mate matching, thereby promoting both personal health and social connection.
 
 ![Application Screenshot](path_to_screenshot.png)
 
 ## Features
 
-- Feature 1: Brief description
-- Feature 2: Brief description
-- ...
-
+- AI Posture Correction – Real-time feedback using camera input and pose-estimation models.
+First we will start with sports that are easy to guide the pose such as golf, bowling. Then will add
+more sports.
+- Sports Equipment Recommendation – LLM-based customer review analysis and personalized
+product suggestions.
+- Training Plan & Scheduling – AI generates structured lesson plans and syncs with user calen-
+dars.
+- Skill Level Tracking – Records progress, provides gamified achievements, and adapts training
+difficulty.
+- Additional Feature: Sports Mate Finder – Match with users of similar skill levels and goals
 ## Getting Started
 
 ### Prerequisites
@@ -26,3 +36,11 @@ Please note that the README doesn't affect your grade and is not included in doc
 ### Installation
 
 [Installation link here]
+
+## M1522.002400 SWPP
+
+Team 16
+
+Software Development Principles and Practices, Fall 2025
+
+Seoul Nat'l University

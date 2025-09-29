@@ -2,3 +2,4 @@
 ./android-studio-app/.kotlin
 ./android-studio-app/.idea
 ./android-studio-app/build
+./android-studio-app/app/build

@@ -58,4 +58,4 @@ Sportify leverages smartphone cameras and AI models to provide real-time posture
 
 ### Installation
 
-[Installation link here]
+[Installation link here](./docs/installation.md)

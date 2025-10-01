@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    
+    <!-- Base Application Theme -->
+    <style name="AppTheme" parent="Theme.Material3.DayNight.NoActionBar">
+        <item name="colorPrimary">@color/primary</item>
+        <item name="colorOnPrimary">@color/primary_foreground</item>
+        <item name="colorSecondary">@color/secondary</item>
+        <item name="colorOnSecondary">@color/secondary_foreground</item>
+        <item name="android:colorBackground">@color/background</item>
+        <item name="colorOnBackground">@color/foreground</item>
+        <item name="colorSurface">@color/card</item>
+        <item name="colorOnSurface">@color/card_foreground</item>
+        <item name="android:windowBackground">@color/background</item>
+        <item name="android:statusBarColor">@color/background</item>
+        <item name="android:windowLightStatusBar">true</item>
+    </style>
+
+    <!-- Calendar Theme -->
+    <style name="CalendarTheme" parent="android:Widget.Material.CalendarView">
+        <item name="android:dateTextAppearance">@style/CalendarDateText</item>
+        <item name="android:weekDayTextAppearance">@style/CalendarWeekText</item>
+        <item name="android:headerMonthTextAppearance">@style/CalendarHeaderText</item>
+        <item name="android:colorAccent">@color/primary</item>
+        <item name="android:selectionColor">@color/primary</item>
+    </style>
+
+    <style name="CalendarDateText" parent="android:TextAppearance.Material.Body1">
+        <item name="android:textColor">@color/foreground</item>
+        <item name="android:textSize">16sp</item>
+    </style>
+
+    <style name="CalendarWeekText" parent="android:TextAppearance.Material.Caption">
+        <item name="android:textColor">@color/muted_foreground</item>
+        <item name="android:textSize">14sp</item>
+        <item name="android:textStyle">bold</item>
+    </style>
+
+    <style name="CalendarHeaderText" parent="android:TextAppearance.Material.Headline6">
+        <item name="android:textColor">@color/foreground</item>
+        <item name="android:textSize">18sp</item>
+        <item name="android:textStyle">bold</item>
+    </style>
+
+    <!-- Button Styles -->
+    <style name="PrimaryButton" parent="Widget.Material3.Button">
+        <item name="backgroundTint">@color/primary</item>
+        <item name="android:textColor">@color/primary_foreground</item>
+        <item name="cornerRadius">10dp</item>
+        <item name="android:textSize">16sp</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:minHeight">72dp</item>
+    </style>
+
+    <style name="SecondaryButton" parent="Widget.Material3.Button.OutlinedButton">
+        <item name="strokeColor">@color/border</item>
+        <item name="strokeWidth">1dp</item>
+        <item name="android:textColor">@color/foreground</item>
+        <item name="cornerRadius">10dp</item>
+        <item name="android:textSize">16sp</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:minHeight">72dp</item>
+    </style>
+
+    <!-- Card Styles -->
+    <style name="AppCardView" parent="CardView">
+        <item name="cardBackgroundColor">@color/card</item>
+        <item name="cardCornerRadius">10dp</item>
+        <item name="cardElevation">2dp</item>
+        <item name="cardUseCompatPadding">true</item>
+    </style>
+
+    <!-- Text Styles -->
+    <style name="TitleText">
+        <item name="android:textColor">@color/foreground</item>
+        <item name="android:textSize">28sp</item>
+        <item name="android:textStyle">bold</item>
+    </style>
+
+    <style name="HeadlineText">
+        <item name="android:textColor">@color/card_foreground</item>
+        <item name="android:textSize">24sp</item>
+        <item name="android:textStyle">bold</item>
+    </style>
+
+    <style name="SubheadText">
+        <item name="android:textColor">@color/card_foreground</item>
+        <item name="android:textSize">18sp</item>
+        <item name="android:textStyle">bold</item>
+    </style>
+
+    <style name="BodyText">
+        <item name="android:textColor">@color/foreground</item>
+        <item name="android:textSize">16sp</item>
+    </style>
+
+    <style name="CaptionText">
+        <item name="android:textColor">@color/muted_foreground</item>
+        <item name="android:textSize">14sp</item>
+    </style>
+
+    <style name="BadgeText">
+        <item name="android:textColor">@color/primary_foreground</item>
+        <item name="android:textSize">14sp</item>
+        <item name="android:textStyle">bold</item>
+    </style>
+
+</resources>

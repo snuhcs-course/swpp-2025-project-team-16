@@ -38,19 +38,7 @@ class SportsFragment : Fragment() {
     }
 
     private fun setupRecyclerView() {
-        sportsAdapter = SportsAdapter(
-            onAddSession = { sport ->
-                (requireActivity() as MainActivity).showAddSessionDialog(sport)
-            },
-            onViewDetails = { sport ->
-                showSportDetails(sport)
-            }
-        )
-        
-        binding.recyclerViewSports.apply {
-            layoutManager = LinearLayoutManager(requireContext())
-            adapter = sportsAdapter
-        }
+        // TODO:
     }
 
     private fun observeViewModel() {
@@ -62,9 +50,7 @@ class SportsFragment : Fragment() {
     }
 
     private fun setupEmptyState() {
-        binding.btnAddFirstSport.setOnClickListener {
-            (requireActivity() as MainActivity).showAddSportDialog()
-        }
+        // TODO:
     }
 
     private fun updateUI(sports: List<Sport>) {

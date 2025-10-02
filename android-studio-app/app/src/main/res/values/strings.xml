@@ -1,21 +1,21 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">AI 스포츠 PT</string>
-    
+    <string name="app_name">Sportify</string>
     <!-- 공통 -->
-    <string name="app_logo">앱 로고</string>
+    <string name="app_logo">logo</string>
     <string name="add_sport">스포츠 추가</string>
     <string name="cancel">취소</string>
     <string name="save">저장</string>
     <string name="ok">확인</string>
     <string name="yes">예</string>
     <string name="no">아니오</string>
+    <string name="notification">알림</string>
     
     <!-- 네비게이션 -->
-    <string name="nav_sports">스포츠</string>
+    <string name="nav_shopping">쇼핑</string>
     <string name="nav_ai_coach">AI 코치</string>
     <string name="nav_training">훈련</string>
-    <string name="nav_achievements">성취</string>
+    <string name="nav_user">Me</string>
     
     <!-- 스포츠 화면 -->
     <string name="no_sports_title">스포츠가 없습니다</string>
@@ -114,5 +114,13 @@
     <string name="percent_format">%d%%</string>
     <string name="days_ago_format">%d일 전</string>
     <string name="just_now">방금 전</string>
-    
+    <string name="nav_exercise_add">운동 추가</string>
+    <string name="_2025_10">2025년 10월</string>
+    <string name="plan_make">계획 생성</string>
+    <string name="plan_edit">계획 수정</string>
+    <string name="plan_percent">계획 성취율</string>
+    <string name="_68">68%</string>
+    <string name="training_header">운동 계획</string>
+    <string name="training_month">2025년 9월</string>
+
 </resources>

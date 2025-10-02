@@ -5,15 +5,13 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import com.aisportspt.app.databinding.ActivityMainBinding
-import com.aisportspt.app.ui.dialogs.AddSessionDialogFragment
-import com.aisportspt.app.ui.dialogs.AddSportDialogFragment
-import com.aisportspt.app.ui.fragments.AchievementFragment
+import com.aisportspt.app.ui.fragments.UserFragment
 import com.aisportspt.app.ui.fragments.AiCoachFragment
 import com.aisportspt.app.ui.fragments.SportsFragment
 import com.aisportspt.app.ui.fragments.TrainingFragment
+import com.aisportspt.app.ui.fragments.ShoppingFragment
 import com.aisportspt.app.ui.viewmodels.MainViewModel
-import com.aisportspt.app.model.Sport
-import com.google.android.material.bottomnavigation.BottomNavigationView
+
 
 class MainActivity : AppCompatActivity() {
 
@@ -22,26 +20,23 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        supportActionBar?.hide()
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
-
-        viewModel = ViewModelProvider(this)[MainViewModel::class.java]
-        
         setupBottomNavigation()
-        setupFAB()
-        
-        // 기본 프래그먼트 로드
+        viewModel = ViewModelProvider(this)[MainViewModel::class.java]
+
         if (savedInstanceState == null) {
             loadFragment(SportsFragment())
-            binding.bottomNavigation.selectedItemId = R.id.nav_sports
+            binding.bottomNavigation.selectedItemId = R.id.nav_training
         }
     }
 
     private fun setupBottomNavigation() {
         binding.bottomNavigation.setOnItemSelectedListener { item ->
             when (item.itemId) {
-                R.id.nav_sports -> {
-                    loadFragment(SportsFragment())
+                R.id.nav_user -> {
+                    loadFragment(UserFragment())
                     true
                 }
                 R.id.nav_ai_coach -> {
@@ -52,8 +47,12 @@ class MainActivity : AppCompatActivity() {
                     loadFragment(TrainingFragment())
                     true
                 }
-                R.id.nav_achievements -> {
-                    loadFragment(AchievementFragment())
+                R.id.nav_shopping -> {
+                    loadFragment(ShoppingFragment())
+                    true
+                }
+                R.id.nav_add ->{
+                    loadFragment(UserFragment())
                     true
                 }
                 else -> false
@@ -61,11 +60,6 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun setupFAB() {
-        binding.fabAdd.setOnClickListener {
-            showAddSportDialog()
-        }
-    }
 
     private fun loadFragment(fragment: Fragment) {
         supportFragmentManager
@@ -73,20 +67,7 @@ class MainActivity : AppCompatActivity() {
             .replace(R.id.fragment_container, fragment)
             .commit()
     }
-    
-    fun showAddSportDialog() {
-        val dialog = AddSportDialogFragment { sport ->
-            viewModel.addSport(sport)
-        }
-        dialog.show(supportFragmentManager, "AddSportDialog")
-    }
-    
-    fun showAddSessionDialog(sport: Sport) {
-        val dialog = AddSessionDialogFragment(sport) { session ->
-            viewModel.addSession(session)
-        }
-        dialog.show(supportFragmentManager, "AddSessionDialog")
-    }
+
     
     fun getViewModel(): MainViewModel = viewModel
 }

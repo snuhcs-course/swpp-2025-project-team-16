@@ -1,10 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <!-- 메인 컬러 - 웹 앱과 동일 -->
+    <color name="white">#FFFFFF</color>
+    <color name="black">#000000</color>
     <color name="primary">#3B82F6</color>
     <color name="primary_dark">#2563EB</color>
-    <color name="secondary">#8B5CF6</color>
-    <color name="secondary_dark">#7C3AED</color>
+    <color name="secondary">@android:color/holo_green_dark</color>
+    <color name="secondary_dark">@android:color/holo_green_light</color>
     
     <!-- 배경 -->
     <color name="background">#FFFFFF</color>
@@ -34,14 +36,14 @@
     <color name="bottom_nav_text_color">@color/nav_text_selector</color>
     
     <!-- 네비게이션 선택자용 -->
-    <color name="nav_selected">#3B82F6</color>
-    <color name="nav_unselected">#64748B</color>
+    <color name="nav_selected">#19612C</color>
+    <color name="nav_unselected">#C0C3C6</color>
     
     <!-- 업적 타입별 색상 -->
     <color name="achievement_bronze">#CD7F32</color>
     <color name="achievement_silver">#C0C0C0</color>
     <color name="achievement_gold">#FFD700</color>
-    <color name="achievement_platinum">#8B5CF6</color>
+    <color name="achievement_platinum">#000000</color>
     
     <!-- 피드백 타입별 색상 -->
     <color name="feedback_good">#10B981</color>
@@ -54,7 +56,7 @@
     
     <!-- 그라데이션 색상 -->
     <color name="gradient_start">#3B82F6</color>
-    <color name="gradient_end">#8B5CF6</color>
+    <color name="gradient_end">#19612C</color>
     
     <!-- 카메라 오버레이 색상 -->
     <color name="overlay_recording">#EF4444</color>

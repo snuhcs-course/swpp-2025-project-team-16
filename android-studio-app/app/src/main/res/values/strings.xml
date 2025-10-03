@@ -129,5 +129,9 @@
     <string name="newDate">새로운 날짜를 선택하세요</string>
 
     <string name="next">다음</string>
+    <string name="shopping">쇼핑</string>
+    <string name="ex1">덤벨</string>
+    <string name="search">검색</string>
+    <string name="searching">제품 검색</string>
 
 </resources>

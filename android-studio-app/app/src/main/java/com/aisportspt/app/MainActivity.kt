@@ -52,7 +52,7 @@ class MainActivity : AppCompatActivity() {
                     true
                 }
                 R.id.nav_add ->{
-                    loadFragment(UserFragment())
+                    loadFragment(SportsFragment())
                     true
                 }
                 else -> false

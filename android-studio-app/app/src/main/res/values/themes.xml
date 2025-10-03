@@ -51,7 +51,7 @@
     <!-- Chip 스타일 -->
     <style name="Widget.AISportsPT.Chip" parent="Widget.Material3.Chip.Filter">
         <item name="chipBackgroundColor">@color/primary</item>
-        <item name="android:textColor">@android:color/white</item>
+        <item name="android:textColor">@color/accent_foreground</item>
     </style>
     
 </resources>

@@ -5,9 +5,12 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
 import androidx.fragment.app.Fragment
 import com.aisportspt.app.databinding.FragmentTrainingBinding
 import com.aisportspt.app.ui.dialogs.CreateTrainingPlanDialogFragment
+import com.aisportspt.app.ui.dialogs.ModifyDateDialogFragment
+import com.aisportspt.app.ui.dialogs.ModifyPlanDialogFragment
 import java.text.SimpleDateFormat
 import java.util.*
 class TrainingFragment : Fragment() {
@@ -53,8 +56,15 @@ class TrainingFragment : Fragment() {
         }
 
         binding.btnEditPlan.setOnClickListener {
-            // TODO: 편집 화면 연결
+            ModifyDateDialogFragment { selectedDate ->
+                // 날짜 선택 완료되면 → 시간대 다이얼로그 실행
+                ModifyPlanDialogFragment { selectedDateFinal, selectedTimeSlot ->
+                    // TODO :
+                }.show(childFragmentManager, "ModifyPlanDialog")
+            }.show(childFragmentManager, "ModifyDateDialog")
         }
+
+
 
         binding.calendarView.setOnDateChangeListener { _, year, month, dayOfMonth ->
             val selectedDate = Calendar.getInstance()
@@ -82,5 +92,3 @@ class TrainingFragment : Fragment() {
         _binding = null
     }
 }
-
-private fun Any.setOnClickListener(function: () -> Unit) {}

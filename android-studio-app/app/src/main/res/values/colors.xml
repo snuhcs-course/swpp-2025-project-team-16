@@ -3,8 +3,9 @@
     <!-- 메인 컬러 - 웹 앱과 동일 -->
     <color name="white">#FFFFFF</color>
     <color name="black">#000000</color>
-    <color name="primary">#3B82F6</color>
-    <color name="primary_dark">#2563EB</color>
+
+    <color name="primary">#19612C</color>
+    <color name="primary_dark">#19612C</color>
     <color name="secondary">@android:color/holo_green_dark</color>
     <color name="secondary_dark">@android:color/holo_green_light</color>
     
@@ -37,7 +38,7 @@
     
     <!-- 네비게이션 선택자용 -->
     <color name="nav_selected">#19612C</color>
-    <color name="nav_unselected">#C0C3C6</color>
+    <color name="nav_unselected">#646464</color>
     
     <!-- 업적 타입별 색상 -->
     <color name="achievement_bronze">#CD7F32</color>
@@ -69,5 +70,22 @@
     <color name="black_alpha_50">#80000000</color>
     <color name="black_alpha_70">#B3000000</color>
     <color name="white_alpha_90">#E6FFFFFF</color>
-    
+
+    <color name="muted">#ECECF0</color>
+    <color name="muted_foreground">#717182</color>
+    <color name="accent">#E9EBEF</color>
+    <color name="accent_foreground">#030213</color>
+
+    <color name="foreground">#000000</color>
+    <color name="calendar_selected">#030213</color>
+    <color name="calendar_today">#E9EBEF</color>
+    <color name="progress_primary">#030213</color>
+
+    <!-- Dark Theme Colors (for future dark mode support) -->
+    <color name="background_dark">#0A0A0A</color>
+    <color name="foreground_dark">#FAFAFA</color>
+    <color name="card_dark">#0A0A0A</color>
+    <color name="card_foreground_dark">#FAFAFA</color>
+    <color name="primary_foreground_dark">#0A0A0A</color>
+
 </resources>

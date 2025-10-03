@@ -15,7 +15,7 @@
     <string name="nav_shopping">쇼핑</string>
     <string name="nav_ai_coach">AI 코치</string>
     <string name="nav_training">훈련</string>
-    <string name="nav_user">Me</string>
+    <string name="nav_user">My page</string>
     
     <!-- 스포츠 화면 -->
     <string name="no_sports_title">스포츠가 없습니다</string>
@@ -122,5 +122,12 @@
     <string name="_68">68%</string>
     <string name="training_header">운동 계획</string>
     <string name="training_month">2025년 9월</string>
+    <string name="button_back">뒤로가기</string>
+    <string name="modify_plan">계획 수정</string>
+    <string name="current_plan">현재 계획</string>
+    <string name="Date">10월 5일 토요일</string>
+    <string name="newDate">새로운 날짜를 선택하세요</string>
+
+    <string name="next">다음</string>
 
 </resources>

@@ -15,9 +15,10 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.AISportsPT"
         tools:targetApi="31">
-        
+
+        <!-- 로그인 액티비티를 앱 시작점으로 -->
         <activity
-            android:name=".MainActivity"
+            android:name=".LoginActivity"
             android:exported="true"
             android:theme="@style/Theme.AISportsPT">
             <intent-filter>
@@ -25,6 +26,10 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <!-- 메인 액티비티 (로그인 성공 후 이동) -->
+        <activity android:name=".MainActivity" />
+
     </application>
 
 </manifest>

@@ -1,0 +1,20 @@
+{
+    "logs": [
+        {
+            "outputFile": "com.aisportspt.app-mergeDebugResources-62:/values-watch-v20/values-watch-v20.xml",
+            "map": [
+                {
+                    "source": "/Users/imjongbin/.gradle/caches/9.0-milestone-1/transforms/a13a42d12edaa0e8819ad92491b37a2d/transformed/appcompat-1.6.1/res/values-watch-v20/values-watch-v20.xml",
+                    "from": {
+                        "startLines": "2,5,8",
+                        "startColumns": "4,4,4",
+                        "startOffsets": "55,214,385",
+                        "endLines": "4,7,10",
+                        "endColumns": "12,12,12",
+                        "endOffsets": "209,380,553"
+                    }
+                }
+            ]
+        }
+    ]
+}

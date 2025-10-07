@@ -19,11 +19,16 @@ import com.aisportspt.app.R
 import com.aisportspt.app.databinding.FragmentAiCoachBinding
 import com.aisportspt.app.ui.adapters.FeedbackAdapter
 import com.aisportspt.app.model.AIPoseFeedback
+import com.aisportspt.app.ui.fragments.coachutils.PoseLandmarkerHelper
 import com.google.common.util.concurrent.ListenableFuture
+import com.google.mediapipe.tasks.vision.core.RunningMode
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 
-class AiCoachFragment : Fragment() {
+import androidx.fragment.app.activityViewModels
+import com.aisportspt.app.ui.fragments.coachutils.MainViewModel
+
+class AiCoachFragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener {
 
     private var _binding: FragmentAiCoachBinding? = null
     private val binding get() = _binding!!
@@ -33,7 +38,13 @@ class AiCoachFragment : Fragment() {
     private var camera: Camera? = null
     private var preview: Preview? = null
     private var imageAnalyzer: ImageAnalysis? = null
-    
+
+    private lateinit var poseLandmarkerHelper: PoseLandmarkerHelper
+//    private lateinit var backgroundExecutor: ExecutorService
+    private var cameraFacing = CameraSelector.LENS_FACING_BACK
+    private val viewModel: MainViewModel by activityViewModels()
+
+
     private lateinit var feedbackAdapter: FeedbackAdapter
     private val feedbackList = mutableListOf<AIPoseFeedback>()
     
@@ -62,6 +73,23 @@ class AiCoachFragment : Fragment() {
         
         setupUI()
         observeViewModel()
+
+        // ❸ 실행 스레드 준비
+        cameraExecutor = Executors.newSingleThreadExecutor()
+//        backgroundExecutor = Executors.newSingleThreadExecutor()
+
+        // ❹ 헬퍼 초기화 (LIVE_STREAM)
+        cameraExecutor.execute {
+            poseLandmarkerHelper = PoseLandmarkerHelper(
+                context = requireContext(),
+                runningMode = RunningMode.LIVE_STREAM,                     // 실시간 모드
+                minPoseDetectionConfidence = viewModel.currentMinPoseDetectionConfidence,
+                minPoseTrackingConfidence = viewModel.currentMinPoseTrackingConfidence,
+                minPosePresenceConfidence = viewModel.currentMinPosePresenceConfidence,
+                currentDelegate = viewModel.currentDelegate,               // CPU/GPU
+                poseLandmarkerHelperListener = this                        // 콜백
+            )
+        }
         
         // Check camera permission
         if (allPermissionsGranted()) {
@@ -70,7 +98,6 @@ class AiCoachFragment : Fragment() {
             requestPermissionLauncher.launch(Manifest.permission.CAMERA)
         }
         
-        cameraExecutor = Executors.newSingleThreadExecutor()
     }
 
     private fun setupUI() {
@@ -134,18 +161,36 @@ class AiCoachFragment : Fragment() {
         
         cameraProviderFuture.addListener({
             val cameraProvider: ProcessCameraProvider = cameraProviderFuture.get()
+//
+//            preview = Preview.Builder().build().also {
+//                it.setSurfaceProvider(binding.cameraPreview.surfaceProvider)
+//            }
+
+            preview = Preview.Builder()
+                .setTargetAspectRatio(AspectRatio.RATIO_4_3)
+                .setTargetRotation(binding.cameraPreview.display.rotation)
+                .build()
+                .also { it.setSurfaceProvider(binding.cameraPreview.surfaceProvider) }
             
-            preview = Preview.Builder().build().also {
-                it.setSurfaceProvider(binding.cameraPreview.surfaceProvider)
-            }
-            
-            imageAnalyzer = ImageAnalysis.Builder().build().also {
-                // TODO: Set up ML Kit pose detection analyzer
-                // it.setAnalyzer(cameraExecutor, PoseAnalyzer())
-            }
+//            imageAnalyzer = ImageAnalysis.Builder().build().also {
+//                // TODO: Set up ML Kit pose detection analyzer
+//                // it.setAnalyzer(cameraExecutor, PoseAnalyzer())
+//
+//            }
+            imageAnalyzer = ImageAnalysis.Builder()
+                .setTargetAspectRatio(AspectRatio.RATIO_4_3)
+                .setTargetRotation(binding.cameraPreview.display.rotation)
+                .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
+                .setOutputImageFormat(ImageAnalysis.OUTPUT_IMAGE_FORMAT_RGBA_8888) // 중요!
+                .build()
+                .also { analysis ->
+                    analysis.setAnalyzer(cameraExecutor) { image ->
+                        detectPose(image) // ❻ 프레임 분석
+                    }
+                }
             
             val cameraSelector = CameraSelector.DEFAULT_BACK_CAMERA
-            
+
             try {
                 cameraProvider.unbindAll()
                 camera = cameraProvider.bindToLifecycle(
@@ -156,6 +201,34 @@ class AiCoachFragment : Fragment() {
             }
             
         }, ContextCompat.getMainExecutor(requireContext()))
+    }
+
+    private fun detectPose(imageProxy: ImageProxy) {
+        if (this::poseLandmarkerHelper.isInitialized) {
+            poseLandmarkerHelper.detectLiveStream(
+                imageProxy = imageProxy,
+                isFrontCamera = (cameraFacing == CameraSelector.LENS_FACING_FRONT)
+            ) // 결과는 콜백 onResults()로 옴 :contentReference[oaicite:7]{index=7}
+        } else {
+            imageProxy.close()
+        }
+    }
+
+    // ❼ 결과 수신 → OverlayView에 그리기
+    override fun onResults(resultBundle: PoseLandmarkerHelper.ResultBundle) {
+        activity?.runOnUiThread {
+            binding.overlay.setResults(
+                resultBundle.results.first(),
+                resultBundle.inputImageHeight,
+                resultBundle.inputImageWidth,
+                RunningMode.LIVE_STREAM
+            ) // OverlayView가 포인트/라인/무릎각도까지 그림 :contentReference[oaicite:8]{index=8}:contentReference[oaicite:9]{index=9}
+            binding.overlay.invalidate()
+        }
+    }
+
+    override fun onError(error: String, errorCode: Int) {
+        // GPU 오류 시 CPU로 강등 등 핸들링 가능
     }
 
     private fun startAnalysis() {
@@ -248,6 +321,7 @@ class AiCoachFragment : Fragment() {
     override fun onDestroyView() {
         super.onDestroyView()
         cameraExecutor.shutdown()
+//        backgroundExecutor.shutdown()
         _binding = null
     }
 }

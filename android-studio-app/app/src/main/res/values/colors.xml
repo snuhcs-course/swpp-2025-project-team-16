@@ -88,4 +88,7 @@
     <color name="card_foreground_dark">#FAFAFA</color>
     <color name="primary_foreground_dark">#0A0A0A</color>
 
+    <!-- Pose color -->
+    <color name="mp_color_primary">#007F8B</color>
+
 </resources>

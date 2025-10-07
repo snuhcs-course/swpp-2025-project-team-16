@@ -75,6 +75,8 @@ dependencies {
     implementation("androidx.camera:camera-video:1.3.1")
     implementation("androidx.camera:camera-view:1.3.1")
     implementation("androidx.camera:camera-extensions:1.3.1")
+    implementation("com.google.mediapipe:tasks-vision:0.10.29")
+
 
     // ML Kit for pose detection
     implementation("com.google.mlkit:pose-detection:18.0.0-beta3")

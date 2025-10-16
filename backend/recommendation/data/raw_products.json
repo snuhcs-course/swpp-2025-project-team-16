@@ -1,0 +1,57 @@
+[
+  {
+    "id": 1,
+    "name": "드릴스포츠 7번아이언 남성용 일반그립",
+    "category": "골프채",
+    "price": 30000,
+    "description": ["Lightweight", "Breathable", "Comfort"],
+    "image_urls": ["https://img1.com"],
+    "brand": "Nike",
+    "stock": 50,
+    "rating": 4.5
+  },
+  {
+    "id": 2,
+    "name": "볼링공 10파운드",
+    "category": "볼링공",
+    "price": 45000,
+    "description": ["균형 잡힌 무게", "내구성 강함", "초보자용"],
+    "image_urls": ["https://img2.com"],
+    "brand": "Brunswick",
+    "stock": 30,
+    "rating": 4.6
+  },
+  {
+    "id": 3,
+    "name": "당구 큐 스탠다드",
+    "category": "당구채",
+    "price": 60000,
+    "description": ["정밀 제작", "균형 좋음", "중급자 추천"],
+    "image_urls": ["https://img3.com"],
+    "brand": "Predator",
+    "stock": 20,
+    "rating": 4.4
+  },
+  {
+    "id": 4,
+    "name": "필라테스 리포머 매트 세트",
+    "category": "필라테스 매트",
+    "price": 120000,
+    "description": ["전신 운동 가능", "튼튼한 구조", "전문가용"],
+    "image_urls": ["https://img4.com"],
+    "brand": "PilatesPro",
+    "stock": 15,
+    "rating": 4.8
+  },
+  {
+    "id": 5,
+    "name": "Yoga Mat 6mm",
+    "category": "요가매트",
+    "price": 40,
+    "description": ["Non-slip", "Eco-friendly", "Durable"],
+    "image_urls": ["https://img5.com"],
+    "brand": "Liforme",
+    "stock": 120,
+    "rating": 4.7
+  }
+]

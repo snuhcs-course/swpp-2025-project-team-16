@@ -9,6 +9,11 @@ import android.widget.Toast
 import androidx.fragment.app.Fragment
 import com.aisportspt.app.MainActivity
 import com.aisportspt.app.databinding.FragmentLoginPasswordBinding
+import android.text.Editable
+import android.text.TextWatcher
+import androidx.core.content.ContextCompat
+import com.aisportspt.app.R
+
 
 class LoginPasswordFragment : Fragment() {
 
@@ -33,6 +38,24 @@ class LoginPasswordFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
+        binding.etPassword.addTextChangedListener(object : TextWatcher {
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
+
+            override fun afterTextChanged(s: Editable?) {
+                val hasText = !s.isNullOrEmpty()
+                binding.btnLogin.apply {
+                    isEnabled = hasText
+                    setBackgroundColor(
+                        ContextCompat.getColor(
+                            requireContext(),
+                            if (hasText) R.color.nav_selected else R.color.achievement_silver
+                        )
+                    )
+                }
+            }
+        })
 
         binding.btnLogin.setOnClickListener {
             val password = binding.etPassword.text.toString().trim()

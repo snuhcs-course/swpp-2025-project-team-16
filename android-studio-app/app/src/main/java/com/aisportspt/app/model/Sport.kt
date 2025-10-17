@@ -29,6 +29,16 @@ data class Session(
 ) : Parcelable
 
 @Parcelize
+data class Schedule(
+    val id: String,
+    val sportId:String,
+    val date:String,
+    val startTime:String, // hh:mm
+    val finishTime:String,
+    val session: Session,
+    var isFinished:Boolean
+): Parcelable
+@Parcelize
 data class Achievement(
     val id: String,
     val title: String,
@@ -59,6 +69,17 @@ data class UserStats(
 ) : Parcelable
 
 @Parcelize
+data class User(
+    val id:String,
+    val selectedSport:Sport,
+    val schedules:HashSet<Schedule>,
+    val userStat: UserStats,
+    val mySports: HashSet<Sport>,
+    val workDates:HashSet<String>,
+    var selectedDate: String
+): Parcelable
+
+@Parcelize
 data class TrainingPlan(
     val id: String,
     val sport: String,
@@ -74,7 +95,7 @@ data class TrainingPlan(
 data class Exercise(
     val id: String,
     val name: String,
-    val duration: String,
+    val duration: Int,
     val sets: Int? = null,
     val reps: Int? = null,
     val description: String,

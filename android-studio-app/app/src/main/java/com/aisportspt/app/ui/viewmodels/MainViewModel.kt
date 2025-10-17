@@ -7,7 +7,9 @@ import com.aisportspt.app.model.Sport
 import com.aisportspt.app.model.Session
 import com.aisportspt.app.model.Achievement
 import com.aisportspt.app.model.TrainingPlan
+import com.aisportspt.app.model.User
 import com.aisportspt.app.model.UserStats
+import java.text.SimpleDateFormat
 import java.util.*
 
 class MainViewModel : ViewModel() {
@@ -31,6 +33,10 @@ class MainViewModel : ViewModel() {
     // User Stats
     private val _userStats = MutableLiveData<UserStats>()
     val userStats: LiveData<UserStats> = _userStats
+
+    private val _user= MutableLiveData<User>()
+
+    val user: LiveData<User> = _user
     
     init {
         loadSampleData()
@@ -38,6 +44,7 @@ class MainViewModel : ViewModel() {
     
     private fun loadSampleData() {
         // Sample sports data
+
         val sampleSports = listOf(
             Sport(
                 id = "1",
@@ -109,6 +116,11 @@ class MainViewModel : ViewModel() {
             nextLevelXp = 3000,
             totalAchievements = 3
         )
+        val calendar=Calendar.getInstance()
+        val sdf = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
+        val selectedDateStr = sdf.format(calendar.time)
+        _user.value=User("admin", sampleSports[0],HashSet(),_userStats.value!!,HashSet(), HashSet(),selectedDateStr)
+        _user.value!!.mySports.add(sampleSports[0])
         
         // Sample achievements
         loadSampleAchievements()
@@ -185,5 +197,10 @@ class MainViewModel : ViewModel() {
         val currentPlans = _trainingPlans.value?.toMutableList() ?: mutableListOf()
         currentPlans.add(plan)
         _trainingPlans.value = currentPlans
+    }
+    fun getSessionForUser():Session{
+        return getSessionsForSport(
+            _user.value!!.selectedSport.id)[
+            _user.value!!.selectedSport.currentWeekSessions]
     }
 }

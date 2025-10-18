@@ -99,6 +99,10 @@
     
     <!-- 스포츠 배열 -->
     <string-array name="sports_array">
+        <item>스쿼트</item>
+        <item>싯업</item>
+        <item>푸쉬업</item>
+        <item>플랭크</item>
         <item>골프</item>
         <item>볼링</item>
         <item>테니스</item>

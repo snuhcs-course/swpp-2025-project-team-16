@@ -27,3 +27,4 @@ server/schedule/migrations/__pycache__
 server/recommendation/__pycache__
 server/recommendation/migrations/__pycache__
 server/.env
+server/sportify/__pycache__

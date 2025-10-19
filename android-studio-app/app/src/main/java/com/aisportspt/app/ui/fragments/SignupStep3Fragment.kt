@@ -10,8 +10,10 @@ import androidx.fragment.app.Fragment
 import com.aisportspt.app.MainActivity
 import com.aisportspt.app.databinding.FragmentSignupStep3Binding
 import androidx.core.content.ContextCompat
+import androidx.lifecycle.lifecycleScope
 import com.aisportspt.app.R
-
+import com.aisportspt.app.data.remote.RetrofitClient
+import kotlinx.coroutines.launch
 
 
 class SignupStep3Fragment : Fragment() {
@@ -45,6 +47,7 @@ class SignupStep3Fragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        // 🔹 라디오 버튼 선택에 따라 버튼 활성화
         binding.rgLevel.setOnCheckedChangeListener { _, checkedId ->
             val selected = checkedId != -1
             binding.btnComplete.apply {
@@ -58,6 +61,7 @@ class SignupStep3Fragment : Fragment() {
             }
         }
 
+        // 🔹 회원가입 완료 버튼 클릭
         binding.btnComplete.setOnClickListener {
             val level = when (binding.rgLevel.checkedRadioButtonId) {
                 binding.rbBeginner.id -> "초급"
@@ -66,11 +70,36 @@ class SignupStep3Fragment : Fragment() {
                 else -> ""
             }
 
-            Toast.makeText(requireContext(), "회원가입 완료!", Toast.LENGTH_SHORT).show()
+            signupAccount(level)
+        }
+    }
 
-            val intent = Intent(requireContext(), MainActivity::class.java)
-            startActivity(intent)
-            requireActivity().finish()
+    // ✅ 서버로 계정 정보 전송
+    private fun signupAccount(level: String) {
+        val request = mapOf(
+            "name" to (name ?: ""),
+            "email" to (email ?: ""),
+            "password" to (password ?: "")
+        )
+
+        lifecycleScope.launch {
+            try {
+                val response = RetrofitClient.apiService.signup(request)
+                if (response.isSuccessful) {
+                    Toast.makeText(requireContext(), "회원가입 완료!", Toast.LENGTH_SHORT).show()
+
+                    // TODO: 나중에 스포츠/레벨 등 추가 정보 저장 API 호출
+                    // 예시: RetrofitClient.apiService.saveProfile(level, sports)
+
+                    val intent = Intent(requireContext(), MainActivity::class.java)
+                    startActivity(intent)
+                    requireActivity().finish()
+                } else {
+                    Toast.makeText(requireContext(), "회원가입 실패", Toast.LENGTH_SHORT).show()
+                }
+            } catch (e: Exception) {
+                Toast.makeText(requireContext(), "네트워크 오류", Toast.LENGTH_SHORT).show()
+            }
         }
     }
 

@@ -11,7 +11,10 @@ import com.aisportspt.app.databinding.FragmentLoginEmailBinding
 import android.text.Editable
 import android.text.TextWatcher
 import androidx.core.content.ContextCompat
-
+import androidx.lifecycle.lifecycleScope
+import kotlinx.coroutines.launch
+import com.aisportspt.app.data.remote.EmailCheckResponse
+import com.aisportspt.app.data.remote.RetrofitClient
 
 class LoginEmailFragment : Fragment() {
 
@@ -29,21 +32,23 @@ class LoginEmailFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
+
         binding.etEmail.addTextChangedListener(object : TextWatcher {
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
-
             override fun afterTextChanged(s: Editable?) {
                 val hasText = !s.isNullOrEmpty()
-                if (hasText) {
-                    binding.btnConfirm.setBackgroundColor(
-                        ContextCompat.getColor(requireContext(), R.color.nav_selected)
+                binding.btnConfirm.setBackgroundColor(
+                    ContextCompat.getColor(
+                        requireContext(),
+                        if (hasText) R.color.nav_selected else R.color.achievement_silver
                     )
-                }
+                )
             }
         })
 
-
+        // 🔹 버튼 클릭 시 이메일 서버로 확인
         binding.btnConfirm.setOnClickListener {
             val email = binding.etEmail.text.toString().trim()
 
@@ -52,35 +57,54 @@ class LoginEmailFragment : Fragment() {
                 return@setOnClickListener
             }
 
-            if (isRegisteredEmail(email)) {
-                // 비밀번호 입력 화면으로 이동
-                val fragment = LoginPasswordFragment.newInstance(email)
-                parentFragmentManager.beginTransaction()
-                    .setCustomAnimations(android.R.anim.fade_in, android.R.anim.fade_out)
-                    .replace(R.id.login_container, fragment)
-                    .addToBackStack(null)
-                    .commit()
+            checkEmailFromServer(email)
+        }
+    }
 
-            } else {
-                if (binding.btnConfirm.text == "확인") {
-                    binding.btnConfirm.text = "회원가입"
-                    Toast.makeText(requireContext(), "등록되지 않은 이메일입니다. 회원가입을 진행하세요.", Toast.LENGTH_SHORT).show()
+    // ✅ 서버로 이메일 존재 여부 확인
+    private fun checkEmailFromServer(email: String) {
+        lifecycleScope.launch {
+            try {
+                val response = RetrofitClient.apiService.checkEmail(mapOf("email" to email))
+                if (response.isSuccessful) {
+                    val result = response.body()
+                    if (result?.exists == true) {
+                        goToPasswordFragment(email)
+                    } else {
+                        handleSignupButton()
+                    }
                 } else {
-                    // 회원가입 Step1 화면으로 이동
-                    val fragment = SignupStep1Fragment()
-                    parentFragmentManager.beginTransaction()
-                        .setCustomAnimations(android.R.anim.fade_in, android.R.anim.fade_out)
-                        .replace(R.id.login_container, fragment)
-                        .addToBackStack(null)
-                        .commit()
+                    Toast.makeText(requireContext(), "서버 오류", Toast.LENGTH_SHORT).show()
                 }
+            } catch (e: Exception) {
+                Toast.makeText(requireContext(), "네트워크 오류", Toast.LENGTH_SHORT).show()
             }
         }
     }
 
+    // ✅ 로그인 비밀번호 화면으로 이동
+    private fun goToPasswordFragment(email: String) {
+        val fragment = LoginPasswordFragment.newInstance(email)
+        parentFragmentManager.beginTransaction()
+            .setCustomAnimations(android.R.anim.fade_in, android.R.anim.fade_out)
+            .replace(R.id.login_container, fragment)
+            .addToBackStack(null)
+            .commit()
+    }
 
-    private fun isRegisteredEmail(email: String): Boolean {
-        return email == "admin@test.com" // admin만 성공 처리
+    // ✅ 회원가입 화면으로 이동
+    private fun handleSignupButton() {
+        if (binding.btnConfirm.text == "확인") {
+            binding.btnConfirm.text = "회원가입"
+            Toast.makeText(requireContext(), "등록되지 않은 이메일입니다. 회원가입을 진행하세요.", Toast.LENGTH_SHORT).show()
+        } else {
+            val fragment = SignupStep1Fragment()
+            parentFragmentManager.beginTransaction()
+                .setCustomAnimations(android.R.anim.fade_in, android.R.anim.fade_out)
+                .replace(R.id.login_container, fragment)
+                .addToBackStack(null)
+                .commit()
+        }
     }
 
     override fun onDestroyView() {

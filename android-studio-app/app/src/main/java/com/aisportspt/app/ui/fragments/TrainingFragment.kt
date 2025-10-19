@@ -7,10 +7,17 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.activityViewModels
 import com.aisportspt.app.databinding.FragmentTrainingBinding
 import com.aisportspt.app.ui.dialogs.CreateTrainingPlanDialogFragment
 import com.aisportspt.app.ui.dialogs.ModifyDateDialogFragment
 import com.aisportspt.app.ui.dialogs.ModifyPlanDialogFragment
+import com.aisportspt.app.*
+import com.aisportspt.app.model.Difficulty
+import com.aisportspt.app.model.Schedule
+import com.aisportspt.app.model.Session
+import com.aisportspt.app.model.TrainingPlan
+import com.aisportspt.app.ui.viewmodels.MainViewModel
 import java.text.SimpleDateFormat
 import java.util.*
 class TrainingFragment : Fragment() {
@@ -18,8 +25,16 @@ class TrainingFragment : Fragment() {
     private var _binding: FragmentTrainingBinding? = null
     private val binding get() = _binding!!
 
+    private val viewModel: MainViewModel by activityViewModels<MainViewModel>()
+
+    fun makeTrainingPlan(): TrainingPlan{
+        //TODO: 훈련 계획 생성
+        return TrainingPlan("","","","", Difficulty.INTERMEDIATE,"",LinkedList(),false)
+    }
+
     // 샘플 데이터
     private val workoutDates = HashSet<String>()
+
     private var achievementRate = 68
 
     override fun onCreateView(
@@ -56,12 +71,16 @@ class TrainingFragment : Fragment() {
         }
 
         binding.btnEditPlan.setOnClickListener {
-            ModifyDateDialogFragment { selectedDate ->
+            if(viewModel.user.value!!.workDates.contains(viewModel.user.value?.selectedDate))
+                ModifyDateDialogFragment { selectedDate ->
                 // 날짜 선택 완료되면 → 시간대 다이얼로그 실행
                 ModifyPlanDialogFragment { selectedDateFinal, selectedTimeSlot ->
-                    // TODO :
+                    viewModel.modifyTrainingPlan(selectedDateFinal,selectedTimeSlot)
                 }.show(childFragmentManager, "ModifyPlanDialog")
             }.show(childFragmentManager, "ModifyDateDialog")
+            else{
+                Toast.makeText(requireContext(),"변경할 날짜를 먼저 선택해 주세요",Toast.LENGTH_SHORT).show()
+            }
         }
 
 
@@ -72,9 +91,16 @@ class TrainingFragment : Fragment() {
 
             val sdf = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
             val selectedDateStr = sdf.format(selectedDate.time)
+            viewModel.user.value!!.selectedDate=selectedDateStr
+            if (viewModel.user.value!!.workDates.contains(selectedDateStr)) {
 
-            if (workoutDates.contains(selectedDateStr)) {
-                // TODO: 선택된 날짜에 훈련 계획이 있으면 상세보기 열기
+                // 선택된 날짜에 훈련 계획이 있으면 상세보기 열기
+                // 일단 ui의 부재로 인해 toast로 대체
+
+                val scheduleList=viewModel.user.value!!.schedules.filter { it.date==selectedDateStr }
+                for(schedule in scheduleList){
+                    Toast.makeText(requireContext(),schedule.session.focus,Toast.LENGTH_SHORT).show()
+                }
             }
         }
     }

@@ -7,7 +7,7 @@ import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import com.aisportspt.app.R
 import com.aisportspt.app.databinding.FragmentSignupStep2Binding
-import com.aisportspt.app.ui.fragments.SignupStep3Fragment
+import androidx.core.content.ContextCompat
 
 class SignupStep2Fragment : Fragment() {
 
@@ -37,6 +37,24 @@ class SignupStep2Fragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
+        val checkBoxes = listOf(binding.cbSoccer, binding.cbBasketball, binding.cbFitness)
+
+        checkBoxes.forEach { cb ->
+            cb.setOnCheckedChangeListener { _, _ ->
+                val anyChecked = checkBoxes.any { it.isChecked }
+                binding.btnNext.apply {
+                    isEnabled = anyChecked
+                    setBackgroundColor(
+                        ContextCompat.getColor(
+                            requireContext(),
+                            if (anyChecked) R.color.nav_selected else R.color.achievement_silver
+                        )
+                    )
+                }
+            }
+        }
+
 
         binding.btnNext.setOnClickListener {
             val selectedSports = mutableListOf<String>()

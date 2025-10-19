@@ -1,8 +1,8 @@
 ﻿from django.db import models
-from django.contrib.auth.models import User
+from django.conf import settings
 
 class EquipmentRecommendation(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     user_level = models.CharField(max_length=20)
     sport_type = models.CharField(max_length=50)
     response = models.JSONField()

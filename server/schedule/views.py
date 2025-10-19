@@ -10,7 +10,7 @@ import jwt
 
 SECRET_KEY = 'sportify_secret_key'
 
-# ✅ Helper: decode JWT
+
 def get_user_from_token(request):
     auth_header = request.headers.get('Authorization')
     if not auth_header or not auth_header.startswith('Bearer '):
@@ -31,7 +31,7 @@ def schedule_list(request):
 
     # 🟢 GET: Get all schedules of the current user
     if request.method == 'GET':
-        schedules = Schedule.objects.filter(userId=user)
+        schedules = Schedule.objects.filter(user=user)
         serializer = ScheduleSerializer(schedules, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
@@ -45,13 +45,13 @@ def schedule_list(request):
 
             session = get_object_or_404(Session, id=session_id)
             schedule = Schedule.objects.create(
-                userId=user,
-                sessionId=session,
+                user=user,
+                session=session,
                 date=date,
-                startTime=start_time,
-                endTime=end_time,
+                start_time=start_time,
+                end_time=end_time,
                 name=session.title,
-                isFinished=False,
+                is_finished=False,
             )
             return Response({'message': 'Schedule created successfully'}, status=status.HTTP_201_CREATED)
         except Exception as e:
@@ -60,6 +60,6 @@ def schedule_list(request):
     # 🔴 DELETE: delete schedule by id
     elif request.method == 'DELETE':
         schedule_id = request.query_params.get('id')
-        schedule = get_object_or_404(Schedule, id=schedule_id, userId=user)
+        schedule = get_object_or_404(Schedule, id=schedule_id, user=user)
         schedule.delete()
         return Response({'message': 'Schedule deleted successfully'}, status=status.HTTP_200_OK)

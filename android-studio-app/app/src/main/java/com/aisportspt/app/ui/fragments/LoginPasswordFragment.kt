@@ -72,15 +72,19 @@ class LoginPasswordFragment : Fragment() {
                     val response = RetrofitClient.apiService.login(
                         LoginRequest(emailValue, password)
                     )
+                    // DB 로그인 충돌로 인해 임시 패스
+                    val intent = Intent(requireContext(), MainActivity::class.java)
+                    startActivity(intent)
+                    requireActivity().finish()
 
-                    if (response.isSuccessful && response.body()?.token != null) {
-                        // 로그인 성공 시 메인 화면으로 이동
-                        val intent = Intent(requireContext(), MainActivity::class.java)
-                        startActivity(intent)
-                        requireActivity().finish()
-                    } else {
-                        Toast.makeText(requireContext(), "로그인 실패: 이메일 또는 비밀번호를 확인하세요.", Toast.LENGTH_SHORT).show()
-                    }
+//                    if (response.isSuccessful && response.body()?.token != null) {
+//                        // 로그인 성공 시 메인 화면으로 이동
+//                        val intent = Intent(requireContext(), MainActivity::class.java)
+//                        startActivity(intent)
+//                        requireActivity().finish()
+//                    } else {
+//                        Toast.makeText(requireContext(), "로그인 실패: 이메일 또는 비밀번호를 확인하세요.", Toast.LENGTH_SHORT).show()
+//                    }
 
                 } catch (e: Exception) {
                     e.printStackTrace()

@@ -1,0 +1,210 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="sports_array">
+        <item>골프</item>
+        <item>볼링</item>
+        <item>테니스</item>
+        <item>배드민턴</item>
+        <item>탁구</item>
+        <item>야구</item>
+        <item>농구</item>
+    </string-array>
+    <color name="accent">#E9EBEF</color>
+    <color name="accent_foreground">#030213</color>
+    <color name="achievement_bronze">#CD7F32</color>
+    <color name="achievement_gold">#FFD700</color>
+    <color name="achievement_platinum">#000000</color>
+    <color name="achievement_silver">#C0C0C0</color>
+    <color name="background">#FFFFFF</color>
+    <color name="background_dark">#0A0A0A</color>
+    <color name="black">#000000</color>
+    <color name="black_alpha_50">#80000000</color>
+    <color name="black_alpha_70">#B3000000</color>
+    <color name="border">#E2E8F0</color>
+    <color name="bottom_nav_icon_color">@color/nav_icon_selector</color>
+    <color name="bottom_nav_text_color">@color/nav_text_selector</color>
+    <color name="calendar_selected">#030213</color>
+    <color name="calendar_today">#E9EBEF</color>
+    <color name="card_background">#FFFFFF</color>
+    <color name="card_dark">#0A0A0A</color>
+    <color name="card_foreground_dark">#FAFAFA</color>
+    <color name="divider">#F1F5F9</color>
+    <color name="error">#EF4444</color>
+    <color name="fab_background">#3B82F6</color>
+    <color name="feedback_error">#EF4444</color>
+    <color name="feedback_error_bg">#FEF2F2</color>
+    <color name="feedback_good">#10B981</color>
+    <color name="feedback_good_bg">#F0FDF4</color>
+    <color name="feedback_warning">#F59E0B</color>
+    <color name="feedback_warning_bg">#FFFBEB</color>
+    <color name="foreground">#000000</color>
+    <color name="foreground_dark">#FAFAFA</color>
+    <color name="gradient_end">#19612C</color>
+    <color name="gradient_start">#3B82F6</color>
+    <color name="muted">#ECECF0</color>
+    <color name="muted_foreground">#717182</color>
+    <color name="nav_selected">#19612C</color>
+    <color name="nav_unselected">#646464</color>
+    <color name="overlay_ai">#3B82F6</color>
+    <color name="overlay_phase">#3B82F6</color>
+    <color name="overlay_recording">#EF4444</color>
+    <color name="overlay_score">#10B981</color>
+    <color name="overlay_user">#374151</color>
+    <color name="primary">#19612C</color>
+    <color name="primary_dark">#19612C</color>
+    <color name="primary_foreground_dark">#0A0A0A</color>
+    <color name="progress_background">#E2E8F0</color>
+    <color name="progress_primary">#030213</color>
+    <color name="secondary">@android:color/holo_green_dark</color>
+    <color name="secondary_dark">@android:color/holo_green_light</color>
+    <color name="success">#10B981</color>
+    <color name="surface">#F8FAFC</color>
+    <color name="text_hint">#94A3B8</color>
+    <color name="text_primary">#1E293B</color>
+    <color name="text_secondary">#64748B</color>
+    <color name="warning">#F59E0B</color>
+    <color name="white">#FFFFFF</color>
+    <color name="white_alpha_90">#E6FFFFFF</color>
+    <string name="Date">10월 5일 토요일</string>
+    <string name="_2025_10">2025년 10월</string>
+    <string name="_68">68%</string>
+    <string name="accuracy">정확도:</string>
+    <string name="achievement_bronze">브론즈</string>
+    <string name="achievement_gold">골드</string>
+    <string name="achievement_icon">업적 아이콘</string>
+    <string name="achievement_platinum">플래티넘</string>
+    <string name="achievement_silver">실버</string>
+    <string name="achievements_count">업적</string>
+    <string name="add_session">세션 추가</string>
+    <string name="add_sport">스포츠 추가</string>
+    <string name="ai_confidence">AI 신뢰도: %d%%</string>
+    <string name="ai_generate">AI 생성</string>
+    <string name="ai_guide">AI 가이드</string>
+    <string name="ai_guide_icon">AI 가이드 아이콘</string>
+    <string name="app_logo">logo</string>
+    <string name="app_name">Sportify</string>
+    <string name="button_back">뒤로가기</string>
+    <string name="camera_icon">카메라 아이콘</string>
+    <string name="camera_permission_required">카메라 권한이 필요합니다</string>
+    <string name="cancel">취소</string>
+    <string name="current_plan">현재 계획</string>
+    <string name="days_ago_format">%d일 전</string>
+    <string name="difficulty">난이도</string>
+    <string name="difficulty_advanced">고급</string>
+    <string name="difficulty_beginner">초급</string>
+    <string name="difficulty_intermediate">중급</string>
+    <string name="empty_feedback_message">분석을 시작하면 실시간 피드백이 표시됩니다</string>
+    <string name="ex1">덤벨</string>
+    <string name="feedback_error">교정 필요</string>
+    <string name="feedback_good">좋음</string>
+    <string name="feedback_warning">개선 필요</string>
+    <string name="filter_all">전체</string>
+    <string name="filter_locked">미달성</string>
+    <string name="filter_unlocked">달성</string>
+    <string name="focus_area">집중 영역</string>
+    <string name="generate_ai_plan">AI 계획 생성</string>
+    <string name="goal_icon">목표 아이콘</string>
+    <string name="hours_format">%dh</string>
+    <string name="intensity_high">높음</string>
+    <string name="intensity_light">가벼움</string>
+    <string name="intensity_moderate">보통</string>
+    <string name="just_now">방금 전</string>
+    <string name="last_session">마지막 연습</string>
+    <string name="modify_plan">계획 수정</string>
+    <string name="my_motion">내 동작</string>
+    <string name="nav_ai_coach">AI 코치</string>
+    <string name="nav_exercise_add">운동 추가</string>
+    <string name="nav_shopping">쇼핑</string>
+    <string name="nav_training">훈련</string>
+    <string name="nav_user">My page</string>
+    <string name="newDate">새로운 날짜를 선택하세요</string>
+    <string name="next">다음</string>
+    <string name="no">아니오</string>
+    <string name="no_achievements">업적이 없습니다</string>
+    <string name="no_achievements_description">선택한 필터에 해당하는 업적이 없습니다</string>
+    <string name="no_sports_description">첫 번째 스포츠를 추가하여 연습을 추적해보세요</string>
+    <string name="no_sports_icon">스포츠 없음 아이콘</string>
+    <string name="no_sports_title">스포츠가 없습니다</string>
+    <string name="no_training_description">AI를 사용하여 맞춤형 훈련 계획을 생성해보세요</string>
+    <string name="no_training_plans">훈련 계획이 없습니다</string>
+    <string name="notification">알림</string>
+    <string name="ok">확인</string>
+    <string name="percent_format">%d%%</string>
+    <string name="permission_camera_rationale">AI 자세 교정을 위해 카메라 권한이 필요합니다.</string>
+    <string name="plan_edit">계획 수정</string>
+    <string name="plan_make">계획 생성</string>
+    <string name="plan_percent">계획 성취율</string>
+    <string name="progress_format">진행도: %d / %d</string>
+    <string name="reset">리셋</string>
+    <string name="reward_points">+%d XP</string>
+    <string name="save">저장</string>
+    <string name="search">검색</string>
+    <string name="search_exercise">운동 선택...</string>
+    <string name="searching">제품 검색</string>
+    <string name="sessions_format">%d회</string>
+    <string name="shopping">쇼핑</string>
+    <string name="sport_image">스포츠 이미지</string>
+    <string name="start_analysis">분석 시작</string>
+    <string name="start_training">훈련 시작</string>
+    <string name="stop_analysis">정지</string>
+    <string name="streak_days">연속일</string>
+    <string name="text_feedback">Text Feedback</string>
+    <string name="this_week">이번 주</string>
+    <string name="total_exercises">총 %d개 운동</string>
+    <string name="total_hours">총 시간</string>
+    <string name="total_sessions">총 세션</string>
+    <string name="training_duration">소요시간</string>
+    <string name="training_header">운동 계획</string>
+    <string name="training_icon">훈련 아이콘</string>
+    <string name="training_month">2025년 9월</string>
+    <string name="training_plans">훈련 계획</string>
+    <string name="unlocked_date">%s에 달성</string>
+    <string name="user_icon">사용자 아이콘</string>
+    <string name="view_stats">통계</string>
+    <string name="weekly_goal_progress">주간 목표 진행도</string>
+    <string name="yes">예</string>
+    <style name="Base.Theme.AISportsPT" parent="Theme.Material3.DayNight">
+        
+        <item name="colorPrimary">@color/achievement_silver</item>
+        <item name="colorPrimaryVariant">@color/achievement_silver</item>
+        <item name="colorOnPrimary">@android:color/white</item>
+        
+        
+        <item name="colorSecondary">#4D4D4D</item>
+        <item name="colorSecondaryVariant">#4D4D4D</item>
+        <item name="colorOnSecondary">@android:color/white</item>
+        
+        
+        <item name="colorSurface">@color/card_background</item>
+        <item name="colorOnSurface">@color/text_primary</item>
+        
+        
+        <item name="android:colorBackground">@color/background</item>
+        <item name="colorOnBackground">@color/text_primary</item>
+        
+        
+        <item name="colorError">@color/error</item>
+        <item name="colorOnError">@android:color/white</item>
+        
+        
+        <item name="android:statusBarColor">@color/primary</item>
+    </style>
+    <style name="Theme.AISportsPT" parent="Base.Theme.AISportsPT"/>
+    <style name="Widget.AISportsPT.Button" parent="Widget.Material3.Button">
+        <item name="android:textAllCaps">false</item>
+        <item name="cornerRadius">8dp</item>
+    </style>
+    <style name="Widget.AISportsPT.Button.Outlined" parent="Widget.Material3.Button.OutlinedButton">
+        <item name="android:textAllCaps">false</item>
+        <item name="cornerRadius">8dp</item>
+    </style>
+    <style name="Widget.AISportsPT.CardView" parent="Widget.Material3.CardView.Elevated">
+        <item name="cardCornerRadius">12dp</item>
+        <item name="cardElevation">4dp</item>
+        <item name="cardBackgroundColor">@color/card_background</item>
+    </style>
+    <style name="Widget.AISportsPT.Chip" parent="Widget.Material3.Chip.Filter">
+        <item name="chipBackgroundColor">@color/primary</item>
+        <item name="android:textColor">@color/accent_foreground</item>
+    </style>
+</resources>

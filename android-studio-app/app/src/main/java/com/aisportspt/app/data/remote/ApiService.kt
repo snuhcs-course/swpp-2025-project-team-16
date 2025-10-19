@@ -3,6 +3,7 @@ package com.aisportspt.app.data.remote
 import retrofit2.Response
 import retrofit2.http.Body
 import retrofit2.http.POST
+import retrofit2.http.GET
 
 data class SignupRequest(
     val name: String,
@@ -27,4 +28,15 @@ interface ApiService {
 
     @POST("/api/accounts/login/")
     suspend fun login(@Body request: LoginRequest): Response<LoginResponse>
+
+    @GET("/api/recommendation/")
+    suspend fun getRecommendations(): RecommendationResponse
+
+//    @GET("/api/recommendation/")
+//    suspend fun getRecommendations(@Query("userId") userId: String): RecommendationResponse
+
+
+//    @GET("/api/recommendation/")
+//    suspend fun getRecommendations(@Header("Authorization") token: String): RecommendationResponse
+
 }

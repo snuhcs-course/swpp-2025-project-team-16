@@ -1,0 +1,94 @@
+[
+    {
+        "merged": "com.aisportspt.app-mergeDebugResources-63:/layout/fragment_sports.xml",
+        "source": "com.aisportspt.app-main-66:/layout/fragment_sports.xml"
+    },
+    {
+        "merged": "com.aisportspt.app-mergeDebugResources-63:/layout/fragment_signup_step1.xml",
+        "source": "com.aisportspt.app-main-66:/layout/fragment_signup_step1.xml"
+    },
+    {
+        "merged": "com.aisportspt.app-mergeDebugResources-63:/layout/activity_main.xml",
+        "source": "com.aisportspt.app-main-66:/layout/activity_main.xml"
+    },
+    {
+        "merged": "com.aisportspt.app-mergeDebugResources-63:/layout/fragment_training.xml",
+        "source": "com.aisportspt.app-main-66:/layout/fragment_training.xml"
+    },
+    {
+        "merged": "com.aisportspt.app-mergeDebugResources-63:/layout/dialog_add_session.xml",
+        "source": "com.aisportspt.app-main-66:/layout/dialog_add_session.xml"
+    },
+    {
+        "merged": "com.aisportspt.app-mergeDebugResources-63:/layout/item_training_plan.xml",
+        "source": "com.aisportspt.app-main-66:/layout/item_training_plan.xml"
+    },
+    {
+        "merged": "com.aisportspt.app-mergeDebugResources-63:/layout/fragment_login_password.xml",
+        "source": "com.aisportspt.app-main-66:/layout/fragment_login_password.xml"
+    },
+    {
+        "merged": "com.aisportspt.app-mergeDebugResources-63:/layout/dialog_create_plan.xml",
+        "source": "com.aisportspt.app-main-66:/layout/dialog_create_plan.xml"
+    },
+    {
+        "merged": "com.aisportspt.app-mergeDebugResources-63:/layout/dialog_modify_plan.xml",
+        "source": "com.aisportspt.app-main-66:/layout/dialog_modify_plan.xml"
+    },
+    {
+        "merged": "com.aisportspt.app-mergeDebugResources-63:/layout/dialog_add_sport.xml",
+        "source": "com.aisportspt.app-main-66:/layout/dialog_add_sport.xml"
+    },
+    {
+        "merged": "com.aisportspt.app-mergeDebugResources-63:/layout/item_sport_card.xml",
+        "source": "com.aisportspt.app-main-66:/layout/item_sport_card.xml"
+    },
+    {
+        "merged": "com.aisportspt.app-mergeDebugResources-63:/layout/fragment_signup_step3.xml",
+        "source": "com.aisportspt.app-main-66:/layout/fragment_signup_step3.xml"
+    },
+    {
+        "merged": "com.aisportspt.app-mergeDebugResources-63:/layout/fragment_signup_step2.xml",
+        "source": "com.aisportspt.app-main-66:/layout/fragment_signup_step2.xml"
+    },
+    {
+        "merged": "com.aisportspt.app-mergeDebugResources-63:/layout/fragment_achievement.xml",
+        "source": "com.aisportspt.app-main-66:/layout/fragment_achievement.xml"
+    },
+    {
+        "merged": "com.aisportspt.app-mergeDebugResources-63:/layout/dialog_modify_date.xml",
+        "source": "com.aisportspt.app-main-66:/layout/dialog_modify_date.xml"
+    },
+    {
+        "merged": "com.aisportspt.app-mergeDebugResources-63:/layout/dialog_create_training_plan.xml",
+        "source": "com.aisportspt.app-main-66:/layout/dialog_create_training_plan.xml"
+    },
+    {
+        "merged": "com.aisportspt.app-mergeDebugResources-63:/layout/item_achievement.xml",
+        "source": "com.aisportspt.app-main-66:/layout/item_achievement.xml"
+    },
+    {
+        "merged": "com.aisportspt.app-mergeDebugResources-63:/layout/item_feedback.xml",
+        "source": "com.aisportspt.app-main-66:/layout/item_feedback.xml"
+    },
+    {
+        "merged": "com.aisportspt.app-mergeDebugResources-63:/layout/fragment_login_email.xml",
+        "source": "com.aisportspt.app-main-66:/layout/fragment_login_email.xml"
+    },
+    {
+        "merged": "com.aisportspt.app-mergeDebugResources-63:/layout/item_shopping_card.xml",
+        "source": "com.aisportspt.app-main-66:/layout/item_shopping_card.xml"
+    },
+    {
+        "merged": "com.aisportspt.app-mergeDebugResources-63:/layout/activity_login.xml",
+        "source": "com.aisportspt.app-main-66:/layout/activity_login.xml"
+    },
+    {
+        "merged": "com.aisportspt.app-mergeDebugResources-63:/layout/fragment_ai_coach.xml",
+        "source": "com.aisportspt.app-main-66:/layout/fragment_ai_coach.xml"
+    },
+    {
+        "merged": "com.aisportspt.app-mergeDebugResources-63:/layout/fragment_shopping.xml",
+        "source": "com.aisportspt.app-main-66:/layout/fragment_shopping.xml"
+    }
+]

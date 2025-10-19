@@ -11,10 +11,16 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 
 from pathlib import Path
+import os
+from dotenv import load_dotenv
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+load_dotenv(os.path.join(BASE_DIR, '.env'))
+
+# OpenAI 키
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY", "sk-TEST_KEY_DO_NOT_USE")
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
@@ -25,12 +31,13 @@ SECRET_KEY = "django-insecure-($$s2w-4hgos)68o7$h$6twbwamtm56)%24e4ggj4=*rvrfv#1
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ["127.0.0.1", "localhost", "10.0.2.2"]
 
 
 # Application definition
 
 INSTALLED_APPS = [
+    'recommendation',
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",

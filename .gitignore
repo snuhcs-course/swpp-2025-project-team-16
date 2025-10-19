@@ -23,3 +23,7 @@
 backend/backend/__pycache__
 backend/accounts/__pycache__
 backend/accounts/migrations/__pycache__
+backend/recommendation/__pycache__
+backend/recommendation/migrations/__pycache__
+backend/.env
+backend/setup_recommendation.ps1

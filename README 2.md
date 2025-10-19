@@ -1,28 +1,36 @@
-# SNU-SWPP-Template
+## Iteration 2 Updates
 
-You can use the README file to showcase and promote your mobile app. The template provided below is just a starting point. Feel free to craft your README as you see fit. 
+### User Features
+#### Registration & Authentication
+- Signup and login implemented.  
+- Password and email verification in place.  
+- Login currently uses a temporary MySQL database; validation fails if credentials do not match.
+#### Database
+- DB schema is under consideration; full integration not yet completed.
 
-Please note that the README doesn't affect your grade and is not included in documentation(Wiki).
+---
 
-# [Your Application Name]
+### Recommendation Features
+#### OpenAI Integration
+- Recommendations are generated via OpenAI API; real products are not stored in the database.  
+- Transition from embedding model (Iteration 1) to OpenAI API (Iteration 2).
+#### API Integration
+- Not completed — API key not yet received.
+#### Dummy Implementation
+- Verified JSON handling and app integration.
+#### Notes
+- Recommendation logic is not fully implemented yet, but the app can process and display dummy results.
 
-[Short application description here]
+---
 
-![Application Screenshot](path_to_screenshot.png)
+### Pose Features
+#### MediaPipe Model Integration
+- Pose detection model integrated and functional in the app.
+#### Changes
+- Several updates applied; details of modifications are not fully documented.
 
-## Features
+---
 
-- Feature 1: Brief description
-- Feature 2: Brief description
-- ...
-
-## Getting Started
-
-### Prerequisites
-
-- Android Studio [version, e.g., 4.2.1]
-- Minimum Android SDK Version [e.g., 21]
-
-### Installation
-
-[Installation link here]
+### Schedule Features
+#### Schedule Creation
+- Schedule creation logic added

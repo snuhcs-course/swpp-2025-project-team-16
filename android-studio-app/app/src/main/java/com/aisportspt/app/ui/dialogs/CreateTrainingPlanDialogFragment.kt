@@ -47,37 +47,18 @@ class CreateTrainingPlanDialogFragment : DialogFragment() {
             if (isFormValid()) {
                 val selectedDays = dayCheckboxes.filter { it.isChecked }.map { it.text.toString() }
                 val selectedTimeSlot = when (binding.rgTimeSlots.checkedRadioButtonId) {
-                    R.id.rb_morning -> "오전 (6:00 - 12:00)"
-                    R.id.rb_afternoon -> "오후 (12:00 - 18:00)"
-                    R.id.rb_evening -> "저녁 (18:00 - 24:00)"
+                    R.id.rb_morning -> "09:00"
+                    R.id.rb_afternoon -> "13:00"
+                    R.id.rb_evening -> "18:00"
                     else -> ""
                 }
-
-
-                for(date in selectedDays){
-                    val calendar= Calendar.getInstance()
-                    val today=calendar.get(Calendar.DAY_OF_WEEK)
-                    val dayOfWeek= koreanToWeekday(date)
-                    for(i in 0..3) {
-                        val cal = calendar.clone() as Calendar
-                        cal.add(Calendar.DAY_OF_MONTH, i * 7 + (today - dayOfWeek + 7) % 7)
-                        val sdf = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
-                        val selectedDate = sdf.format(cal.time)
-                        viewModel.user.value!!.schedules.add(
-                            Schedule(
-                                viewModel.user.value!!.id,
-                                viewModel.user.value!!.selectedSport.id,
-                                selectedDate,
-                                selectedTimeSlot,
-                                selectedTimeSlot,
-                                viewModel.getSessionForUser(),
-                                false
-                            )
-                        )
-                        viewModel.user.value!!.workDates.add(selectedDate)
-                    }
+                val selectedFinishTime=when(binding.rgTimeSlots.checkedRadioButtonId){
+                    R.id.rb_morning->"11:00"
+                    R.id.rb_afternoon->"15:00"
+                    R.id.rb_evening->"20:00"
+                    else->"0"
                 }
-
+                viewModel.createTrainingPlan(selectedDays,selectedTimeSlot,selectedFinishTime)
                 Toast.makeText(requireContext(), "계획이 생성되었습니다!", Toast.LENGTH_SHORT).show()
                 dismiss()
             } else {
@@ -100,16 +81,5 @@ class CreateTrainingPlanDialogFragment : DialogFragment() {
         super.onDestroyView()
         _binding = null
     }
-    fun koreanToWeekday(text:String):Int{
-        return when (text) {
-            "일요일" -> Calendar.SUNDAY    // 1
-            "월요일" -> Calendar.MONDAY    // 2
-            "화요일" -> Calendar.TUESDAY   // 3
-            "수요일" -> Calendar.WEDNESDAY // 4
-            "목요일" -> Calendar.THURSDAY  // 5
-            "금요일" -> Calendar.FRIDAY    // 6
-            "토요일" -> Calendar.SATURDAY  // 7
-            else -> 0
-        }
-    }
+
 }

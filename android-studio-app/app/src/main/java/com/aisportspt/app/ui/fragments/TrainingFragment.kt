@@ -31,10 +31,6 @@ class TrainingFragment : Fragment() {
         //TODO: 훈련 계획 생성
         return TrainingPlan("","","","", Difficulty.INTERMEDIATE,"",LinkedList(),false)
     }
-    fun getSession():Session{
-        // ViewModel에서 세션 가져오기
-        return viewModel.getSessionForUser()
-    }
 
     // 샘플 데이터
     private val workoutDates = HashSet<String>()
@@ -75,16 +71,11 @@ class TrainingFragment : Fragment() {
         }
 
         binding.btnEditPlan.setOnClickListener {
-            if(workoutDates.contains(viewModel.user.value!!.selectedDate))
+            if(viewModel.user.value!!.workDates.contains(viewModel.user.value?.selectedDate))
                 ModifyDateDialogFragment { selectedDate ->
                 // 날짜 선택 완료되면 → 시간대 다이얼로그 실행
-
                 ModifyPlanDialogFragment { selectedDateFinal, selectedTimeSlot ->
-                    val schedule=viewModel.user.value!!.schedules.find{ it.date == viewModel.user.value!!.selectedDate }
-                    viewModel.user.value!!.schedules.remove(schedule)
-                    viewModel.user.value!!.schedules.add(Schedule(viewModel.user.value!!.id,viewModel.user.value!!.selectedSport.id,selectedDateFinal,selectedTimeSlot,selectedTimeSlot, getSession(),false))
-                    workoutDates.add(selectedDateFinal)
-                    workoutDates.remove(viewModel.user.value!!.selectedDate)
+                    viewModel.modifyTrainingPlan(selectedDateFinal,selectedTimeSlot)
                 }.show(childFragmentManager, "ModifyPlanDialog")
             }.show(childFragmentManager, "ModifyDateDialog")
             else{
@@ -101,14 +92,14 @@ class TrainingFragment : Fragment() {
             val sdf = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
             val selectedDateStr = sdf.format(selectedDate.time)
             viewModel.user.value!!.selectedDate=selectedDateStr
-            if (workoutDates.contains(selectedDateStr)) {
+            if (viewModel.user.value!!.workDates.contains(selectedDateStr)) {
 
                 // 선택된 날짜에 훈련 계획이 있으면 상세보기 열기
                 // 일단 ui의 부재로 인해 toast로 대체
 
                 val scheduleList=viewModel.user.value!!.schedules.filter { it.date==selectedDateStr }
                 for(schedule in scheduleList){
-                    Toast.makeText(requireContext(),schedule.session.focus,Toast.LENGTH_LONG).show()
+                    Toast.makeText(requireContext(),schedule.session.focus,Toast.LENGTH_SHORT).show()
                 }
             }
         }

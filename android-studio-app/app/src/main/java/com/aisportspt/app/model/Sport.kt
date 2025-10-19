@@ -24,6 +24,7 @@ data class Session(
     val duration: Int, // 분 단위
     val satisfaction: Int, // 1-10
     val focus: String,
+    val week:Int,
     val intensity: String, // light, moderate, high
     val notes: String
 ) : Parcelable
@@ -76,7 +77,8 @@ data class User(
     val userStat: UserStats,
     val mySports: HashSet<Sport>,
     val workDates:HashSet<String>,
-    var selectedDate: String
+    var selectedDate: String,
+    val currentWeek: Int
 ): Parcelable
 
 @Parcelize

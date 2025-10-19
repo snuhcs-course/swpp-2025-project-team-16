@@ -20,6 +20,8 @@ android-studio-app/Thumbs.db
 android-studio-app/gradle-wrapper.jar
 
 #backend
-backend/backend/__pycache__
-backend/accounts/__pycache__
-backend/accounts/migrations/__pycache__
+server/accounts/__pycache__
+server/accounts/migrations/__pycache__
+server/schedule/__pycache__
+server/schedule/migrations/__pycache__
+server/sportify/__pycache__

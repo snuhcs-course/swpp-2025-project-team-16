@@ -11,7 +11,7 @@ class Sport(models.Model):
 
 
 class Session(models.Model):
-    user = models.ManyToManyField(settings.AUTH_USER_MODEL, related_name='sessions')
+    user = models.ManyToManyField(settings.AUTH_USER_MODEL, related_name='sessions', default=1)
     title = models.CharField(max_length=200)
     description = models.TextField()
     sport = models.ForeignKey(Sport, on_delete=models.CASCADE, related_name='sessions')
@@ -24,7 +24,7 @@ class Session(models.Model):
 
 
 class Schedule(models.Model):
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='schedules')
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='schedules', default=1)
     session = models.ForeignKey(Session, on_delete=models.CASCADE)
     date = models.DateField()
     start_time = models.TimeField()
@@ -37,7 +37,7 @@ class Schedule(models.Model):
 
 
 class SportStatus(models.Model):
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='sport_statuses')
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='sport_statuses',default=1)
     sport = models.ForeignKey(Sport, on_delete=models.CASCADE)
     session = models.ForeignKey(Session, on_delete=models.CASCADE, related_name='sport_statuses')
     proficiency_level = models.CharField(max_length=50)

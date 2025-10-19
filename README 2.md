@@ -34,3 +34,24 @@
 ### Schedule Features
 #### Schedule Creation
 - Schedule creation logic added
+
+---
+
+#### Install
+```
+django
+djangorestframework
+openai
+mysqlclient
+python-dotenv
+PyJWT
+```
+
+1. get access authority  
+```
+ssh -L 3306:localhost:3306 -p 2204 team16@147.46.78.29
+```
+
+2. activate conda environment and run django server with `0.0.0.0:8000`  
+3. if you want to connect your phone, please change `BASE_URL` with your wifi environment in `RetrofitClient.kt`
+   and add that IP address in ALLOWED_HOSTS in `settings.py`  

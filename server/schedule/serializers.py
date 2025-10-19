@@ -4,7 +4,13 @@ from .models import Schedule
 class ScheduleSerializer(serializers.ModelSerializer):
     class Meta:
         model = Schedule
-        fields = ['id', 'userId', 'sessionId', 'date', 'startTime', 'endTime', 'name', 'isFinished']
-        extra_kwargs = {
-            'userId': {'read_only': True},  
-        }
+        fields = [
+            'id',
+            'user',       
+            'session',     
+            'date',
+            'start_time',   
+            'end_time',
+            'name',
+            'is_finished'   
+        ]

@@ -1,38 +1,65 @@
-from django.shortcuts import render
-from django.http import HttpResponse
-from django.views.decorators.csrf import csrf_exempt
-from .models import Schedule
-# Create your views here.
-@csrf_exempt
+from rest_framework.decorators import api_view
+from rest_framework.response import Response
+from rest_framework import status
+from django.shortcuts import get_object_or_404
+from django.utils.dateparse import parse_date, parse_time
+from .models import Schedule, Session
+from accounts.models import Account
+from .serializers import ScheduleSerializer
+import jwt
+
+SECRET_KEY = 'sportify_secret_key'
+
+# ✅ Helper: decode JWT
+def get_user_from_token(request):
+    auth_header = request.headers.get('Authorization')
+    if not auth_header or not auth_header.startswith('Bearer '):
+        return None
+    token = auth_header.split(' ')[1]
+    try:
+        payload = jwt.decode(token, SECRET_KEY, algorithms=['HS256'])
+        return Account.objects.get(id=payload['id'])
+    except Exception:
+        return None
+
+
+@api_view(['GET', 'POST', 'DELETE'])
 def schedule_list(request):
-    if(request.method=='GET'):
-        schedules = Schedule.objects.all()
-        return JsonResponse(list(schedules.values()), safe=False, status=200)
+    user = get_user_from_token(request)
+    if not user:
+        return Response({'error': 'Unauthorized'}, status=status.HTTP_401_UNAUTHORIZED)
 
-    elif(request.method=='POST'):
-        userId = User.objects.get(id=request.POST.get('userId'))
-        sessionId = Session.objects.get(id=request.POST.get('sessionId'))
-        date = request.POST.get('date')
-        startTime = request.POST.get('startTime')
-        endTime = request.POST.get('endTime')
-        name=sessionId.title
-        isFinished = false
+    # 🟢 GET: Get all schedules of the current user
+    if request.method == 'GET':
+        schedules = Schedule.objects.filter(userId=user)
+        serializer = ScheduleSerializer(schedules, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
-        schedule = Schedule(
-            userId_id=userId,
-            sessionId_id=sessionId,
-            date=date,
-            startTime=startTime,
-            endTime=endTime,
-            name=name,
-            isFinished=isFinished
-        )
-        schedule.save()
-        return JsonResponse({'message': 'Schedule created successfully'}, status=201)
-    elif (request.method=='DELETE'):
-        schedule_id=request.GET.get('date')
-        schedule=Schedule.objects.get(date=schedule_id)
+    # 🟠 POST: Create a new schedule
+    elif request.method == 'POST':
+        try:
+            session_id = request.data.get('sessionId')
+            date = parse_date(request.data.get('date'))
+            start_time = parse_time(request.data.get('startTime'))
+            end_time = parse_time(request.data.get('endTime'))
+
+            session = get_object_or_404(Session, id=session_id)
+            schedule = Schedule.objects.create(
+                userId=user,
+                sessionId=session,
+                date=date,
+                startTime=start_time,
+                endTime=end_time,
+                name=session.title,
+                isFinished=False,
+            )
+            return Response({'message': 'Schedule created successfully'}, status=status.HTTP_201_CREATED)
+        except Exception as e:
+            return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+    # 🔴 DELETE: delete schedule by id
+    elif request.method == 'DELETE':
+        schedule_id = request.query_params.get('id')
+        schedule = get_object_or_404(Schedule, id=schedule_id, userId=user)
         schedule.delete()
-        return JsonResponse({'message': 'Schedule deleted successfully'}, status=200)
-    else:
-        return JsonResponse({'error': 'Method not allowed'}, status=405)
+        return Response({'message': 'Schedule deleted successfully'}, status=status.HTTP_200_OK)

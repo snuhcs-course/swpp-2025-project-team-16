@@ -1,13 +1,17 @@
 package com.aisportspt.app.ui.viewmodels
 
+import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.aisportspt.app.model.Sport
 import com.aisportspt.app.model.Session
 import com.aisportspt.app.model.Achievement
+import com.aisportspt.app.model.Schedule
 import com.aisportspt.app.model.TrainingPlan
+import com.aisportspt.app.model.User
 import com.aisportspt.app.model.UserStats
+import java.text.SimpleDateFormat
 import java.util.*
 
 class MainViewModel : ViewModel() {
@@ -31,6 +35,10 @@ class MainViewModel : ViewModel() {
     // User Stats
     private val _userStats = MutableLiveData<UserStats>()
     val userStats: LiveData<UserStats> = _userStats
+
+    private val _user= MutableLiveData<User>()
+
+    val user: LiveData<User> = _user
     
     init {
         loadSampleData()
@@ -38,6 +46,7 @@ class MainViewModel : ViewModel() {
     
     private fun loadSampleData() {
         // Sample sports data
+
         val sampleSports = listOf(
             Sport(
                 id = "1",
@@ -45,7 +54,7 @@ class MainViewModel : ViewModel() {
                 imageUrl = "https://images.unsplash.com/photo-1703293024102-44224053a305",
                 totalSessions = 12,
                 weeklyGoal = 3,
-                currentWeekSessions = 2,
+                currentWeekSessions = 1,
                 lastSession = "2일 전",
                 skillLevel = "중급",
                 nextGoal = "핸디캡 15 달성"
@@ -56,7 +65,7 @@ class MainViewModel : ViewModel() {
                 imageUrl = "https://images.unsplash.com/photo-1628139417027-c356ba05fe4f",
                 totalSessions = 8,
                 weeklyGoal = 2,
-                currentWeekSessions = 1,
+                currentWeekSessions = 2,
                 lastSession = "4일 전",
                 skillLevel = "초중급",
                 nextGoal = "평균 140점 달성"
@@ -72,6 +81,7 @@ class MainViewModel : ViewModel() {
                 date = getDateString(-2),
                 duration = 90,
                 satisfaction = 8,
+                week=1,
                 focus = "드라이버 연습",
                 intensity = "moderate",
                 notes = "백스윙 개선 필요"
@@ -83,6 +93,7 @@ class MainViewModel : ViewModel() {
                 duration = 60,
                 satisfaction = 7,
                 focus = "스페어 연습",
+                week=1,
                 intensity = "light",
                 notes = "좋은 진전 있음"
             ),
@@ -93,6 +104,29 @@ class MainViewModel : ViewModel() {
                 duration = 75,
                 satisfaction = 9,
                 focus = "퍼팅 연습",
+                week= 2,
+                intensity = "moderate",
+                notes = "컨디션 좋았음"
+            ),
+            Session(
+                id = "4",
+                sportId = "1",
+                date = getDateString(-1),
+                duration = 75,
+                satisfaction = 9,
+                focus = "스윙 활용",
+                week= 3,
+                intensity = "moderate",
+                notes = "컨디션 좋았음"
+            ),
+            Session(
+                id = "5",
+                sportId = "1",
+                date = getDateString(-1),
+                duration = 75,
+                satisfaction = 9,
+                focus = "퍼팅 실전",
+                week= 4,
                 intensity = "moderate",
                 notes = "컨디션 좋았음"
             )
@@ -109,6 +143,11 @@ class MainViewModel : ViewModel() {
             nextLevelXp = 3000,
             totalAchievements = 3
         )
+        val calendar=Calendar.getInstance()
+        val sdf = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
+        val selectedDateStr = sdf.format(calendar.time)
+        _user.value=User("admin", sampleSports[0],HashSet(),_userStats.value!!,HashSet(), HashSet(),selectedDateStr,0)
+        _user.value!!.mySports.add(sampleSports[0])
         
         // Sample achievements
         loadSampleAchievements()
@@ -186,4 +225,60 @@ class MainViewModel : ViewModel() {
         currentPlans.add(plan)
         _trainingPlans.value = currentPlans
     }
+    fun getSessionForUser(week:Int):Session{
+        //TODO: fetch
+        return getSessionsForSport(
+            _user.value!!.selectedSport.id)[
+            _user.value!!.selectedSport.currentWeekSessions+week-1]
+    }
+    fun createTrainingPlan(selectedDays:List<String>,selectedTimeSlot:String,selectedFinishTime:String){
+        for(date in selectedDays){
+            val calendar= android.icu.util.Calendar.getInstance()
+            val today=calendar.get(android.icu.util.Calendar.DAY_OF_WEEK)
+            val dayOfWeek= koreanToWeekday(date)
+            for(i in 0..3) {
+                val cal = calendar.clone() as android.icu.util.Calendar
+                cal.add(android.icu.util.Calendar.DAY_OF_MONTH, i * 7 + (dayOfWeek-today + 7) % 7)
+                val sdf = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
+                val selectedDate = sdf.format(cal.time)
+                _user.value!!.schedules.add(
+                    Schedule(
+                        _user.value!!.id,
+                        _user.value!!.selectedSport.id,
+                        selectedDate,
+                        selectedTimeSlot,
+                        selectedFinishTime,
+                        getSessionForUser(i),
+                        false
+                    )
+                )
+                //TODO: add schedule in server
+                Log.d("schedule","schedule create,$selectedDate")
+                _user.value!!.workDates.add(selectedDate)
+            }
+        }
+    }
+    fun modifyTrainingPlan(selectedDateFinal:String,selectedTimeSlot:String){
+        //TODO: add new schedule in server and delete existing schedule
+
+        val schedule=_user.value!!.schedules.find{ it.date == _user.value!!.selectedDate }
+        val week=schedule!!.session.week
+        _user.value!!.schedules.remove(schedule)
+        _user.value!!.schedules.add(Schedule(_user.value!!.id,_user.value!!.selectedSport.id,selectedDateFinal,selectedTimeSlot,selectedTimeSlot, getSessionForUser(week),false))
+        _user.value!!.workDates.add(selectedDateFinal)
+        _user.value!!.workDates.remove(_user.value!!.selectedDate)
+    }
+    fun koreanToWeekday(text:String):Int{
+        return when (text) {
+            "일요일" -> android.icu.util.Calendar.SUNDAY    // 1
+            "월요일" -> android.icu.util.Calendar.MONDAY    // 2
+            "화요일" -> android.icu.util.Calendar.TUESDAY   // 3
+            "수요일" -> android.icu.util.Calendar.WEDNESDAY // 4
+            "목요일" -> android.icu.util.Calendar.THURSDAY  // 5
+            "금요일" -> android.icu.util.Calendar.FRIDAY    // 6
+            "토요일" -> android.icu.util.Calendar.SATURDAY  // 7
+            else -> 0
+        }
+    }
+
 }

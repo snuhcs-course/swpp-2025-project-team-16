@@ -1,22 +1,34 @@
 package com.aisportspt.app.ui.dialogs
 
 import android.app.Dialog
+import android.icu.util.Calendar
+import android.os.Build
 import android.os.Bundle
 import android.widget.CheckBox
 import android.widget.RadioGroup
 import android.widget.Toast
+import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.DialogFragment
+import androidx.fragment.app.activityViewModels
 import com.aisportspt.app.R
 import com.aisportspt.app.databinding.DialogCreatePlanBinding
+import com.aisportspt.app.model.Schedule
+import com.aisportspt.app.ui.viewmodels.MainViewModel
+import java.text.SimpleDateFormat
+import java.time.DayOfWeek
+import java.util.Locale
 
 class CreateTrainingPlanDialogFragment : DialogFragment() {
 
     private var _binding: DialogCreatePlanBinding? = null
     private val binding get() = _binding!!
 
+    private val viewModel: MainViewModel by activityViewModels<MainViewModel>()
+
     private val dayCheckboxes = mutableListOf<CheckBox>()
 
+    @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         _binding = DialogCreatePlanBinding.inflate(layoutInflater)
 
@@ -35,13 +47,18 @@ class CreateTrainingPlanDialogFragment : DialogFragment() {
             if (isFormValid()) {
                 val selectedDays = dayCheckboxes.filter { it.isChecked }.map { it.text.toString() }
                 val selectedTimeSlot = when (binding.rgTimeSlots.checkedRadioButtonId) {
-                    R.id.rb_morning -> "오전 (6:00 - 12:00)"
-                    R.id.rb_afternoon -> "오후 (12:00 - 18:00)"
-                    R.id.rb_evening -> "저녁 (18:00 - 24:00)"
+                    R.id.rb_morning -> "09:00"
+                    R.id.rb_afternoon -> "13:00"
+                    R.id.rb_evening -> "18:00"
                     else -> ""
                 }
-
-                // TODO: ViewModel/Repo에 저장하거나, 콜백으로 TrainingFragment에 전달
+                val selectedFinishTime=when(binding.rgTimeSlots.checkedRadioButtonId){
+                    R.id.rb_morning->"11:00"
+                    R.id.rb_afternoon->"15:00"
+                    R.id.rb_evening->"20:00"
+                    else->"0"
+                }
+                viewModel.createTrainingPlan(selectedDays,selectedTimeSlot,selectedFinishTime)
                 Toast.makeText(requireContext(), "계획이 생성되었습니다!", Toast.LENGTH_SHORT).show()
                 dismiss()
             } else {
@@ -64,4 +81,5 @@ class CreateTrainingPlanDialogFragment : DialogFragment() {
         super.onDestroyView()
         _binding = null
     }
+
 }

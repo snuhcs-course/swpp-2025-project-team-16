@@ -80,6 +80,7 @@ class AddSessionDialogFragment(
         val durationText = binding.editDuration.text.toString().trim()
         val focus = binding.editFocus.text.toString().trim()
         val notes = binding.editNotes.text.toString().trim()
+        val week=0
         val satisfaction = binding.sliderSatisfaction.value.toInt()
         val intensity = when (binding.spinnerIntensity.selectedItemPosition) {
             0 -> "light"
@@ -118,6 +119,7 @@ class AddSessionDialogFragment(
             duration = duration,
             satisfaction = satisfaction,
             focus = focus,
+            week=week,
             intensity = intensity,
             notes = notes
         )

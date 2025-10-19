@@ -9,10 +9,6 @@ import android.widget.Toast
 import androidx.fragment.app.Fragment
 import com.aisportspt.app.MainActivity
 import com.aisportspt.app.databinding.FragmentSignupStep3Binding
-import androidx.core.content.ContextCompat
-import com.aisportspt.app.R
-
-
 
 class SignupStep3Fragment : Fragment() {
 
@@ -44,19 +40,6 @@ class SignupStep3Fragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-
-        binding.rgLevel.setOnCheckedChangeListener { _, checkedId ->
-            val selected = checkedId != -1
-            binding.btnComplete.apply {
-                isEnabled = selected
-                setBackgroundColor(
-                    ContextCompat.getColor(
-                        requireContext(),
-                        if (selected) R.color.nav_selected else R.color.achievement_silver
-                    )
-                )
-            }
-        }
 
         binding.btnComplete.setOnClickListener {
             val level = when (binding.rgLevel.checkedRadioButtonId) {

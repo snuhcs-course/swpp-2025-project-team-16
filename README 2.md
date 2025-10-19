@@ -37,7 +37,13 @@
 
 ---
 
-#### Install
+### Demo Video
+- link 1: `https://drive.google.com/file/d/1yLaxindcJVp0D3gl3Qdqq4R4G-T1-f8o/view?usp=drive_link`
+- link 2: `https://drive.google.com/file/d/1yLaxindcJVp0D3gl3Qdqq4R4G-T1-f8o/view?usp=drive_link`
+
+---
+
+### Install
 ```
 django
 djangorestframework

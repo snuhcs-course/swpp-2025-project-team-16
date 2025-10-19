@@ -40,6 +40,8 @@ class LoginPasswordFragment : Fragment() {
                 val intent = Intent(requireContext(), MainActivity::class.java)
                 startActivity(intent)
                 requireActivity().finish()
+
+                //TODO: 로그인 유저의 정보 서버에 저장
             } else {
                 Toast.makeText(requireContext(), "비밀번호가 틀립니다.", Toast.LENGTH_SHORT).show()
             }

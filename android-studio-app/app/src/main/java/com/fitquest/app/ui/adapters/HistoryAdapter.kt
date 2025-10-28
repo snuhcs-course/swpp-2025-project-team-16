@@ -17,10 +17,10 @@ class HistoryAdapter(
 ) : RecyclerView.Adapter<HistoryAdapter.HistoryViewHolder>() {
 
     class HistoryViewHolder(view: View) : RecyclerView.ViewHolder(view) {
-        val dateText: TextView = view.findViewById(R.id.date_text)
-        val pointsText: TextView = view.findViewById(R.id.points_text)
-        val scoreText: TextView = view.findViewById(R.id.score_text)
-        val exerciseCountText: TextView = view.findViewById(R.id.exercise_count_text)
+        val dateText: TextView = view.findViewById(R.id.tvDate)
+        val pointsText: TextView = view.findViewById(R.id.tvXpEarned)
+        val scoreText: TextView = view.findViewById(R.id.tvDuration)
+        val exerciseCountText: TextView = view.findViewById(R.id.tvExerciseCount)
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): HistoryViewHolder {

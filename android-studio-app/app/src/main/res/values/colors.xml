@@ -1,37 +1,40 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <!-- FitQuest RPG Color Scheme -->
-    
+
     <!-- Primary Colors -->
     <color name="primary_blue">#0D47A1</color>
     <color name="gold">#FFD700</color>
     <color name="cyan">#00E5FF</color>
-    
+    <color name="deep_blue">#0B132B</color>
+
     <!-- Background Colors -->
     <color name="background_dark">#0A0E27</color>
     <color name="surface_dark">#1A1F3A</color>
-    
+
     <!-- Text Colors -->
     <color name="text_primary">#FFFFFF</color>
     <color name="text_secondary">#94A3B8</color>
-    
+
     <!-- Accent Colors -->
     <color name="success_green">#4CAF50</color>
+    <color name="green">#4CAF50</color>
     <color name="warning_orange">#FF9800</color>
     <color name="error_red">#F44336</color>
-    
+
     <!-- Transparent Overlays -->
     <color name="overlay_dark">#80000000</color>
     <color name="overlay_light">#40FFFFFF</color>
 
-    <color name="surface_dark_translucent">#1c273f</color>
+    <!-- Extra UI colors -->
+    <color name="surface_dark_translucent">#1C273F</color>
     <color name="cyan_bright">#00E0FF</color>
     <color name="cyan_15">#2600E0FF</color>
+    <color name="cyan_20">#3300E0FF</color>
     <color name="cyan_25">#3D00E0FF</color>
     <color name="cyan_30">#4000E0FF</color>
-    <color name="cyan_20">#3300E0FF</color>
+
     <color name="input_bg">#222E3E</color>
     <color name="input_bg_stronger">#2A3649</color>
-
 
 </resources>

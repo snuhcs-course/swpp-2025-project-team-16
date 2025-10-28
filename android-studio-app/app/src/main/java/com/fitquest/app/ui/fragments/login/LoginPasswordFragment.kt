@@ -53,10 +53,10 @@ class LoginPasswordFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        emailText = view.findViewById(R.id.email_text)
-        passwordInput = view.findViewById(R.id.password_input)
-        loginButton = view.findViewById(R.id.login_button)
-        backButton = view.findViewById(R.id.back_button)
+        emailText = view.findViewById(R.id.tvEmail)
+        passwordInput = view.findViewById(R.id.tilPassword)
+        loginButton = view.findViewById(R.id.btnLogin)
+        backButton = view.findViewById(R.id.btnBack)
 
         emailText.text = email
 

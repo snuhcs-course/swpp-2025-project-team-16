@@ -43,7 +43,7 @@ class JourneyFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        workoutRecyclerView = view.findViewById(R.id.workout_recycler_view)
+        workoutRecyclerView = view.findViewById(R.id.rvJourneyPath)
         workoutRecyclerView.layoutManager = LinearLayoutManager(context)
 
         // TODO: Fetch workout plans from backend

@@ -1,5 +1,16 @@
-<gradient xmlns:android="http://schemas.android.com/apk/res/android"
-    android:startColor="#0B132B"
-    android:centerColor="#1C2541"
-    android:endColor="#3A506B"
-    android:angle="135" />
+<?xml version="1.0" encoding="utf-8"?>
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="rectangle">
+
+    <gradient
+        android:startColor="#0B132B"
+        android:centerColor="#1C2541"
+        android:endColor="#3A506B"
+        android:angle="135"
+        android:type="linear" />
+
+    <!-- 선택 (모서리 둥글게 하고 싶으면):
+    <corners android:radius="16dp" />
+    -->
+
+</shape>

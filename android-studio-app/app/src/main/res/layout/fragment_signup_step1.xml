@@ -98,6 +98,7 @@
                     android:layout_marginBottom="16dp">
 
                     <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/etEmail"
                         android:layout_width="match_parent"
                         android:layout_height="48dp"
                         android:hint="Email Address"
@@ -123,6 +124,7 @@
                     android:layout_marginBottom="16dp">
 
                     <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/etHeroName"
                         android:layout_width="match_parent"
                         android:layout_height="48dp"
                         android:hint="Hero Name"
@@ -150,6 +152,7 @@
                     android:layout_marginBottom="16dp">
 
                     <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/etPassword"
                         android:layout_width="match_parent"
                         android:layout_height="48dp"
                         android:hint="Password"
@@ -177,6 +180,7 @@
                     android:layout_marginBottom="24dp">
 
                     <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/etConfirmPassword"
                         android:layout_width="match_parent"
                         android:layout_height="48dp"
                         android:hint="Confirm Password"
@@ -195,6 +199,7 @@
                     android:gravity="center">
 
                     <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnBack"
                         android:layout_width="0dp"
                         android:layout_height="50dp"
                         android:layout_weight="1"
@@ -211,6 +216,7 @@
                         android:layout_height="0dp" />
 
                     <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnContinue"
                         android:layout_width="0dp"
                         android:layout_height="50dp"
                         android:layout_weight="1"

@@ -9,11 +9,11 @@
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
         android:fullBackupContent="@xml/backup_rules"
-        android:icon="@drawable/ic_launcher"
+        android:icon="@drawable/ic_fitquest_logo"
         android:label="@string/app_name"
-        android:roundIcon="@mipmap/ic_logo_round"
+        android:roundIcon="@drawable/ic_fitquest_logo_rounded"
         android:supportsRtl="true"
-        android:theme="@style/Theme.AISportsPT"
+        android:theme="@style/Theme.FitQuest"
         android:usesCleartextTraffic="true"
         tools:targetApi="31">
 
@@ -21,7 +21,7 @@
         <activity
             android:name=".LoginActivity"
             android:exported="true"
-            android:theme="@style/Theme.fitquest">
+            android:theme="@style/Theme.FitQuest">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />

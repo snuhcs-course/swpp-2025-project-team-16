@@ -4,11 +4,11 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Button
-import android.widget.EditText
 import androidx.fragment.app.Fragment
 import com.fitquest.app.LoginActivity
 import com.fitquest.app.R
+import com.google.android.material.button.MaterialButton
+import com.google.android.material.textfield.TextInputEditText
 
 /**
  * LoginEmailFragment - Step 1 of login flow
@@ -19,8 +19,8 @@ import com.fitquest.app.R
  */
 class LoginEmailFragment : Fragment() {
 
-    private lateinit var emailInput: EditText
-    private lateinit var continueButton: Button
+    private lateinit var emailInput: TextInputEditText
+    private lateinit var continueButton: MaterialButton
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -33,8 +33,8 @@ class LoginEmailFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        emailInput = view.findViewById(R.id.tilEmail)
-        continueButton = view.findViewById(R.id.tvEmail)
+        emailInput = view.findViewById(R.id.etEmail)
+        continueButton = view.findViewById(R.id.btnBeginQuest)
 
         continueButton.setOnClickListener {
             val email = emailInput.text.toString()

@@ -27,9 +27,9 @@ import com.fitquest.app.model.FitnessLevel
  */
 class SignupStep2Fragment : Fragment() {
 
-    private lateinit var beginnerCard: CardView
-    private lateinit var intermediateCard: CardView
-    private lateinit var advancedCard: CardView
+    private lateinit var beginnerCard: View
+    private lateinit var intermediateCard: View
+    private lateinit var advancedCard: View
     private lateinit var startButton: Button
     private lateinit var backButton: Button
     
@@ -72,11 +72,11 @@ class SignupStep2Fragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        beginnerCard = view.findViewById(R.id.beginner_card)
-        intermediateCard = view.findViewById(R.id.intermediate_card)
-        advancedCard = view.findViewById(R.id.advanced_card)
-        startButton = view.findViewById(R.id.start_button)
-        backButton = view.findViewById(R.id.back_button)
+        beginnerCard = view.findViewById(R.id.btnBeginner)
+        intermediateCard = view.findViewById(R.id.btnIntermediate)
+        advancedCard = view.findViewById(R.id.btnAdvanced)
+        startButton = view.findViewById(R.id.btnStart)
+        backButton = view.findViewById(R.id.btnBack)
 
         beginnerCard.setOnClickListener {
             selectLevel(FitnessLevel.BEGINNER)

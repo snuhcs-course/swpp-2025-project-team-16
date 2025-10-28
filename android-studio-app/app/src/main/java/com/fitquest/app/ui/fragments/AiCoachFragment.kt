@@ -7,10 +7,10 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
-import android.widget.Spinner
 import android.widget.TextView
 import androidx.camera.core.CameraSelector
 import androidx.camera.core.Preview
+import com.google.android.material.progressindicator.LinearProgressIndicator
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.view.PreviewView
 import androidx.core.app.ActivityCompat
@@ -43,13 +43,13 @@ import java.util.concurrent.Executors
 class AiCoachFragment : Fragment() {
 
     private lateinit var previewView: PreviewView
-    private lateinit var exerciseSpinner: Spinner
+    private lateinit var currentExercise: TextView
     private lateinit var startButton: Button
     private lateinit var stopButton: Button
     private lateinit var repCountText: TextView
     private lateinit var pointsText: TextView
     private lateinit var feedbackText: TextView
-    private lateinit var formScoreText: TextView
+    private lateinit var progressBar: LinearProgressIndicator
     
     private lateinit var cameraExecutor: ExecutorService
     private var isRecording = false
@@ -67,14 +67,40 @@ class AiCoachFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        previewView = view.findViewById(R.id.camera_preview)
-        exerciseSpinner = view.findViewById(R.id.exercise_spinner)
-        startButton = view.findViewById(R.id.start_button)
-        stopButton = view.findViewById(R.id.stop_button)
-        repCountText = view.findViewById(R.id.rep_count_text)
-        pointsText = view.findViewById(R.id.points_text)
-        feedbackText = view.findViewById(R.id.feedback_text)
-        formScoreText = view.findViewById(R.id.form_score_text)
+//        previewView = view.findViewById(R.id.cameraPreview)
+//        currentExercise = view.findViewById(R.id.tvCurrentExercise)
+//        startButton = view.findViewById(R.id.btnPause) // Changed from btnStart to btnPause as per layout
+//        stopButton = view.findViewById(R.id.btnComplete)
+//        repCountText = view.findViewById(R.id.tvRepCount)
+//        pointsText = view.findViewById(R.id.tvRepCount)
+//        feedbackText = view.findViewById(R.id.tvFeedback)
+//        progressBar = view.findViewById(R.id.progressBar)
+        previewView = view.findViewById(R.id.cameraPreview)
+
+// 현재 운동 표시:
+// 우리 XML에는 운동 이름 텍스트(tvCurrentExercise)는 없고
+// 운동 이모지(tvCurrentExerciseEmoji)만 있으니까 그걸로 매핑
+        currentExercise = view.findViewById(R.id.tvCurrentExerciseEmoji)
+
+// "시작 / 일시정지" 역할 버튼
+        startButton = view.findViewById(R.id.btnStartWorkout)
+
+// 이건 예전의 stopButton(Complete)랑 1:1은 아니고
+// 지금 레이아웃에서는 카메라 온/오프 버튼임
+        stopButton = view.findViewById(R.id.btnToggleCamera)
+
+// 반복 수
+        repCountText = view.findViewById(R.id.tvRepCount)
+
+// 포인트(XP)
+        pointsText = view.findViewById(R.id.tvXpPoints)
+
+// AI 피드백 텍스트
+        feedbackText = view.findViewById(R.id.tvFeedback)
+
+// 폼 퀄리티 프로그레스바 (LinearProgressIndicator)
+        progressBar = view.findViewById(R.id.progressFormQuality)
+
 
         cameraExecutor = Executors.newSingleThreadExecutor()
 
@@ -159,7 +185,7 @@ class AiCoachFragment : Fragment() {
 
     private fun updateFormFeedback(feedback: String, score: Int) {
         feedbackText.text = feedback
-        formScoreText.text = "$score%"
+        progressBar.progress = score
     }
 
     private fun allPermissionsGranted() = REQUIRED_PERMISSIONS.all {

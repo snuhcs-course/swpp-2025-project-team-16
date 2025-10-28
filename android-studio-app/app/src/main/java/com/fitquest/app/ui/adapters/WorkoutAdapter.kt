@@ -17,9 +17,9 @@ class WorkoutAdapter(
 ) : RecyclerView.Adapter<WorkoutAdapter.WorkoutViewHolder>() {
 
     class WorkoutViewHolder(view: View) : RecyclerView.ViewHolder(view) {
-        val dateText: TextView = view.findViewById(R.id.date_text)
-        val exerciseCountText: TextView = view.findViewById(R.id.exercise_count_text)
-        val statusText: TextView = view.findViewById(R.id.status_text)
+        val dateText: TextView = view.findViewById(R.id.tvWorkoutTime)
+        val exerciseCountText: TextView = view.findViewById(R.id.tvExerciseCount)
+        val statusText: TextView = view.findViewById(R.id.tvDuration)
         // TODO: Add flag icon, emoji displays, etc.
     }
 

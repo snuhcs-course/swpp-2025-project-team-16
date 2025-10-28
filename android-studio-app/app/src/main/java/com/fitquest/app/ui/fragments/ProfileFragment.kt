@@ -52,14 +52,14 @@ class ProfileFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        usernameText = view.findViewById(R.id.username_text)
-        levelText = view.findViewById(R.id.level_text)
-        pointsText = view.findViewById(R.id.points_text)
-        streakText = view.findViewById(R.id.streak_text)
-        totalWorkoutsText = view.findViewById(R.id.total_workouts_text)
-        journeyDaysText = view.findViewById(R.id.journey_days_text)
-        missedDaysText = view.findViewById(R.id.missed_days_text)
-        historyRecyclerView = view.findViewById(R.id.history_recycler_view)
+        usernameText = view.findViewById(R.id.tvUserName)
+        levelText = view.findViewById(R.id.tvLevel)
+        pointsText = view.findViewById(R.id.tvTotalXp)
+        streakText = view.findViewById(R.id.tvStreak)
+//        totalWorkoutsText = view.findViewById(R.id.total_workouts_text)
+//        journeyDaysText = view.findViewById(R.id.journey_days_text)
+//        missedDaysText = view.findViewById(R.id.missed_days_text)
+        historyRecyclerView = view.findViewById(R.id.rvJourneyHistory)
 
         historyRecyclerView.layoutManager = LinearLayoutManager(context)
 

@@ -4,11 +4,11 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Button
-import android.widget.EditText
 import androidx.fragment.app.Fragment
 import com.fitquest.app.LoginActivity
 import com.fitquest.app.R
+import com.google.android.material.button.MaterialButton
+import com.google.android.material.textfield.TextInputEditText
 
 /**
  * SignupStep1Fragment - Step 3-1 of signup flow
@@ -17,12 +17,12 @@ import com.fitquest.app.R
  */
 class SignupStep1Fragment : Fragment() {
 
-    private lateinit var emailInput: EditText
-    private lateinit var usernameInput: EditText
-    private lateinit var passwordInput: EditText
-    private lateinit var confirmPasswordInput: EditText
-    private lateinit var nextButton: Button
-    private lateinit var backButton: Button
+    private lateinit var emailInput: TextInputEditText
+    private lateinit var usernameInput: TextInputEditText
+    private lateinit var passwordInput: TextInputEditText
+    private lateinit var confirmPasswordInput: TextInputEditText
+    private lateinit var nextButton: MaterialButton
+    private lateinit var backButton: MaterialButton
     
     private var email: String = ""
 
@@ -54,12 +54,13 @@ class SignupStep1Fragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        emailInput = view.findViewById(R.id.email_input)
-        usernameInput = view.findViewById(R.id.username_input)
-        passwordInput = view.findViewById(R.id.password_input)
-        confirmPasswordInput = view.findViewById(R.id.confirm_password_input)
-        nextButton = view.findViewById(R.id.next_button)
-        backButton = view.findViewById(R.id.back_button)
+        // Initialize views
+        emailInput = view.findViewById(R.id.etEmail)
+        usernameInput = view.findViewById(R.id.etHeroName)
+        passwordInput = view.findViewById(R.id.etPassword)
+        confirmPasswordInput = view.findViewById(R.id.etConfirmPassword)
+        nextButton = view.findViewById(R.id.btnContinue)
+        backButton = view.findViewById(R.id.btnBack)
 
         // Pre-fill email
         emailInput.setText(email)

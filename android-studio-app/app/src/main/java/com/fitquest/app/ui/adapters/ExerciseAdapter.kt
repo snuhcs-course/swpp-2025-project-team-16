@@ -17,9 +17,9 @@ class ExerciseAdapter(
 ) : RecyclerView.Adapter<ExerciseAdapter.ExerciseViewHolder>() {
 
     class ExerciseViewHolder(view: View) : RecyclerView.ViewHolder(view) {
-        val emojiText: TextView = view.findViewById(R.id.emoji_text)
-        val nameText: TextView = view.findViewById(R.id.name_text)
-        val detailsText: TextView = view.findViewById(R.id.details_text)
+        val emojiText: TextView = view.findViewById(R.id.tvExerciseIcon)
+        val nameText: TextView = view.findViewById(R.id.tvExerciseIcon)
+        val detailsText: TextView = view.findViewById(R.id.tvExerciseCount)
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ExerciseViewHolder {

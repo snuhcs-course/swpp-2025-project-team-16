@@ -33,8 +33,8 @@ android {
         targetCompatibility = JavaVersion.VERSION_1_8
     }
 
-    kotlin {
-        jvmToolchain(8)
+    kotlinOptions {
+        jvmTarget = "1.8"
     }
     
     buildFeatures {
@@ -82,6 +82,7 @@ dependencies {
 
     // Permissions
     implementation("androidx.activity:activity-ktx:1.8.2")
+    implementation("com.google.android.material:material:1.13.0")
 
     testImplementation("junit:junit:4.13.2")
     androidTestImplementation("androidx.test.ext:junit:1.1.5")

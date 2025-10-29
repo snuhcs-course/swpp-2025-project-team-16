@@ -37,4 +37,7 @@
     <color name="input_bg">#222E3E</color>
     <color name="input_bg_stronger">#2A3649</color>
 
+    <!-- Pose color -->
+    <color name="mp_color_primary">#007F8B</color>
+
 </resources>

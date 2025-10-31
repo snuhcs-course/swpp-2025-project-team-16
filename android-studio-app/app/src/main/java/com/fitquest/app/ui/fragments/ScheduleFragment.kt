@@ -7,6 +7,7 @@ import android.view.ViewGroup
 import android.widget.Button
 import android.widget.CalendarView
 import androidx.fragment.app.Fragment
+import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.fitquest.app.R
 import com.fitquest.app.ui.adapters.ExerciseAdapter
@@ -35,7 +36,6 @@ class ScheduleFragment : Fragment() {
     private lateinit var exerciseAdapter: ExerciseAdapter
     private lateinit var autoGenerateButton: Button
     private lateinit var customPlanButton: Button
-    private lateinit var saveButton: Button
     
     private var selectedDate: String = ""
 
@@ -54,7 +54,7 @@ class ScheduleFragment : Fragment() {
         exerciseRecyclerView = view.findViewById(R.id.exercise_recycler_view)
         autoGenerateButton = view.findViewById(R.id.auto_generate_button)
         customPlanButton = view.findViewById(R.id.custom_plan_button)
-        saveButton = view.findViewById(R.id.save_button)
+        exerciseRecyclerView.layoutManager = LinearLayoutManager(context)
 
         calendarView.setOnDateChangeListener { _, year, month, dayOfMonth ->
             selectedDate = "$year-${month + 1}-$dayOfMonth"
@@ -67,10 +67,6 @@ class ScheduleFragment : Fragment() {
 
         customPlanButton.setOnClickListener {
             showExerciseLibrary()
-        }
-
-        saveButton.setOnClickListener {
-            saveSchedule()
         }
     }
 

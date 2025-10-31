@@ -5,11 +5,11 @@ plugins {
 }
 
 android {
-    namespace = "com.aisportspt.app"
+    namespace = "com.fitquest.app"
     compileSdk = 34
 
     defaultConfig {
-        applicationId = "com.aisportspt.app"
+        applicationId = "com.fitquest.app"
         minSdk = 24
         targetSdk = 34
         versionCode = 1
@@ -32,7 +32,7 @@ android {
         sourceCompatibility = JavaVersion.VERSION_1_8
         targetCompatibility = JavaVersion.VERSION_1_8
     }
-    
+
     kotlinOptions {
         jvmTarget = "1.8"
     }
@@ -82,6 +82,7 @@ dependencies {
 
     // Permissions
     implementation("androidx.activity:activity-ktx:1.8.2")
+    implementation("com.google.android.material:material:1.13.0")
 
     testImplementation("junit:junit:4.13.2")
     androidTestImplementation("androidx.test.ext:junit:1.1.5")

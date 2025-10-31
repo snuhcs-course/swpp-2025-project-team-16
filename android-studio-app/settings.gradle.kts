@@ -14,5 +14,5 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "AI Sports PT"
+rootProject.name = "fitquest"
 include(":app")

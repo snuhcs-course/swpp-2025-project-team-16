@@ -2,7 +2,7 @@ from django.db import models
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
 
 
-# ✅ 사용자 생성 전용 매니저
+# ✅ 사용자 생성 전용 매니저 (변경 없음)
 class AccountManager(BaseUserManager):
     def create_user(self, email, name, password=None, **extra_fields):
         if not email:
@@ -24,6 +24,15 @@ class Account(AbstractBaseUser, PermissionsMixin):
     email = models.EmailField(unique=True)
     name = models.CharField(max_length=100)
 
+    # --- 운동/활동 관련 필드 확장 ---
+    xp = models.IntegerField(default=0)                  # 누적 경험치
+    level = models.IntegerField(default=1)               # ✅ 사용자 레벨
+    initial_reps = models.IntegerField(default=0)        # 최초 설정 목표 운동 개수
+    total_reps = models.IntegerField(default=0)          # 누적 운동 횟수
+    total_time = models.FloatField(default=0.0)          # ✅ 누적 운동 시간 (단위: 초 or 분)
+    last_session_at = models.DateTimeField(null=True, blank=True)  # 마지막 세션 시각
+
+    # --- 기본 Django 사용자 필드 ---
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)
     date_joined = models.DateTimeField(auto_now_add=True)

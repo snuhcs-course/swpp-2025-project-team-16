@@ -4,30 +4,30 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Button
-import android.widget.EditText
 import android.widget.TextView
 import androidx.fragment.app.Fragment
 import com.fitquest.app.LoginActivity
 import com.fitquest.app.R
+import com.google.android.material.button.MaterialButton
+import com.google.android.material.textfield.TextInputEditText
 
 /**
  * LoginPasswordFragment - Step 2 of login flow (for existing users)
- * 
+ *
  * User enters password to login
  */
 class LoginPasswordFragment : Fragment() {
 
     private lateinit var emailText: TextView
-    private lateinit var passwordInput: EditText
-    private lateinit var loginButton: Button
-    private lateinit var backButton: Button
-    
+    private lateinit var passwordInput: TextInputEditText
+    private lateinit var loginButton: MaterialButton
+    private lateinit var backButton: MaterialButton
+
     private var email: String = ""
 
     companion object {
         private const val ARG_EMAIL = "email"
-        
+
         fun newInstance(email: String): LoginPasswordFragment {
             val fragment = LoginPasswordFragment()
             val args = Bundle()
@@ -54,15 +54,14 @@ class LoginPasswordFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         emailText = view.findViewById(R.id.tvEmail)
-        passwordInput = view.findViewById(R.id.tilPassword)
+        passwordInput = view.findViewById(R.id.etPassword)
         loginButton = view.findViewById(R.id.btnLogin)
-        backButton = view.findViewById(R.id.btnBack)
 
         emailText.text = email
 
         loginButton.setOnClickListener {
             val password = passwordInput.text.toString()
-            
+
             if (password.isNotEmpty()) {
                 verifyPassword(email, password)
             } else {
@@ -70,15 +69,12 @@ class LoginPasswordFragment : Fragment() {
             }
         }
 
-        backButton.setOnClickListener {
-            activity?.onBackPressed()
-        }
     }
 
     private fun verifyPassword(email: String, password: String) {
         // TODO: Backend - Verify password from server
         val isValid = true // Replace with actual backend call
-        
+
         if (isValid) {
             val activity = activity as? LoginActivity
             activity?.completeLogin()

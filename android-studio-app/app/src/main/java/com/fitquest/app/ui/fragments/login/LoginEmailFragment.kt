@@ -49,15 +49,13 @@ class LoginEmailFragment : Fragment() {
     }
 
     private fun checkEmailExists(email: String) {
-        // TODO: Backend - Check if email exists in database
-        val userExists = false // Replace with actual backend call
-        
+        val userExists = email.equals("test@test.com", ignoreCase = true)
         val activity = activity as? LoginActivity
         if (userExists) {
-            // User exists, go to password screen
+            // 이미 존재하는 유저 → 패스워드 화면으로 이동
             activity?.navigateToPasswordStep(email)
         } else {
-            // New user, go to signup
+            // 새로운 유저 → 회원가입 단계로 이동
             activity?.navigateToSignupStep1(email)
         }
     }

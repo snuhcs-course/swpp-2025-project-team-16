@@ -3,14 +3,9 @@ package com.fitquest.app.ui.fragments.login
 import android.Manifest
 import android.content.pm.PackageManager
 import android.os.Bundle
-import android.view.LayoutInflater
-import android.view.Surface
-import android.view.TextureView
-import android.view.View
-import android.view.ViewGroup
+import android.view.*
 import android.widget.TextView
-import androidx.camera.core.CameraSelector
-import androidx.camera.core.Preview
+import androidx.camera.core.*
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
@@ -19,7 +14,7 @@ import com.fitquest.app.R
 import com.google.android.material.button.MaterialButton
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
-
+import com.fitquest.app.LoginActivity
 /**
  * SignupStep2Fragment - AI Intro / Camera Session
  *
@@ -42,53 +37,52 @@ class SignupStep2Fragment : Fragment() {
 
     private var cameraExecutor: ExecutorService? = null
 
+    // 전달받을 값
+    private var email: String? = null
+    private var password: String? = null
+    private var username: String? = null
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        arguments?.let {
+            email = it.getString(ARG_EMAIL)
+            password = it.getString(ARG_PASSWORD)
+            username = it.getString(ARG_USERNAME)
+        }
+    }
+
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        // 기존 XML 유지 (fragment_signup_step2.xml)
         return inflater.inflate(R.layout.fragment_signup_step2, container, false)
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        // View 연결
         textureView = view.findViewById(R.id.textureView)
         tvCountNumber = view.findViewById(R.id.tvCountNumber)
         tvCountLabel = view.findViewById(R.id.tvCountLabel)
         btnStop = view.findViewById(R.id.btnStop)
 
-        // Executor 초기화
         cameraExecutor = Executors.newSingleThreadExecutor()
 
-        // 권한 확인 후 카메라 실행
-        if (allPermissionsGranted()) {
-            startCamera()
-        } else {
-            ActivityCompat.requestPermissions(
-                requireActivity(),
-                REQUIRED_PERMISSIONS,
-                REQUEST_CODE_PERMISSIONS
-            )
-        }
+        if (allPermissionsGranted()) startCamera()
+        else ActivityCompat.requestPermissions(
+            requireActivity(),
+            REQUIRED_PERMISSIONS,
+            REQUEST_CODE_PERMISSIONS
+        )
 
-        // Stop 버튼 클릭 리스너
-        btnStop.setOnClickListener {
-            stopSession()
-        }
+        btnStop.setOnClickListener { stopSession() }
     }
 
-    /**
-     * CameraX 미리보기 시작
-     */
     private fun startCamera() {
         val cameraProviderFuture = ProcessCameraProvider.getInstance(requireContext())
-
         cameraProviderFuture.addListener({
             val cameraProvider = cameraProviderFuture.get()
-
             val preview = Preview.Builder().build()
             val cameraSelector = CameraSelector.DEFAULT_FRONT_CAMERA
 
@@ -103,17 +97,13 @@ class SignupStep2Fragment : Fragment() {
             } catch (e: Exception) {
                 e.printStackTrace()
             }
-
         }, ContextCompat.getMainExecutor(requireContext()))
     }
 
-    /**
-     * Stop 버튼 클릭 시 세션 종료
-     */
     private fun stopSession() {
-        // TODO: 세션 종료 로직 (결과 화면으로 이동 or 팝업 표시)
-        // ex) 운동 횟수 / 점수 / 소요시간 등을 저장
-        requireActivity().finish()
+        // TODO: 세션 종료 시 결과 저장 or 다음 화면 이동
+        val activity = activity as? LoginActivity
+        activity?.completeLogin()
     }
 
     override fun onDestroyView() {
@@ -121,17 +111,26 @@ class SignupStep2Fragment : Fragment() {
         cameraExecutor?.shutdown()
     }
 
-    /**
-     * 카메라 권한 확인
-     */
     private fun allPermissionsGranted() = REQUIRED_PERMISSIONS.all {
-        ContextCompat.checkSelfPermission(
-            requireContext(), it
-        ) == PackageManager.PERMISSION_GRANTED
+        ContextCompat.checkSelfPermission(requireContext(), it) == PackageManager.PERMISSION_GRANTED
     }
 
     companion object {
+        private const val ARG_EMAIL = "email"
+        private const val ARG_PASSWORD = "password"
+        private const val ARG_USERNAME = "username"
+
         private const val REQUEST_CODE_PERMISSIONS = 10
         private val REQUIRED_PERMISSIONS = arrayOf(Manifest.permission.CAMERA)
+
+        fun newInstance(email: String, password: String, username: String): SignupStep2Fragment {
+            val fragment = SignupStep2Fragment()
+            val args = Bundle()
+            args.putString(ARG_EMAIL, email)
+            args.putString(ARG_PASSWORD, password)
+            args.putString(ARG_USERNAME, username)
+            fragment.arguments = args
+            return fragment
+        }
     }
 }

@@ -3,7 +3,9 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@drawable/bg_gradient_dark">
+    xmlns:tools="http://schemas.android.com/tools"
+    android:background="@drawable/bg_gradient_dark"
+    tools:context=".ui.fragments.login.SignupStep1Fragment">
 
     <!-- Outer Glow Wrapper -->
     <FrameLayout

@@ -4,15 +4,23 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.lifecycleScope
 import com.fitquest.app.LoginActivity
 import com.fitquest.app.R
+import com.fitquest.app.data.remote.RetrofitClient
+import com.fitquest.app.data.remote.SignupRequest
+import com.fitquest.app.data.remote.SignupResponse
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.textfield.TextInputEditText
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 /**
  * SignupStep1Fragment - Step 3-1 of signup flow
- * 
+ *
  * Collects: email, username/nickname, password, confirm password
  */
 class SignupStep1Fragment : Fragment() {
@@ -23,12 +31,12 @@ class SignupStep1Fragment : Fragment() {
     private lateinit var confirmPasswordInput: TextInputEditText
     private lateinit var nextButton: MaterialButton
     private lateinit var backButton: MaterialButton
-    
+
     private var email: String = ""
 
     companion object {
         private const val ARG_EMAIL = "email"
-        
+
         fun newInstance(email: String): SignupStep1Fragment {
             val fragment = SignupStep1Fragment()
             val args = Bundle()
@@ -54,7 +62,6 @@ class SignupStep1Fragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        // Initialize views
         emailInput = view.findViewById(R.id.etEmail)
         usernameInput = view.findViewById(R.id.etHeroName)
         passwordInput = view.findViewById(R.id.etPassword)
@@ -62,22 +69,16 @@ class SignupStep1Fragment : Fragment() {
         nextButton = view.findViewById(R.id.btnContinue)
         backButton = view.findViewById(R.id.btnBack)
 
-        // Pre-fill email
         emailInput.setText(email)
 
         nextButton.setOnClickListener {
             if (validateInputs()) {
-                val activity = activity as? LoginActivity
-                activity?.navigateToSignupStep2(
-                    emailInput.text.toString(),
-                    passwordInput.text.toString(),
-                    usernameInput.text.toString()
-                )
+                signupUser()
             }
         }
 
         backButton.setOnClickListener {
-            activity?.onBackPressed()
+            activity?.onBackPressedDispatcher?.onBackPressed()
         }
     }
 
@@ -109,7 +110,41 @@ class SignupStep1Fragment : Fragment() {
                 return false
             }
         }
-
         return true
+    }
+
+    private fun signupUser() {
+        val email = emailInput.text.toString().trim()
+        val username = usernameInput.text.toString().trim()
+        val password = passwordInput.text.toString().trim()
+
+        lifecycleScope.launch {
+            try {
+                val response = withContext(Dispatchers.IO) {
+                    RetrofitClient.apiService.signup(
+                        SignupRequest(
+                            name = username,
+                            email = email,
+                            password = password
+                        )
+                    )
+                }
+
+                if (response.isSuccessful) {
+                    val body: SignupResponse? = response.body()
+                    Toast.makeText(requireContext(), body?.message ?: "Signup success!", Toast.LENGTH_SHORT).show()
+
+                    // 회원가입 성공 시 → 다음 단계로 이동
+                    val activity = activity as? LoginActivity
+                    activity?.navigateToSignupStep2(email, password, username)
+                } else {
+                    Toast.makeText(requireContext(), "Signup failed: ${response.code()}", Toast.LENGTH_SHORT).show()
+                }
+
+            } catch (e: Exception) {
+                e.printStackTrace()
+                Toast.makeText(requireContext(), "Network error: ${e.localizedMessage}", Toast.LENGTH_SHORT).show()
+            }
+        }
     }
 }

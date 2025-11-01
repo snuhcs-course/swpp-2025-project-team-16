@@ -5,16 +5,22 @@ import android.content.pm.PackageManager
 import android.os.Bundle
 import android.view.*
 import android.widget.TextView
+import android.widget.Toast
 import androidx.camera.core.*
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.lifecycleScope
 import com.fitquest.app.R
 import com.google.android.material.button.MaterialButton
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 import com.fitquest.app.LoginActivity
+import com.fitquest.app.data.remote.InitialCountRequest
+import com.fitquest.app.data.remote.RetrofitClient
+import kotlinx.coroutines.launch
+
 /**
  * SignupStep2Fragment - AI Intro / Camera Session
  *
@@ -99,12 +105,35 @@ class SignupStep2Fragment : Fragment() {
             }
         }, ContextCompat.getMainExecutor(requireContext()))
     }
-
     private fun stopSession() {
-        // TODO: 세션 종료 시 결과 저장 or 다음 화면 이동
-        val activity = activity as? LoginActivity
-        activity?.completeLogin()
+        val initialCount = 20  // 예시
+
+        val prefs = requireContext().getSharedPreferences("auth", 0)
+        val token = prefs.getString("token", null) ?: return
+
+        lifecycleScope.launch {
+            try {
+                val response = RetrofitClient.apiService.updateInitialReps(
+                    token = "Bearer $token",
+                    body = InitialCountRequest(initial_reps = initialCount)
+                )
+
+                if (response.isSuccessful) {
+                    val result = response.body()
+                    Toast.makeText(requireContext(), "Saved: ${result?.initial_reps}", Toast.LENGTH_SHORT).show()
+                } else {
+                    Toast.makeText(requireContext(), "Failed: ${response.code()}", Toast.LENGTH_SHORT).show()
+                }
+            } catch (e: Exception) {
+                e.printStackTrace()
+                Toast.makeText(requireContext(), "Network error: ${e.localizedMessage}", Toast.LENGTH_SHORT).show()
+            }
+        }
+
+        (activity as? LoginActivity)?.completeLogin()
     }
+
+
 
     override fun onDestroyView() {
         super.onDestroyView()

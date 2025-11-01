@@ -49,25 +49,25 @@ data class InitialCountResponse(
 interface ApiService {
 
     // ✅ 회원가입
-    @POST("api/accounts/signup/")
+    @POST("accounts/signup/")
     suspend fun signup(
         @Body request: SignupRequest
     ): Response<SignupResponse>
 
     // ✅ 로그인
-    @POST("api/accounts/login/")
+    @POST("accounts/login/")
     suspend fun login(
         @Body request: LoginRequest
     ): Response<LoginResponse>
 
     // ✅ 이메일 중복 확인
-    @POST("api/accounts/check_email/")
+    @POST("accounts/check_email/")
     suspend fun checkEmail(
         @Body request: Map<String, String>
     ): Response<EmailCheckResponse>
 
     // ✅ 초기 운동 개수 설정 (JWT 필요)
-    @POST("api/accounts/update_initial_reps/")
+    @POST("accounts/update_initial_reps/")
     suspend fun updateInitialReps(
         @Header("Authorization") token: String, // "Bearer <JWT>"
         @Body body: InitialCountRequest

@@ -99,3 +99,14 @@ def user_schedule(request):
 
     result = list(grouped.values())
     return Response(result)
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def user_history(request):
+    """
+    GET /api/accounts/history/
+    사용자 운동 기록 반환
+    """
+    schedules = Schedule.objects.filter(user=request.user).order_by('-date')
+    serializer = ScheduleSerializer(schedules, many=True)
+    return Response(serializer.data)

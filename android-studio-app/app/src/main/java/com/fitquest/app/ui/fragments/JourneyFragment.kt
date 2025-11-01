@@ -1,27 +1,23 @@
 package com.fitquest.app.ui.fragments
 
 import android.os.Bundle
-import android.transition.AutoTransition
-import android.transition.TransitionManager
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.lifecycleScope
 import com.fitquest.app.R
+import com.fitquest.app.data.remote.RetrofitClient
+import com.fitquest.app.model.Exercise
 import com.google.android.material.bottomsheet.BottomSheetDialog
+import kotlinx.coroutines.launch
 
 class JourneyFragment : Fragment() {
 
     private lateinit var timelineContainer: LinearLayout
-
-    data class Exercise(
-        val emoji: String,
-        val name: String,
-        val detail: String,
-        val status: String
-    )
 
     data class WorkoutDay(
         val date: String,
@@ -29,26 +25,7 @@ class JourneyFragment : Fragment() {
         val xp: String
     )
 
-    private val dummySchedule = listOf(
-        WorkoutDay(
-            "Nov 1",
-            listOf(
-                Exercise("💪", "Pike Push-ups", "10 reps × 3 sets", "Ready"),
-                Exercise("🧱", "Wall Sit", "60s × 3 sets", "Ready"),
-                Exercise("🚴", "Bicycle Crunches", "20 reps × 3 sets", "Ready")
-            ),
-            "+250 XP"
-        ),
-        WorkoutDay(
-            "Nov 2",
-            listOf(
-                Exercise("🏋️", "Lunges", "15 reps × 3 sets", "Ready"),
-                Exercise("🧍", "Wall Sit", "45s × 3 sets", "Ready"),
-                Exercise("🔥", "Crunches", "25 reps × 3 sets", "Ready")
-            ),
-            "+180 XP"
-        )
-    )
+    private var scheduleList: List<WorkoutDay> = emptyList()
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -61,14 +38,16 @@ class JourneyFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         timelineContainer = view.findViewById(R.id.timelineContainer)
-        populateTimeline()
+
+        // ✅ 서버에서 일정 데이터 가져오기
+        fetchScheduleFromServer()
     }
 
     private fun populateTimeline() {
         val inflater = LayoutInflater.from(requireContext())
         timelineContainer.removeAllViews()
 
-        dummySchedule.forEachIndexed { index, workout ->
+        scheduleList.forEachIndexed { index, workout ->
             val nodeView = inflater.inflate(R.layout.item_journey_daynode, timelineContainer, false)
 
             val leftCard = nodeView.findViewById<View>(R.id.summaryCardLeft)
@@ -88,7 +67,6 @@ class JourneyFragment : Fragment() {
 
             if (index == 0) activeCard.setBackgroundResource(R.drawable.card_glow_outer)
 
-            // 클릭 → 바텀시트 열기
             activeCard.setOnClickListener {
                 showWorkoutDetails(workout)
             }
@@ -97,9 +75,6 @@ class JourneyFragment : Fragment() {
         }
     }
 
-    /**
-     * 하단 팝업(바텀시트)에 운동 목록 표시
-     */
     private fun showWorkoutDetails(workout: WorkoutDay) {
         val dialog = BottomSheetDialog(requireContext(), R.style.BottomSheetDialogTheme)
         val view = layoutInflater.inflate(R.layout.layout_journey_daydetail, null)
@@ -112,7 +87,6 @@ class JourneyFragment : Fragment() {
         tvDayTitle.text = workout.date
         btnClose.setOnClickListener { dialog.dismiss() }
 
-        // 운동 카드 여러 개 붙이기
         workout.exercises.forEach { ex ->
             val itemView = layoutInflater.inflate(R.layout.item_exercise, exerciseListContainer, false)
             itemView.findViewById<TextView>(R.id.tvExerciseEmoji).text = ex.emoji
@@ -123,5 +97,37 @@ class JourneyFragment : Fragment() {
         }
 
         dialog.show()
+    }
+
+    private fun fetchScheduleFromServer() {
+        val prefs = requireContext().getSharedPreferences("auth", 0)
+        val token = prefs.getString("token", null) ?: return
+
+        lifecycleScope.launch {
+            try {
+                val response = RetrofitClient.journeyApiService.getUserSchedules("Bearer $token")
+
+                if (response.isSuccessful) {
+                    val data = response.body() ?: emptyList()
+
+                    // ✅ 서버 데이터 → UI용으로 매핑
+                    scheduleList = data.map { workout ->
+                        WorkoutDay(
+                            date = workout.date,
+                            xp = "+${workout.xp} XP",
+                            exercises = workout.exercises.map {
+                                Exercise("🏋️", it.name, it.detail, it.status)
+                            }
+                        )
+                    }
+
+                    populateTimeline()
+                } else {
+                    Log.e("Journey", "Server Error: ${response.code()} ${response.message()}")
+                }
+            } catch (e: Exception) {
+                Log.e("Journey", "Network error: ${e.localizedMessage}")
+            }
+        }
     }
 }

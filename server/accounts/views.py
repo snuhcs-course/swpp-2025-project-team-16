@@ -67,6 +67,7 @@ def login(request):
         "level": user.level,
         "xp": user.xp
     }, status=status.HTTP_200_OK)
+
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def update_initial_reps(request):

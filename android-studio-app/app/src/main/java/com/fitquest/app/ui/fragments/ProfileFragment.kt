@@ -8,6 +8,7 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import com.fitquest.app.R
 import com.fitquest.app.data.remote.RetrofitClient
+import com.fitquest.app.model.Exercise
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import kotlinx.coroutines.launch
@@ -33,15 +34,6 @@ class ProfileFragment : Fragment() {
         val exercises: List<Exercise>
     )
 
-    data class Exercise(
-        val emoji: String,
-        val name: String,
-        val done: String,
-        val xp: String,
-        val accuracy: String,
-        val duration: String
-    )
-
     private val dummyHistory = listOf(
         HistoryDay(
             "Oct 29", "+250 XP", "95%", "35 min",
@@ -52,6 +44,65 @@ class ProfileFragment : Fragment() {
             )
         )
     )
+    private fun fetchHistoryFromServer() {
+        val prefs = requireContext().getSharedPreferences("auth", 0)
+        val token = prefs.getString("token", null) ?: return
+
+        lifecycleScope.launch {
+            try {
+                val response = RetrofitClient.profileApiService.getUserHistory("Bearer $token")
+                if (response.isSuccessful) {
+                    val historyList = response.body() ?: emptyList()
+
+                    val mappedList = historyList.map { item ->
+                        HistoryDay(
+                            date = item.date,
+                            xp = "+200 XP",  // 서버에 XP 계산 로직이 없으면 임시
+                            percent = "100%",
+                            time = "${item.start_time?.substring(0, 5)} - ${item.end_time?.substring(0, 5)}",
+                            exercises = listOf(
+                                Exercise("🏋️", item.name, "done", "+100 XP", "100%", "30 min")
+                            )
+                        )
+                    }
+
+                    updateHistoryUI(mappedList)
+                } else {
+                    Log.e("HistoryFetch", "Error: ${response.code()}")
+                }
+            } catch (e: Exception) {
+                Log.e("HistoryFetch", "Network error: ${e.localizedMessage}")
+            }
+        }
+    }
+
+    private fun updateHistoryUI(data: List<HistoryDay>) {
+        val inflater = LayoutInflater.from(requireContext())
+        historyContainer.removeAllViews()
+
+        data.forEachIndexed { index, history ->
+            val nodeView = inflater.inflate(R.layout.item_historynode, historyContainer, false)
+            val leftCard = nodeView.findViewById<View>(R.id.summaryCardLeft)
+            val rightCard = nodeView.findViewById<View>(R.id.summaryCardRight)
+            val activeCard = if (index % 2 == 0) rightCard else leftCard
+            val inactiveCard = if (index % 2 == 0) leftCard else rightCard
+            inactiveCard.visibility = View.GONE
+            activeCard.visibility = View.VISIBLE
+
+            val tvDate = activeCard.findViewById<TextView>(R.id.tvDate)
+            val tvXp = activeCard.findViewById<TextView>(R.id.tvXp)
+            val tvPercent = activeCard.findViewById<TextView>(R.id.tvPercent)
+            val tvTime = activeCard.findViewById<TextView>(R.id.tvTime)
+
+            tvDate.text = history.date
+            tvXp.text = history.xp
+            tvPercent.text = history.percent
+            tvTime.text = history.time
+
+            activeCard.setOnClickListener { showDayDetail(history) }
+            historyContainer.addView(nodeView)
+        }
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -74,40 +125,8 @@ class ProfileFragment : Fragment() {
         tvSecondName = rankOverlay.findViewById(R.id.tvSecondName)
         tvThirdName = rankOverlay.findViewById(R.id.tvThirdName)
 
-        populateHistory()
+        fetchHistoryFromServer()
         setupRankButton()
-    }
-
-    private fun populateHistory() {
-        val inflater = LayoutInflater.from(requireContext())
-        historyContainer.removeAllViews()
-
-        dummyHistory.forEachIndexed { index, history ->
-            val nodeView = inflater.inflate(R.layout.item_historynode, historyContainer, false)
-
-            val leftCard = nodeView.findViewById<View>(R.id.summaryCardLeft)
-            val rightCard = nodeView.findViewById<View>(R.id.summaryCardRight)
-            val activeCard = if (index % 2 == 0) rightCard else leftCard
-            val inactiveCard = if (index % 2 == 0) leftCard else rightCard
-            inactiveCard.visibility = View.GONE
-            activeCard.visibility = View.VISIBLE
-
-            val tvDate = activeCard.findViewById<TextView>(R.id.tvDate)
-            val tvXp = activeCard.findViewById<TextView>(R.id.tvXp)
-            val tvPercent = activeCard.findViewById<TextView>(R.id.tvPercent)
-            val tvTime = activeCard.findViewById<TextView>(R.id.tvTime)
-
-            tvDate.text = history.date
-            tvXp.text = history.xp
-            tvPercent.text = history.percent
-            tvTime.text = history.time
-
-            activeCard.setOnClickListener {
-                showDayDetail(history)
-            }
-
-            historyContainer.addView(nodeView)
-        }
     }
 
     private fun setupRankButton() {

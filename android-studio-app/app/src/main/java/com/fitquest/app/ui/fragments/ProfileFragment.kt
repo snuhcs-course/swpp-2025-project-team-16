@@ -9,7 +9,7 @@ import android.widget.TextView
 import androidx.fragment.app.Fragment
 import com.fitquest.app.R
 import com.google.android.material.button.MaterialButton
-
+import com.google.android.material.bottomsheet.BottomSheetDialog
 class ProfileFragment : Fragment() {
 
     private lateinit var historyContainer: LinearLayout
@@ -131,36 +131,41 @@ class ProfileFragment : Fragment() {
      * ====== 운동 상세 BottomSheet ======
      */
     private fun showDayDetail(history: HistoryDay) {
-        val dialogView = LayoutInflater.from(requireContext())
-            .inflate(R.layout.layout_history_daydetail, null)
+        // ✅ 커스텀 스타일 적용 (투명 배경 + 아래 슬라이드)
+        val dialog = BottomSheetDialog(requireContext(), R.style.BottomSheetDialogTheme)
 
-        // 헤더
+        // inflate custom layout
+        val dialogView = LayoutInflater.from(requireContext())
+            .inflate(R.layout.layout_history_detail, null)
+        dialog.setContentView(dialogView)
+
+        // ===== Header =====
         dialogView.findViewById<TextView>(R.id.tvDayTitle).text = history.date
         dialogView.findViewById<TextView>(R.id.tvTotalXp).text = history.xp
         dialogView.findViewById<TextView>(R.id.tvCompletion).text = history.percent
         dialogView.findViewById<TextView>(R.id.tvTotalTime).text = history.time
 
-        // 운동 리스트 채우기
+        // ===== 운동 리스트 =====
         val container = dialogView.findViewById<LinearLayout>(R.id.exercisedoneListContainer)
         container.removeAllViews()
 
         history.exercises.forEach { ex ->
             val itemView = LayoutInflater.from(requireContext())
-                .inflate(R.layout.item_exercise_done, container, false)
-
+                .inflate(R.layout.item_exercisedone, container, false)
             itemView.findViewById<TextView>(R.id.tvExerciseEmoji).text = ex.emoji
             itemView.findViewById<TextView>(R.id.tvExerciseName).text = ex.name
             itemView.findViewById<TextView>(R.id.tvExerciseDetails).text = "Completed: ${ex.done}"
             itemView.findViewById<TextView>(R.id.tvXp).text = ex.xp
             itemView.findViewById<TextView>(R.id.tvPercent).text = ex.accuracy
             itemView.findViewById<TextView>(R.id.tvTime).text = ex.duration
-
             container.addView(itemView)
         }
 
-        // BottomSheetDialog 생성
-        val dialog = BottomSheetDialog(requireContext(), R.style.AppBottomSheetStyle)
-        dialog.setContentView(dialogView)
+        // ✅ 배경 터치 시 닫힘 설정
+        dialog.setCanceledOnTouchOutside(true)
+        dialog.setDismissWithAnimation(true)
+
         dialog.show()
     }
+
 }

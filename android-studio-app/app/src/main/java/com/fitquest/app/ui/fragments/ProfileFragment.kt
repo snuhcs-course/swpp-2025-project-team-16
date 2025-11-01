@@ -4,96 +4,163 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.fragment.app.Fragment
-import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
 import com.fitquest.app.R
-import com.fitquest.app.ui.adapters.HistoryAdapter
+import com.google.android.material.button.MaterialButton
 
-/**
- * ProfileFragment - Screen 4 (RPG HERO SCREEN)
- * 
- * MAIN FOCUS: Journey Road showing conquest history
- * - Compact stats header at top (level, XP, streak in condensed format)
- * - DOMINANT: Scrollable road with victory markers for completed workouts
- * - Each waypoint shows: date, exercises, XP earned, form score
- * - Glowing achievement path with gold/cyan effects
- * - Character avatar with level badge
- * - Click on workout marker to see full details
- * 
- * Design: RPG character progression screen
- * - Deep blue backgrounds (#0D47A1)
- * - Gold markers for achievements (#FFD700)
- * - Electric cyan accents (#00E5FF)
- * - XP bar with glowing effects
- * - Victory road as primary element (80% of screen)
- */
 class ProfileFragment : Fragment() {
 
-    private lateinit var usernameText: TextView
-    private lateinit var levelText: TextView
-    private lateinit var pointsText: TextView
-    private lateinit var streakText: TextView
-    private lateinit var totalWorkoutsText: TextView
-    private lateinit var journeyDaysText: TextView
-    private lateinit var missedDaysText: TextView
-    private lateinit var historyRecyclerView: RecyclerView
-    private lateinit var historyAdapter: HistoryAdapter
+    private lateinit var historyContainer: LinearLayout
+    private lateinit var rankOverlay: View
+    private lateinit var btnViewRankings: MaterialButton
+
+    // 예시 데이터 (나중에 DB 연동)
+    private val dummyHistory = listOf(
+        HistoryDay(
+            "Oct 29", "+250 XP", "95%", "35 min",
+            listOf(
+                Exercise("💪", "Push-ups", "20 / 20", "+100 XP", "98%", "10 min"),
+                Exercise("🏋️", "Squats", "25 / 25", "+80 XP", "94%", "12 min"),
+                Exercise("🧘", "Plank", "3 min hold", "+70 XP", "93%", "13 min")
+            )
+        ),
+        HistoryDay(
+            "Oct 28", "+180 XP", "88%", "28 min",
+            listOf(
+                Exercise("🤸", "Lunges", "20 / 20", "+90 XP", "89%", "15 min"),
+                Exercise("🏃", "Jumping Jacks", "50 / 50", "+90 XP", "87%", "13 min")
+            )
+        ),
+    )
+
+    data class HistoryDay(
+        val date: String,
+        val xp: String,
+        val percent: String,
+        val time: String,
+        val exercises: List<Exercise>
+    )
+
+    data class Exercise(
+        val emoji: String,
+        val name: String,
+        val done: String,
+        val xp: String,
+        val accuracy: String,
+        val duration: String
+    )
 
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
+    ): View {
         return inflater.inflate(R.layout.fragment_profile, container, false)
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        usernameText = view.findViewById(R.id.tvUserName)
-        levelText = view.findViewById(R.id.tvLevel)
-        pointsText = view.findViewById(R.id.tvTotalXp)
-        streakText = view.findViewById(R.id.tvStreak)
-//        totalWorkoutsText = view.findViewById(R.id.total_workouts_text)
-//        journeyDaysText = view.findViewById(R.id.journey_days_text)
-//        missedDaysText = view.findViewById(R.id.missed_days_text)
-        historyRecyclerView = view.findViewById(R.id.rvJourneyHistory)
+        historyContainer = view.findViewById(R.id.historyContainer)
+        rankOverlay = view.findViewById(R.id.rankOverlay)
+        btnViewRankings = view.findViewById(R.id.btnViewRankings)
 
-        historyRecyclerView.layoutManager = LinearLayoutManager(context)
-
-        loadUserProfile()
-        loadWorkoutHistory()
+        populateHistory()
+        setupRankButton()
     }
 
-    private fun loadUserProfile() {
-        // TODO: Backend - Fetch user profile data
-        // Display user stats in game-like format
-        // Calculate level based on points (e.g., level = points / 500)
+    /**
+     * ====== History 목록 채우기 ======
+     */
+    private fun populateHistory() {
+        val inflater = LayoutInflater.from(requireContext())
+        historyContainer.removeAllViews()
+
+        dummyHistory.forEachIndexed { index, history ->
+            val nodeView = inflater.inflate(R.layout.item_historynode, historyContainer, false)
+
+            // 카드 쪽 (좌우 번갈아 배치)
+            val leftCard = nodeView.findViewById<View>(R.id.summaryCardLeft)
+            val rightCard = nodeView.findViewById<View>(R.id.summaryCardRight)
+            val activeCard = if (index % 2 == 0) rightCard else leftCard
+            val inactiveCard = if (index % 2 == 0) leftCard else rightCard
+            inactiveCard.visibility = View.GONE
+            activeCard.visibility = View.VISIBLE
+
+            val tvDate = activeCard.findViewById<TextView>(R.id.tvDate)
+            val tvXp = activeCard.findViewById<TextView>(R.id.tvXp)
+            val tvPercent = activeCard.findViewById<TextView>(R.id.tvPercent)
+            val tvTime = activeCard.findViewById<TextView>(R.id.tvTime)
+
+            tvDate.text = history.date
+            tvXp.text = history.xp
+            tvPercent.text = history.percent
+            tvTime.text = history.time
+
+            // 클릭 시 상세 보기
+            activeCard.setOnClickListener {
+                showDayDetail(history)
+            }
+
+            historyContainer.addView(nodeView)
+        }
     }
 
-    private fun loadWorkoutHistory() {
-        // TODO: Backend - Fetch workout history
-        // Display as scrollable list with date flags
-        // Each item shows: date, exercises, points earned, AI score
-        
-        // historyAdapter = HistoryAdapter(workoutHistory) { workout ->
-        //     showWorkoutDetails(workout)
-        // }
-        // historyRecyclerView.adapter = historyAdapter
+    /**
+     * ====== 랭킹 버튼 클릭 ======
+     */
+    private fun setupRankButton() {
+        btnViewRankings.setOnClickListener {
+            rankOverlay.visibility = View.VISIBLE
+            rankOverlay.alpha = 0f
+            rankOverlay.animate().alpha(1f).setDuration(250).start()
+
+            rankOverlay.findViewById<View>(R.id.btnCloseRank)?.setOnClickListener {
+                rankOverlay.animate()
+                    .alpha(0f)
+                    .setDuration(200)
+                    .withEndAction { rankOverlay.visibility = View.GONE }
+                    .start()
+            }
+        }
     }
 
-    private fun showWorkoutDetails(workoutId: String) {
-        // TODO: Show dialog/bottom sheet with detailed workout info
-        // - Exercises completed
-        // - Points earned
-        // - AI feedback
-        // - Form score
-        // - Time completed
-    }
+    /**
+     * ====== 운동 상세 BottomSheet ======
+     */
+    private fun showDayDetail(history: HistoryDay) {
+        val dialogView = LayoutInflater.from(requireContext())
+            .inflate(R.layout.layout_history_daydetail, null)
 
-    private fun calculateLevel(points: Int): Int {
-        return (points / 500) + 1
+        // 헤더
+        dialogView.findViewById<TextView>(R.id.tvDayTitle).text = history.date
+        dialogView.findViewById<TextView>(R.id.tvTotalXp).text = history.xp
+        dialogView.findViewById<TextView>(R.id.tvCompletion).text = history.percent
+        dialogView.findViewById<TextView>(R.id.tvTotalTime).text = history.time
+
+        // 운동 리스트 채우기
+        val container = dialogView.findViewById<LinearLayout>(R.id.exercisedoneListContainer)
+        container.removeAllViews()
+
+        history.exercises.forEach { ex ->
+            val itemView = LayoutInflater.from(requireContext())
+                .inflate(R.layout.item_exercise_done, container, false)
+
+            itemView.findViewById<TextView>(R.id.tvExerciseEmoji).text = ex.emoji
+            itemView.findViewById<TextView>(R.id.tvExerciseName).text = ex.name
+            itemView.findViewById<TextView>(R.id.tvExerciseDetails).text = "Completed: ${ex.done}"
+            itemView.findViewById<TextView>(R.id.tvXp).text = ex.xp
+            itemView.findViewById<TextView>(R.id.tvPercent).text = ex.accuracy
+            itemView.findViewById<TextView>(R.id.tvTime).text = ex.duration
+
+            container.addView(itemView)
+        }
+
+        // BottomSheetDialog 생성
+        val dialog = BottomSheetDialog(requireContext(), R.style.AppBottomSheetStyle)
+        dialog.setContentView(dialogView)
+        dialog.show()
     }
 }

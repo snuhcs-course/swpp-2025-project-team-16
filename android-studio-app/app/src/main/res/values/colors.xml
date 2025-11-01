@@ -5,6 +5,8 @@
     <!-- Primary Colors -->
     <color name="primary_blue">#0D47A1</color>
     <color name="gold">#FFD700</color>
+    <color name="silver">#C0C0C0</color>
+    <color name="bronze">#CD7F32</color>
     <color name="cyan">#00E5FF</color>
     <color name="deep_blue">#0B132B</color>
 

@@ -15,6 +15,7 @@ import com.google.android.material.bottomnavigation.BottomNavigationView
  * 2. ScheduleFragment - Schedule creation and modification
  * 3. AiCoachFragment - AI pose detection with camera
  * 4. ProfileFragment - User stats and workout history
+ * 5. PoseFragment - Pose detection with camera
  */
 class MainActivity : AppCompatActivity() {
 
@@ -43,6 +44,10 @@ class MainActivity : AppCompatActivity() {
                 }
                 R.id.nav_schedule -> {
                     loadFragment(ScheduleFragment())
+                    true
+                }
+                R.id.nav_pose ->{
+                    loadFragment(PoseFragment())
                     true
                 }
                 R.id.nav_ai_coach -> {

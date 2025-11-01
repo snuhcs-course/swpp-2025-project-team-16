@@ -16,7 +16,7 @@
         android:title="@string/nav_ai_coach" />
 
     <item
-        android:id="@+id/pose_correction"
+        android:id="@+id/nav_pose"
         android:icon="@drawable/ic_pose"
         android:title="@string/pose" />
     

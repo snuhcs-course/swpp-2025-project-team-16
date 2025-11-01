@@ -1,0 +1,235 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/layoutRankRoot"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#B3000000"
+    android:clickable="true"
+    android:focusable="true"
+    tools:context=".ui.fragments.ProfileFragment">
+
+
+    <LinearLayout
+        android:id="@+id/rankCardContainer"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:layout_marginHorizontal="16dp"
+        android:background="@drawable/bg_card_translucent"
+        android:orientation="vertical"
+        android:padding="18dp"
+        android:elevation="16dp"
+        android:clipToOutline="true">
+
+        <!-- 닫기 버튼 -->
+        <ImageButton
+            android:id="@+id/btnCloseRank"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:layout_gravity="start"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:src="@drawable/ic_arrow_back"
+            app:tint="@color/cyan"
+            android:contentDescription="Close Rankings" />
+
+        <!-- 타이틀 -->
+        <TextView
+            android:id="@+id/tvTitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:text="🏆 TOP RANKINGS"
+            android:textColor="@color/gold"
+            android:textSize="20sp"
+            android:textStyle="bold"
+            android:layout_marginTop="6dp"
+            android:layout_marginBottom="0dp" />
+
+        <LinearLayout
+            android:id="@+id/podiumContainer"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center"
+            android:layout_marginTop="10dp"
+            android:paddingHorizontal="15dp">
+
+            <!-- 🥈 2nd -->
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical"
+                android:gravity="bottom|center_horizontal"
+                android:layout_marginTop="40dp">
+
+                <ImageView
+                    android:layout_width="54dp"
+                    android:layout_height="54dp"
+                    android:src="@drawable/ic_trophy"
+                    app:tint="@color/silver"
+                    android:layout_marginBottom="8dp" />
+
+                <View
+                    android:layout_width="70dp"
+                    android:layout_height="60dp"
+                    android:background="@drawable/bg_podium_silver"
+                    android:layout_marginBottom="8dp" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="2nd  •  Alex"
+                    android:textColor="@color/silver"
+                    android:textStyle="bold"
+                    android:textSize="13sp"
+                    android:gravity="center" />
+            </LinearLayout>
+
+            <!-- 🥇 1st -->
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical"
+                android:gravity="bottom|center_horizontal">
+
+                <ImageView
+                    android:layout_width="70dp"
+                    android:layout_height="70dp"
+                    android:src="@drawable/ic_trophy"
+                    app:tint="@color/gold"
+                    android:layout_marginBottom="8dp" />
+
+                <View
+                    android:layout_width="80dp"
+                    android:layout_height="120dp"
+                    android:background="@drawable/bg_podium_gold"
+                    android:layout_marginBottom="8dp" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="1st  •  You"
+                    android:textColor="@color/gold"
+                    android:textStyle="bold"
+                    android:textSize="14sp"
+                    android:gravity="center" />
+            </LinearLayout>
+
+            <!-- 🥉 3rd -->
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical"
+                android:gravity="bottom|center_horizontal"
+                android:layout_marginTop="60dp">
+
+                <ImageView
+                    android:layout_width="48dp"
+                    android:layout_height="48dp"
+                    android:src="@drawable/ic_trophy"
+                    app:tint="@color/bronze"
+                    android:layout_marginBottom="8dp" />
+
+                <View
+                    android:layout_width="70dp"
+                    android:layout_height="30dp"
+                    android:background="@drawable/bg_podium_bronze"
+                    android:layout_marginBottom="8dp" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="3rd  •  Liam"
+                    android:textColor="@color/bronze"
+                    android:textSize="13sp"
+                    android:textStyle="bold"
+                    android:gravity="center" />
+            </LinearLayout>
+        </LinearLayout>
+
+
+        <!-- ===== Rank List ===== -->
+        <ScrollView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:overScrollMode="never"
+            android:layout_marginTop="10dp">
+
+            <LinearLayout
+                android:id="@+id/rankListContainer"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:layout_gravity="center">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="4. Olivia — 820 XP"
+                    android:textColor="@color/text_primary"
+                    android:gravity="center"
+                    android:textSize="13sp"
+                    android:paddingVertical="2dp" />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="5. Noah — 790 XP"
+                    android:textColor="@color/text_primary"
+                    android:gravity="center"
+                    android:textSize="13sp"
+                    android:paddingVertical="2dp" />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="6. Emma — 760 XP"
+                    android:textColor="@color/text_primary"
+                    android:gravity="center"
+                    android:textSize="13sp"
+                    android:paddingVertical="2dp" />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="7. James — 730 XP"
+                    android:textColor="@color/text_primary"
+                    android:gravity="center"
+                    android:textSize="13sp"
+                    android:paddingVertical="2dp" />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="8. Mia — 700 XP"
+                    android:textColor="@color/text_primary"
+                    android:gravity="center"
+                    android:textSize="13sp"
+                    android:paddingVertical="2dp" />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="9. Sophia — 680 XP"
+                    android:textColor="@color/text_primary"
+                    android:gravity="center"
+                    android:textSize="13sp"
+                    android:paddingVertical="2dp" />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="10. Lucas — 650 XP"
+                    android:textColor="@color/text_primary"
+                    android:gravity="center"
+                    android:textSize="13sp"
+                    android:paddingVertical="2dp" />
+            </LinearLayout>
+        </ScrollView>
+    </LinearLayout>
+</FrameLayout>

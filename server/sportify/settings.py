@@ -33,13 +33,11 @@ SECRET_KEY = "django-insecure-($$s2w-4hgos)68o7$h$6twbwamtm56)%24e4ggj4=*rvrfv#1
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ["127.0.0.1", "localhost", "10.0.2.2"]
-
+ALLOWED_HOSTS = ["127.0.0.1", "localhost", "10.0.2.2", ]
 
 # Application definition
 
 INSTALLED_APPS = [
-    'recommendation',
     'schedule',
     'accounts',
     'django.contrib.admin',
@@ -49,6 +47,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
 ]
+
 CORS_ALLOW_ALL_ORIGINS = True 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -86,11 +85,15 @@ WSGI_APPLICATION = 'sportify.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'sportify',
-        'USER': 'team16',
+        'NAME': 'swpp',
+        'USER': 'user',
         'PASSWORD': '1234',
         'HOST': 'localhost',
         'PORT': '3306',
+        'OPTIONS': {
+            'unix_socket': '/tmp/mysql.sock',
+            'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
+        },
     }
 }
 

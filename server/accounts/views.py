@@ -94,3 +94,27 @@ def update_initial_reps(request):
         "message": "Initial reps saved successfully",
         "initial_reps": user.initial_reps
     }, status=status.HTTP_200_OK)
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def user_rankings(request):
+    """
+    GET /api/accounts/rankings/
+    Response:
+    [
+      {"rank": 1, "name": "재희", "xp": 2100, "level": 5},
+      {"rank": 2, "name": "단야", "xp": 1800, "level": 4},
+      ...
+    ]
+    """
+    users = Account.objects.filter(is_active=True).order_by('-xp')[:50]  # 상위 50명
+    data = []
+    for i, u in enumerate(users, start=1):
+        data.append({
+            "rank": i,
+            "name": u.name,
+            "xp": u.xp,
+            "level": u.level,
+        })
+    return Response(data)

@@ -63,9 +63,10 @@
                 android:id="@+id/icActivity"
                 android:layout_width="24dp"
                 android:layout_height="24dp"
-                android:tint="@android:color/white"
                 android:src="@drawable/ic_activity"
-                android:contentDescription="Activity indicator" />
+                android:contentDescription="Activity indicator"
+                android:layout_gravity="center"
+                app:tint="@android:color/white" />
         </FrameLayout>
     </LinearLayout>
 

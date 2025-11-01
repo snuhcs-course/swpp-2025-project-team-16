@@ -17,8 +17,8 @@ class ExerciseAdapter(
 ) : RecyclerView.Adapter<ExerciseAdapter.ExerciseViewHolder>() {
 
     class ExerciseViewHolder(view: View) : RecyclerView.ViewHolder(view) {
-        val emojiText: TextView = view.findViewById(R.id.tvExerciseIcon)
-        val nameText: TextView = view.findViewById(R.id.tvExerciseIcon)
+//        val emojiText: TextView = view.findViewById(R.id.tvExerciseIcon)
+//        val nameText: TextView = view.findViewById(R.id.tvExerciseIcon)
         val detailsText: TextView = view.findViewById(R.id.tvExerciseCount)
     }
 
@@ -31,8 +31,8 @@ class ExerciseAdapter(
     override fun onBindViewHolder(holder: ExerciseViewHolder, position: Int) {
         val exercise = exercises[position]
         
-        holder.emojiText.text = exercise.emoji
-        holder.nameText.text = exercise.name
+//        holder.emojiText.text = exercise.emoji
+//        holder.nameText.text = exercise.name
         
         val details = buildString {
             if (exercise.reps != null) append("${exercise.reps} reps")
@@ -40,7 +40,7 @@ class ExerciseAdapter(
             if (exercise.sets != null) append(" × ${exercise.sets} sets")
         }
         holder.detailsText.text = details
-        
+
         holder.itemView.setOnClickListener {
             onExerciseClick(exercise)
         }

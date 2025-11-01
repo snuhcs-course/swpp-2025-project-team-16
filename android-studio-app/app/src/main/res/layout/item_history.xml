@@ -35,7 +35,7 @@
                 android:id="@+id/tvNodeIcon"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:text="⚔️"
+
                 android:textSize="24sp"
                 android:gravity="center" />
 

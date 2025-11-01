@@ -5,279 +5,111 @@
     android:layout_height="match_parent"
     android:background="@drawable/bg_gradient_dark">
 
-    <!-- Outer Glow -->
-    <FrameLayout
-        android:layout_width="wrap_content"
+    <!-- 상단 안내 문구 -->
+    <LinearLayout
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_gravity="center"
-        android:padding="3dp"
-        android:background="@drawable/card_glow_outer">
+        android:orientation="vertical"
+        android:gravity="center_horizontal"
+        android:paddingTop="60dp"
+        android:paddingBottom="16dp">
 
-        <!-- Main Card -->
-        <androidx.cardview.widget.CardView
-            android:layout_width="340dp"
+        <TextView
+            android:id="@+id/tvGreeting"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:padding="32dp"
-            app:cardCornerRadius="20dp"
-            app:cardElevation="22dp"
-            android:backgroundTint="@color/surface_dark_translucent"
-            app:strokeColor="@color/cyan_20"
-            app:strokeWidth="1dp">
+            android:text="Ready for your session?"
+            android:textColor="@color/text_secondary"
+            android:textSize="14sp" />
 
-            <LinearLayout
-                android:layout_width="match_parent"
+        <TextView
+            android:id="@+id/tvMission"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Do as many squats as you can!"
+            android:textColor="@color/cyan_bright"
+            android:textSize="20sp"
+            android:textStyle="bold"
+            android:layout_marginTop="4dp" />
+    </LinearLayout>
+
+    <!-- 카메라 뷰 -->
+    <androidx.cardview.widget.CardView
+        android:id="@+id/cameraCard"
+        android:layout_width="320dp"
+        android:layout_height="420dp"
+        android:layout_gravity="center"
+        app:cardCornerRadius="20dp"
+        app:cardElevation="18dp"
+        android:backgroundTint="@color/surface_dark_translucent"
+        app:strokeColor="@color/cyan_20"
+        app:strokeWidth="1dp">
+
+        <TextureView
+            android:id="@+id/textureView"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:scaleType="centerCrop" />
+
+        <View
+            android:id="@+id/overlayView"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="@android:color/transparent" />
+    </androidx.cardview.widget.CardView>
+
+    <!-- 하단 컨트롤 -->
+    <LinearLayout
+        android:id="@+id/controlPanel"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom"
+        android:orientation="horizontal"
+        android:gravity="center"
+        android:padding="24dp">
+
+        <TextView
+            android:id="@+id/tvCountLabel"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Count : "
+            android:textColor="@color/gold"
+            android:textSize="24sp"
+            android:textStyle="bold" />
+
+        <!-- 횟수 표시 -->
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:gravity="center"
+            android:layout_marginEnd="24dp">
+
+            <TextView
+                android:id="@+id/tvCountNumber"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:gravity="center_horizontal"
-                android:padding="25dp">
+                android:text="0"
+                android:textColor="@color/gold"
+                android:textSize="26sp"
+                android:textStyle="bold" />
 
-                <!-- Logo -->
-                <ImageView
-                    android:layout_width="64dp"
-                    android:layout_height="64dp"
-                    android:layout_marginBottom="16dp"
-                    android:src="@drawable/ic_fitquest_logo_rounded"
-                    android:contentDescription="FitQuest Logo" />
+        </LinearLayout>
 
-                <!-- Title -->
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="FitQuest"
-                    android:textColor="@android:color/white"
-                    android:textSize="20sp"
-                    android:textStyle="bold" />
+        <!-- Stop 버튼 -->
 
-                <!-- Subtitle -->
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="2dp"
-                    android:layout_marginBottom="28dp"
-                    android:text="Begin Your Transformation"
-                    android:textColor="@color/cyan_bright"
-                    android:textSize="13sp"
-                    android:fontFamily="sans-serif-medium" />
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnStop"
+            android:layout_width="160dp"
+            android:layout_height="56dp"
+            android:background="@drawable/btn_gradient_blue"
+            android:elevation="6dp"
+            android:text="Stop"
+            android:textColor="@android:color/white"
+            android:textSize="15sp"
+            app:cornerRadius="12dp"
+            app:strokeColor="@color/cyan_30"
+            app:strokeWidth="1dp" />
 
-                <!-- Section Header -->
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Choose Your Class"
-                    android:textColor="@android:color/white"
-                    android:textSize="17sp"
-                    android:textStyle="bold" />
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Select your starting level"
-                    android:textColor="@color/cyan_bright"
-                    android:textSize="13sp"
-                    android:layout_marginBottom="20dp" />
-
-                <!-- Level Buttons -->
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="vertical"
-                    android:dividerPadding="8dp"
-                    android:showDividers="middle">
-
-                    <!-- Beginner -->
-                    <LinearLayout
-                        android:id="@+id/btnBeginner"
-                        android:layout_width="match_parent"
-                        android:layout_height="64dp"
-                        android:background="@drawable/box_class_selector"
-                        android:gravity="center_vertical"
-                        android:orientation="horizontal"
-                        android:paddingHorizontal="16dp"
-                        android:clickable="true"
-                        android:focusable="true"
-                        android:foreground="?attr/selectableItemBackgroundBorderless">
-
-                        <ImageView
-                            android:layout_width="24dp"
-                            android:layout_height="24dp"
-                            android:src="@drawable/ic_shield"
-                            app:tint="@color/cyan_bright" />
-
-                        <LinearLayout
-                            android:layout_width="0dp"
-                            android:layout_weight="1"
-                            android:layout_height="wrap_content"
-                            android:orientation="vertical"
-                            android:layout_marginStart="12dp">
-
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="Beginner"
-                                android:textColor="@android:color/white"
-                                android:textSize="14sp"
-                                android:textStyle="bold" />
-
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="Starting my journey"
-                                android:textColor="@color/text_secondary"
-                                android:textSize="12sp" />
-                        </LinearLayout>
-
-                        <ImageView
-                            android:id="@+id/iconCheckBeginner"
-                            android:layout_width="20dp"
-                            android:layout_height="20dp"
-                            android:src="@drawable/ic_check"
-                            android:visibility="gone"
-                            app:tint="@color/gold" />
-                    </LinearLayout>
-
-                    <!-- Intermediate -->
-                    <LinearLayout
-                        android:id="@+id/btnIntermediate"
-                        android:layout_width="match_parent"
-                        android:layout_height="64dp"
-                        android:background="@drawable/box_class_selector"
-                        android:gravity="center_vertical"
-                        android:orientation="horizontal"
-                        android:paddingHorizontal="16dp"
-                        android:clickable="true"
-                        android:focusable="true"
-                        android:foreground="?attr/selectableItemBackgroundBorderless">
-
-                        <ImageView
-                            android:layout_width="24dp"
-                            android:layout_height="24dp"
-                            android:src="@drawable/ic_swords"
-                            app:tint="@color/cyan_bright" />
-
-                        <LinearLayout
-                            android:layout_width="0dp"
-                            android:layout_weight="1"
-                            android:layout_height="wrap_content"
-                            android:orientation="vertical"
-                            android:layout_marginStart="12dp">
-
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="Intermediate"
-                                android:textColor="@android:color/white"
-                                android:textSize="14sp"
-                                android:textStyle="bold" />
-
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="Regular training"
-                                android:textColor="@color/text_secondary"
-                                android:textSize="12sp" />
-                        </LinearLayout>
-
-                        <ImageView
-                            android:id="@+id/iconCheckIntermediate"
-                            android:layout_width="20dp"
-                            android:layout_height="20dp"
-                            android:src="@drawable/ic_check"
-                            android:visibility="gone"
-                            app:tint="@color/gold" />
-                    </LinearLayout>
-
-                    <!-- Advanced -->
-                    <LinearLayout
-                        android:id="@+id/btnAdvanced"
-                        android:layout_width="match_parent"
-                        android:layout_height="64dp"
-                        android:background="@drawable/box_class_selector"
-                        android:gravity="center_vertical"
-                        android:orientation="horizontal"
-                        android:paddingHorizontal="16dp"
-                        android:clickable="true"
-                        android:focusable="true"
-                        android:foreground="?attr/selectableItemBackgroundBorderless">
-
-                        <ImageView
-                            android:layout_width="24dp"
-                            android:layout_height="24dp"
-                            android:src="@drawable/ic_bolt"
-                            app:tint="@color/cyan_bright" />
-
-                        <LinearLayout
-                            android:layout_width="0dp"
-                            android:layout_weight="1"
-                            android:layout_height="wrap_content"
-                            android:orientation="vertical"
-                            android:layout_marginStart="12dp">
-
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="Advanced"
-                                android:textColor="@android:color/white"
-                                android:textSize="14sp"
-                                android:textStyle="bold" />
-
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="Elite performance"
-                                android:textColor="@color/text_secondary"
-                                android:textSize="12sp" />
-                        </LinearLayout>
-
-                        <ImageView
-                            android:id="@+id/iconCheckAdvanced"
-                            android:layout_width="20dp"
-                            android:layout_height="20dp"
-                            android:src="@drawable/ic_check"
-                            android:visibility="gone"
-                            app:tint="@color/gold" />
-                    </LinearLayout>
-                </LinearLayout>
-
-                <!-- Buttons -->
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:gravity="center"
-                    android:layout_marginTop="28dp">
-
-                    <com.google.android.material.button.MaterialButton
-                        android:id="@+id/btnBack"
-                        android:layout_width="0dp"
-                        android:layout_weight="1"
-                        android:layout_height="50dp"
-                        android:text="Back"
-                        android:textSize="13sp"
-                        android:gravity="center"
-                        android:textAlignment="center"
-                        android:backgroundTint="@color/input_bg_stronger"
-                        android:textColor="@color/text_secondary"
-                        app:cornerRadius="12dp" />
-
-                    <View
-                        android:layout_width="12dp"
-                        android:layout_height="0dp" />
-
-                    <com.google.android.material.button.MaterialButton
-                        android:id="@+id/btnStart"
-                        android:layout_width="0dp"
-                        android:layout_weight="1"
-                        android:layout_height="50dp"
-                        android:text="Start Journey"
-                        android:textSize="13sp"
-                        android:gravity="center"
-                        android:textAlignment="center"
-                        android:textColor="@android:color/white"
-                        android:background="@drawable/btn_gradient_blue"
-                        app:cornerRadius="12dp" />
-                </LinearLayout>
-
-            </LinearLayout>
-        </androidx.cardview.widget.CardView>
-    </FrameLayout>
+    </LinearLayout>
 </FrameLayout>

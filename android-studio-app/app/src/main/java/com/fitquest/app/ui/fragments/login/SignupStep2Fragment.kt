@@ -1,127 +1,137 @@
 package com.fitquest.app.ui.fragments.login
 
+import android.Manifest
+import android.content.pm.PackageManager
 import android.os.Bundle
 import android.view.LayoutInflater
+import android.view.Surface
+import android.view.TextureView
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Button
-import androidx.cardview.widget.CardView
+import android.widget.TextView
+import androidx.camera.core.CameraSelector
+import androidx.camera.core.Preview
+import androidx.camera.lifecycle.ProcessCameraProvider
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
-import com.fitquest.app.LoginActivity
 import com.fitquest.app.R
-import com.fitquest.app.model.FitnessLevel
+import com.google.android.material.button.MaterialButton
+import java.util.concurrent.ExecutorService
+import java.util.concurrent.Executors
 
 /**
- * SignupStep2Fragment - Step 3-2 of signup flow (CHOOSE YOUR CLASS)
- * 
- * User selects fitness level as RPG class:
- * - Novice (Beginner) - Shield icon, cyan theme
- * - Warrior (Intermediate) - Swords icon, gold theme
- * - Champion (Advanced) - Lightning icon, bright gold theme
- * 
- * Design: RPG class selection
- * - Dark slate background
- * - Cards with hover/select animations
- * - Icon + class name + description
- * - Selected card glows with class color
+ * SignupStep2Fragment - AI Intro / Camera Session
+ *
+ * 로그인 직후 표시되는 화면.
+ * - 카메라 자동 실행
+ * - 상단: 안내 문구
+ * - 중앙: 카메라 프리뷰
+ * - 하단: Count + Stop 버튼
+ *
+ * TODO:
+ *  - Pose detection 및 rep counting 연동
+ *  - Stop 클릭 시 세션 결과 전송 or 저장 로직 추가
  */
 class SignupStep2Fragment : Fragment() {
 
-    private lateinit var beginnerCard: View
-    private lateinit var intermediateCard: View
-    private lateinit var advancedCard: View
-    private lateinit var startButton: Button
-    private lateinit var backButton: Button
-    
-    private var email: String = ""
-    private var password: String = ""
-    private var username: String = ""
-    private var selectedLevel: FitnessLevel? = null
+    private lateinit var textureView: TextureView
+    private lateinit var tvCountNumber: TextView
+    private lateinit var tvCountLabel: TextView
+    private lateinit var btnStop: MaterialButton
 
-    companion object {
-        private const val ARG_EMAIL = "email"
-        private const val ARG_PASSWORD = "password"
-        private const val ARG_USERNAME = "username"
-        
-        fun newInstance(email: String, password: String, username: String): SignupStep2Fragment {
-            val fragment = SignupStep2Fragment()
-            val args = Bundle()
-            args.putString(ARG_EMAIL, email)
-            args.putString(ARG_PASSWORD, password)
-            args.putString(ARG_USERNAME, username)
-            fragment.arguments = args
-            return fragment
-        }
-    }
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        email = arguments?.getString(ARG_EMAIL) ?: ""
-        password = arguments?.getString(ARG_PASSWORD) ?: ""
-        username = arguments?.getString(ARG_USERNAME) ?: ""
-    }
+    private var cameraExecutor: ExecutorService? = null
 
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
+        // 기존 XML 유지 (fragment_signup_step2.xml)
         return inflater.inflate(R.layout.fragment_signup_step2, container, false)
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        beginnerCard = view.findViewById(R.id.btnBeginner)
-        intermediateCard = view.findViewById(R.id.btnIntermediate)
-        advancedCard = view.findViewById(R.id.btnAdvanced)
-        startButton = view.findViewById(R.id.btnStart)
-        backButton = view.findViewById(R.id.btnBack)
+        // View 연결
+        textureView = view.findViewById(R.id.textureView)
+        tvCountNumber = view.findViewById(R.id.tvCountNumber)
+        tvCountLabel = view.findViewById(R.id.tvCountLabel)
+        btnStop = view.findViewById(R.id.btnStop)
 
-        beginnerCard.setOnClickListener {
-            selectLevel(FitnessLevel.BEGINNER)
+        // Executor 초기화
+        cameraExecutor = Executors.newSingleThreadExecutor()
+
+        // 권한 확인 후 카메라 실행
+        if (allPermissionsGranted()) {
+            startCamera()
+        } else {
+            ActivityCompat.requestPermissions(
+                requireActivity(),
+                REQUIRED_PERMISSIONS,
+                REQUEST_CODE_PERMISSIONS
+            )
         }
 
-        intermediateCard.setOnClickListener {
-            selectLevel(FitnessLevel.INTERMEDIATE)
+        // Stop 버튼 클릭 리스너
+        btnStop.setOnClickListener {
+            stopSession()
         }
+    }
 
-        advancedCard.setOnClickListener {
-            selectLevel(FitnessLevel.ADVANCED)
-        }
+    /**
+     * CameraX 미리보기 시작
+     */
+    private fun startCamera() {
+        val cameraProviderFuture = ProcessCameraProvider.getInstance(requireContext())
 
-        startButton.setOnClickListener {
-            if (selectedLevel != null) {
-                completeSignup()
-            } else {
-                // Show error - no level selected
+        cameraProviderFuture.addListener({
+            val cameraProvider = cameraProviderFuture.get()
+
+            val preview = Preview.Builder().build()
+            val cameraSelector = CameraSelector.DEFAULT_FRONT_CAMERA
+
+            preview.setSurfaceProvider { surfaceRequest ->
+                val surface = Surface(textureView.surfaceTexture)
+                surfaceRequest.provideSurface(surface, cameraExecutor!!, { surface.release() })
             }
-        }
 
-        backButton.setOnClickListener {
-            activity?.onBackPressed()
-        }
+            try {
+                cameraProvider.unbindAll()
+                cameraProvider.bindToLifecycle(this, cameraSelector, preview)
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+
+        }, ContextCompat.getMainExecutor(requireContext()))
     }
 
-    private fun selectLevel(level: FitnessLevel) {
-        selectedLevel = level
-        
-        // Update UI to show selection
-        // TODO: Add visual feedback (highlight selected card)
-        updateCardSelection()
+    /**
+     * Stop 버튼 클릭 시 세션 종료
+     */
+    private fun stopSession() {
+        // TODO: 세션 종료 로직 (결과 화면으로 이동 or 팝업 표시)
+        // ex) 운동 횟수 / 점수 / 소요시간 등을 저장
+        requireActivity().finish()
     }
 
-    private fun updateCardSelection() {
-        // TODO: Update card backgrounds/borders to show selection
-        // Reset all cards
-        // Highlight selected card based on selectedLevel
+    override fun onDestroyView() {
+        super.onDestroyView()
+        cameraExecutor?.shutdown()
     }
 
-    private fun completeSignup() {
-        // TODO: Backend - Create user account
-        // Save user data: email, password, username, selectedLevel
-        
-        val activity = activity as? LoginActivity
-        activity?.completeLogin()
+    /**
+     * 카메라 권한 확인
+     */
+    private fun allPermissionsGranted() = REQUIRED_PERMISSIONS.all {
+        ContextCompat.checkSelfPermission(
+            requireContext(), it
+        ) == PackageManager.PERMISSION_GRANTED
+    }
+
+    companion object {
+        private const val REQUEST_CODE_PERMISSIONS = 10
+        private val REQUIRED_PERMISSIONS = arrayOf(Manifest.permission.CAMERA)
     }
 }

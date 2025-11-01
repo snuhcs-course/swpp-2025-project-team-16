@@ -27,7 +27,7 @@ class Account(AbstractBaseUser, PermissionsMixin):
     # --- 운동/활동 관련 필드 확장 ---
     xp = models.IntegerField(default=0)                  # 누적 경험치
     level = models.IntegerField(default=1)               # ✅ 사용자 레벨
-    initial_reps = models.IntegerField(default=0)        # 최초 설정 목표 운동 개수
+    initial_reps = models.IntegerField(default=0)        # 최초 설정 운동 개수
     total_reps = models.IntegerField(default=0)          # 누적 운동 횟수
     total_time = models.FloatField(default=0.0)          # ✅ 누적 운동 시간 (단위: 초 or 분)
     last_session_at = models.DateTimeField(null=True, blank=True)  # 마지막 세션 시각

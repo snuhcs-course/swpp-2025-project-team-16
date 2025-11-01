@@ -79,6 +79,7 @@
                     android:layout_marginBottom="8dp" />
 
                 <TextView
+                    android:id="@+id/tvSecondName"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="2nd  •  Alex"
@@ -110,6 +111,7 @@
                     android:layout_marginBottom="8dp" />
 
                 <TextView
+                    android:id="@+id/tvFirstName"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="1st  •  You"
@@ -142,6 +144,7 @@
                     android:layout_marginBottom="8dp" />
 
                 <TextView
+                    android:id="@+id/tvThirdName"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="3rd  •  Liam"

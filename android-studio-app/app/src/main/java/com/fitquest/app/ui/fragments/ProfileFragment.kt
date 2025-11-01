@@ -1,40 +1,30 @@
 package com.fitquest.app.ui.fragments
 
 import android.os.Bundle
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
-import android.widget.LinearLayout
-import android.widget.TextView
+import android.util.Log
+import android.view.*
+import android.widget.*
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.lifecycleScope
 import com.fitquest.app.R
+import com.fitquest.app.data.remote.RetrofitClient
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.bottomsheet.BottomSheetDialog
+import kotlinx.coroutines.launch
+
 class ProfileFragment : Fragment() {
 
     private lateinit var historyContainer: LinearLayout
     private lateinit var rankOverlay: View
     private lateinit var btnViewRankings: MaterialButton
+    private lateinit var rankListContainer: LinearLayout
 
-    // 예시 데이터 (나중에 DB 연동)
-    private val dummyHistory = listOf(
-        HistoryDay(
-            "Oct 29", "+250 XP", "95%", "35 min",
-            listOf(
-                Exercise("💪", "Push-ups", "20 / 20", "+100 XP", "98%", "10 min"),
-                Exercise("🏋️", "Squats", "25 / 25", "+80 XP", "94%", "12 min"),
-                Exercise("🧘", "Plank", "3 min hold", "+70 XP", "93%", "13 min")
-            )
-        ),
-        HistoryDay(
-            "Oct 28", "+180 XP", "88%", "28 min",
-            listOf(
-                Exercise("🤸", "Lunges", "20 / 20", "+90 XP", "89%", "15 min"),
-                Exercise("🏃", "Jumping Jacks", "50 / 50", "+90 XP", "87%", "13 min")
-            )
-        ),
-    )
+    // podium (top3)
+    private lateinit var tvFirstName: TextView
+    private lateinit var tvSecondName: TextView
+    private lateinit var tvThirdName: TextView
 
+    // ======= Dummy History (임시) =======
     data class HistoryDay(
         val date: String,
         val xp: String,
@@ -52,6 +42,17 @@ class ProfileFragment : Fragment() {
         val duration: String
     )
 
+    private val dummyHistory = listOf(
+        HistoryDay(
+            "Oct 29", "+250 XP", "95%", "35 min",
+            listOf(
+                Exercise("💪", "Push-ups", "20 / 20", "+100 XP", "98%", "10 min"),
+                Exercise("🏋️", "Squats", "25 / 25", "+80 XP", "94%", "12 min"),
+                Exercise("🧘", "Plank", "3 min hold", "+70 XP", "93%", "13 min")
+            )
+        )
+    )
+
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -66,14 +67,17 @@ class ProfileFragment : Fragment() {
         historyContainer = view.findViewById(R.id.historyContainer)
         rankOverlay = view.findViewById(R.id.rankOverlay)
         btnViewRankings = view.findViewById(R.id.btnViewRankings)
+        rankListContainer = rankOverlay.findViewById(R.id.rankListContainer)
+
+        // podium 이름 3개 찾기
+        tvFirstName = rankOverlay.findViewById(R.id.tvFirstName)
+        tvSecondName = rankOverlay.findViewById(R.id.tvSecondName)
+        tvThirdName = rankOverlay.findViewById(R.id.tvThirdName)
 
         populateHistory()
         setupRankButton()
     }
 
-    /**
-     * ====== History 목록 채우기 ======
-     */
     private fun populateHistory() {
         val inflater = LayoutInflater.from(requireContext())
         historyContainer.removeAllViews()
@@ -81,7 +85,6 @@ class ProfileFragment : Fragment() {
         dummyHistory.forEachIndexed { index, history ->
             val nodeView = inflater.inflate(R.layout.item_historynode, historyContainer, false)
 
-            // 카드 쪽 (좌우 번갈아 배치)
             val leftCard = nodeView.findViewById<View>(R.id.summaryCardLeft)
             val rightCard = nodeView.findViewById<View>(R.id.summaryCardRight)
             val activeCard = if (index % 2 == 0) rightCard else leftCard
@@ -99,7 +102,6 @@ class ProfileFragment : Fragment() {
             tvPercent.text = history.percent
             tvTime.text = history.time
 
-            // 클릭 시 상세 보기
             activeCard.setOnClickListener {
                 showDayDetail(history)
             }
@@ -108,14 +110,13 @@ class ProfileFragment : Fragment() {
         }
     }
 
-    /**
-     * ====== 랭킹 버튼 클릭 ======
-     */
     private fun setupRankButton() {
         btnViewRankings.setOnClickListener {
             rankOverlay.visibility = View.VISIBLE
             rankOverlay.alpha = 0f
             rankOverlay.animate().alpha(1f).setDuration(250).start()
+
+            fetchRankData() // 서버 요청
 
             rankOverlay.findViewById<View>(R.id.btnCloseRank)?.setOnClickListener {
                 rankOverlay.animate()
@@ -127,45 +128,74 @@ class ProfileFragment : Fragment() {
         }
     }
 
-    /**
-     * ====== 운동 상세 BottomSheet ======
-     */
+    private fun fetchRankData() {
+        val prefs = requireContext().getSharedPreferences("auth", 0)
+        val token = prefs.getString("token", null) ?: return
+
+        lifecycleScope.launch {
+            try {
+                val response = RetrofitClient.profileApiService.getRankings("Bearer $token")
+                if (response.isSuccessful) {
+                    val ranks = response.body() ?: emptyList()
+
+                    // Clear existing
+                    rankListContainer.removeAllViews()
+
+                    // 상위 3명 podium
+                    if (ranks.isNotEmpty()) {
+                        tvFirstName.text = "1st • ${ranks.getOrNull(0)?.name ?: "-"}"
+                        tvSecondName.text = "2nd • ${ranks.getOrNull(1)?.name ?: "-"}"
+                        tvThirdName.text = "3rd • ${ranks.getOrNull(2)?.name ?: "-"}"
+                    }
+
+                    // 4등 이후 리스트
+                    val inflater = LayoutInflater.from(requireContext())
+                    for (i in 3 until ranks.size) {
+                        val rank = ranks[i]
+                        val tv = TextView(requireContext()).apply {
+                            text = "${rank.rank}. ${rank.name} — ${rank.xp} XP"
+                            setTextColor(resources.getColor(R.color.text_primary, null))
+                            textSize = 13f
+                            gravity = Gravity.CENTER
+                            setPadding(0, 6, 0, 6)
+                        }
+                        rankListContainer.addView(tv)
+                    }
+                } else {
+                    Log.e("RankFetch", "HTTP ${response.code()}")
+                }
+            } catch (e: Exception) {
+                Log.e("RankFetch", "Error: ${e.localizedMessage}")
+            }
+        }
+    }
+
     private fun showDayDetail(history: HistoryDay) {
-        // ✅ 커스텀 스타일 적용 (투명 배경 + 아래 슬라이드)
         val dialog = BottomSheetDialog(requireContext(), R.style.BottomSheetDialogTheme)
-
-        // inflate custom layout
-        val dialogView = LayoutInflater.from(requireContext())
+        val view = LayoutInflater.from(requireContext())
             .inflate(R.layout.layout_history_detail, null)
-        dialog.setContentView(dialogView)
+        dialog.setContentView(view)
 
-        // ===== Header =====
-        dialogView.findViewById<TextView>(R.id.tvDayTitle).text = history.date
-        dialogView.findViewById<TextView>(R.id.tvTotalXp).text = history.xp
-        dialogView.findViewById<TextView>(R.id.tvCompletion).text = history.percent
-        dialogView.findViewById<TextView>(R.id.tvTotalTime).text = history.time
+        view.findViewById<TextView>(R.id.tvDayTitle).text = history.date
+        view.findViewById<TextView>(R.id.tvTotalXp).text = history.xp
+        view.findViewById<TextView>(R.id.tvCompletion).text = history.percent
+        view.findViewById<TextView>(R.id.tvTotalTime).text = history.time
 
-        // ===== 운동 리스트 =====
-        val container = dialogView.findViewById<LinearLayout>(R.id.exercisedoneListContainer)
+        val container = view.findViewById<LinearLayout>(R.id.exercisedoneListContainer)
         container.removeAllViews()
 
         history.exercises.forEach { ex ->
-            val itemView = LayoutInflater.from(requireContext())
+            val item = LayoutInflater.from(requireContext())
                 .inflate(R.layout.item_exercisedone, container, false)
-            itemView.findViewById<TextView>(R.id.tvExerciseEmoji).text = ex.emoji
-            itemView.findViewById<TextView>(R.id.tvExerciseName).text = ex.name
-            itemView.findViewById<TextView>(R.id.tvExerciseDetails).text = "Completed: ${ex.done}"
-            itemView.findViewById<TextView>(R.id.tvXp).text = ex.xp
-            itemView.findViewById<TextView>(R.id.tvPercent).text = ex.accuracy
-            itemView.findViewById<TextView>(R.id.tvTime).text = ex.duration
-            container.addView(itemView)
+            item.findViewById<TextView>(R.id.tvExerciseEmoji).text = ex.emoji
+            item.findViewById<TextView>(R.id.tvExerciseName).text = ex.name
+            item.findViewById<TextView>(R.id.tvExerciseDetails).text = "Completed: ${ex.done}"
+            item.findViewById<TextView>(R.id.tvXp).text = ex.xp
+            item.findViewById<TextView>(R.id.tvPercent).text = ex.accuracy
+            item.findViewById<TextView>(R.id.tvTime).text = ex.duration
+            container.addView(item)
         }
-
-        // ✅ 배경 터치 시 닫힘 설정
-        dialog.setCanceledOnTouchOutside(true)
-        dialog.setDismissWithAnimation(true)
 
         dialog.show()
     }
-
 }

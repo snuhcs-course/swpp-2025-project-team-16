@@ -19,7 +19,7 @@ data class WorkoutDayResponse(
 )
 
 interface JourneyApiService{
-    @GET("schedules/")
+    @GET("schedule/schedules")
     suspend fun getUserSchedules(
         @Header("Authorization") token: String
     ): Response<List<WorkoutDayResponse>>

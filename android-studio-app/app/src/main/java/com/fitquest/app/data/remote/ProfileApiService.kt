@@ -28,7 +28,7 @@ interface ProfileApiService{
         @Header("Authorization") token: String
     ): Response<List<RankResponse>>
 
-    @GET("accounts/history/")
+    @GET("schedule/history/")
     suspend fun getUserHistory(
         @Header("Authorization") token: String
     ): Response<List<HistoryResponse>>

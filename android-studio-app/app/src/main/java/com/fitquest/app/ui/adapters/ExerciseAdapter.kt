@@ -17,10 +17,10 @@ class ExerciseAdapter(
     private val onExerciseClick: (Exercise) -> Unit
 ) : ListAdapter<Exercise,ExerciseAdapter.ExerciseViewHolder>(DiffCallback()) {
     class ExerciseViewHolder(view: View) : RecyclerView.ViewHolder(view) {
-        val emojiText: TextView = view.findViewById(R.id.tvExerciseIcon)
+        val emojiText: TextView = view.findViewById(R.id.tvExerciseEmoji)
         val nameText: TextView = view.findViewById(R.id.tvExerciseName)
-        val detailsText: TextView = view.findViewById(R.id.tvSetsReps)
-        val xpText: TextView=view.findViewById(R.id.tvXpReward)
+        val detailsText: TextView = view.findViewById(R.id.tvExerciseDetails)
+        val progressText: TextView=view.findViewById(R.id.tvProgressText)
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ExerciseViewHolder {
@@ -34,14 +34,9 @@ class ExerciseAdapter(
         
         holder.emojiText.text = exercise.emoji
         holder.nameText.text = exercise.name
-        
-        val details = buildString {
-            if (exercise.reps != null) append("${exercise.reps} reps")
-            if (exercise.duration != null) append("${exercise.duration}s")
-            if (exercise.sets != null) append(" × ${exercise.sets} sets")
-        }
-        holder.detailsText.text = details
-        holder.xpText.text="50xp"
+
+        holder.detailsText.text = exercise.detail
+        holder.progressText.text=exercise.status
         holder.itemView.setOnClickListener {
             onExerciseClick(exercise)
         }
@@ -50,7 +45,7 @@ class ExerciseAdapter(
     override fun getItemCount() = currentList.size
     class DiffCallback : DiffUtil.ItemCallback<Exercise>() {
         override fun areItemsTheSame(oldItem: Exercise, newItem: Exercise) = oldItem.id == newItem.id
-        override fun areContentsTheSame(oldItem: Exercise, newItem: Exercise) = oldItem.type== newItem.type
+        override fun areContentsTheSame(oldItem: Exercise, newItem: Exercise) = oldItem== newItem
     }
 
 }

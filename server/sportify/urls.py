@@ -21,5 +21,5 @@ from schedule import views
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('schedule/', include('schedule.urls')), 
-    path('api/accounts/', include('accounts.urls')),
+    path('accounts/', include('accounts.urls')),
 ]

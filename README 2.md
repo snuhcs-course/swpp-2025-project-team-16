@@ -28,8 +28,8 @@
 ---
 
 ### Demo Video
-- link: https://drive.google.com/file/d/1yTbT5iAS6IawYoWdvj64U8ftuFSwOu17/view?usp=drive_link
-
+- link1: https://drive.google.com/file/d/1yTbT5iAS6IawYoWdvj64U8ftuFSwOu17/view?usp=drive_link
+- link2: https://drive.google.com/file/d/1oaLHLrDsbIQT9wAY-nRapvUUZH5O4xvh/view?usp=drive_link
 ---
 
 ### Install

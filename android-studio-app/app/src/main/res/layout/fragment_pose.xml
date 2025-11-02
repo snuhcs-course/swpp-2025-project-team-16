@@ -70,9 +70,9 @@
     <LinearLayout
         android:id="@+id/mainContainer"
         android:layout_width="376dp"
-        android:layout_height="480dp"
-        android:layout_marginHorizontal="16dp"
-        android:gravity="center"
+        android:layout_height="500dp"
+        android:layout_marginTop="0dp"
+        android:gravity="center_horizontal"
         android:orientation="horizontal"
         app:layout_constraintBottom_toTopOf="@id/feedbackCard"
         app:layout_constraintEnd_toEndOf="parent"
@@ -83,20 +83,21 @@
         <FrameLayout
             android:id="@+id/cameraContainer"
             android:layout_width="0dp"
-            android:layout_height="match_parent"
+            android:layout_height="500dp"
             android:layout_marginEnd="8dp"
             android:layout_weight="1"
             android:background="@color/surface_dark_translucent">
 
             <!-- Camera Preview (가장 뒤) -->
+
+            <!-- Countdown -->
             <androidx.camera.view.PreviewView
                 android:id="@+id/cameraPreview"
                 android:layout_width="match_parent"
-                android:layout_height="478dp"
-                android:scaleType="fitCenter"
-                android:elevation="0dp" />
+                android:layout_height="500dp"
+                android:elevation="0dp"
+                android:scaleType="fitCenter" />
 
-            <!-- Countdown -->
             <TextView
                 android:id="@+id/tvCountdown"
                 android:layout_width="match_parent"
@@ -147,7 +148,7 @@
             <TextView
                 android:id="@+id/tvGuideText"
                 android:layout_width="match_parent"
-                android:layout_height="478dp"
+                android:layout_height="500dp"
                 android:gravity="center"
                 android:text="Take a picture and upload it"
                 android:textColor="@color/text_secondary"
@@ -171,7 +172,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         app:cardCornerRadius="20dp"
-        app:cardElevation="12dp"
+        app:cardElevation="1dp"
         android:backgroundTint="@color/surface_dark_translucent"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -180,36 +181,36 @@
 
         <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="120dp"
             android:orientation="vertical"
-            android:padding="16dp">
+            android:padding="10dp">
 
             <TextView
+                android:id="@+id/tvGoodPoints"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:id="@+id/tvGoodPoints"
+                android:layout_marginBottom="4dp"
                 android:text="Good Point:"
                 android:textColor="@color/gold"
-                android:textSize="13sp"
-                android:layout_marginBottom="4dp"/>
+                android:textSize="13sp" />
 
             <TextView
+                android:id="@+id/tvImprovePoints"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:id="@+id/tvImprovePoints"
+                android:layout_marginBottom="4dp"
                 android:text="Needs Improvement:"
                 android:textColor="@color/gold"
-                android:textSize="13sp"
-                android:layout_marginBottom="4dp"/>
+                android:textSize="13sp" />
 
             <TextView
+                android:id="@+id/tvCue"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:id="@+id/tvCue"
                 android:text="💡 Cue:"
                 android:textColor="@color/cyan_bright"
-                android:textStyle="italic"
-                android:textSize="13sp"/>
+                android:textSize="13sp"
+                android:textStyle="italic" />
 
         </LinearLayout>
     </androidx.cardview.widget.CardView>

@@ -150,20 +150,22 @@ class PoseFragment : Fragment() {
 
                 override fun onImageSaved(output: ImageCapture.OutputFileResults) {
                     Log.d("PoseFragment", "Photo saved: ${photoFile.absolutePath}")
-                    showAnalysisResult()
                 }
             }
         )
+        showAnalysisImage()
     }
 
     // =============== SHOW RESULT ==================
-    private fun showAnalysisResult() {
+    private fun showAnalysisImage() {
         tvGuideText.visibility = View.GONE
         imgAnalysisResult.visibility = View.VISIBLE
 
         // TODO: Replace with real pose analysis bitmap later
         imgAnalysisResult.setImageResource(R.drawable.sample_pose_result)
-
+    }
+    private fun showAnalysisResult() {
+        // TODO: Replace with real pose analysis bitmap later
         tvGoodPoints.text = "✅ Great shoulder alignment detected"
         tvImprovePoints.text = "⚠️  Try to straighten your left leg"
         tvCue.text = "💡 Keep your core tight and head up"

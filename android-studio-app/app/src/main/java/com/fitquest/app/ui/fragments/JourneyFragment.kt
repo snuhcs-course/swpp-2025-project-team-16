@@ -6,6 +6,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.LinearLayout
+import android.widget.ScrollView
 import android.widget.TextView
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
@@ -73,6 +74,10 @@ class JourneyFragment : Fragment() {
 
             timelineContainer.addView(nodeView)
         }
+        val scrollView = view?.findViewById<ScrollView>(R.id.scrollTimeline)
+        scrollView?.post {
+            scrollView.fullScroll(View.FOCUS_DOWN)
+        }
     }
 
     private fun showWorkoutDetails(workout: WorkoutDay) {
@@ -110,8 +115,21 @@ class JourneyFragment : Fragment() {
                 if (response.isSuccessful) {
                     val data = response.body() ?: emptyList()
 
+                    // ✅ 오늘 날짜 구하기 (yyyy-MM-dd 형식으로)
+                    val today = java.time.LocalDate.now()
+
+                    // ✅ 오늘 이후(또는 오늘 포함) 데이터만 필터링
+                    val filtered = data.filter { workout ->
+                        try {
+                            val workoutDate = java.time.LocalDate.parse(workout.date)
+                            !workoutDate.isBefore(today) // 오늘보다 이전 날짜는 제외
+                        } catch (e: Exception) {
+                            false // 날짜 파싱 실패 시 제외
+                        }
+                    }
+
                     // ✅ 서버 데이터 → UI용으로 매핑
-                    scheduleList = data.map { workout ->
+                    scheduleList = filtered.map { workout ->
                         WorkoutDay(
                             date = workout.date,
                             xp = "+${workout.xp} XP",
@@ -130,4 +148,5 @@ class JourneyFragment : Fragment() {
             }
         }
     }
+
 }

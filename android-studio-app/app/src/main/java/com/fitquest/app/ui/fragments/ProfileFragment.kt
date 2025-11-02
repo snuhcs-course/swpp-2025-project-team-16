@@ -44,10 +44,24 @@ class ProfileFragment : Fragment() {
                 if (response.isSuccessful) {
                     val historyList = response.body() ?: emptyList()
 
-                    val mappedList = historyList.map { item ->
+                    // ✅ 오늘 날짜
+                    val today = java.time.LocalDate.now()
+
+                    // ✅ 오늘 포함 "이전" 데이터만 필터링
+                    val filtered = historyList.filter { item ->
+                        try {
+                            val date = java.time.LocalDate.parse(item.date)
+                            !date.isAfter(today)   // 오늘 이후면 제외
+                        } catch (e: Exception) {
+                            false // 날짜 파싱 실패 시 제외
+                        }
+                    }
+
+                    // ✅ UI용 매핑
+                    val mappedList = filtered.map { item ->
                         HistoryDay(
                             date = item.date,
-                            xp = "+200 XP",  // 서버에 XP 계산 로직이 없으면 임시
+                            xp = "+200 XP",  // 서버 XP 미구현 시 임시값
                             percent = "100%",
                             time = "${item.start_time?.substring(0, 5)} - ${item.end_time?.substring(0, 5)}",
                             exercises = listOf(
@@ -65,6 +79,7 @@ class ProfileFragment : Fragment() {
             }
         }
     }
+
 
     private fun updateHistoryUI(data: List<HistoryDay>) {
         val inflater = LayoutInflater.from(requireContext())

@@ -73,7 +73,6 @@ class ScheduleFragment : Fragment() {
             if(list.isNullOrEmpty()){
                 exerciseRecyclerView.visibility=View.GONE
                 emptyState.visibility=View.VISIBLE
-                exerciseAdapter.submitList(list)
             }else{
                 emptyState.visibility=View.GONE
                 exerciseRecyclerView.visibility=View.VISIBLE
@@ -89,14 +88,11 @@ class ScheduleFragment : Fragment() {
             cal.set(date.year,date.month,date.day)
             selectedDate = sdf.format(cal.time)
             viewModel.loadScheduleForDate(selectedDate)
-            Log.d("DateChange","${selectedDate},${exerciseAdapter.currentList}")
         }
 
         autoGenerateButton.setOnClickListener {
             viewModel.generateSchedule()
-            Log.d("GENERATE1","${selectedDate},${viewModel.exercises.value}")
             viewModel.loadScheduleForDate(selectedDate)
-            Log.d("GENERATE2","${exerciseAdapter.itemCount}")
             Toast.makeText(requireContext(),"계획이 생성되었습니다!",Toast.LENGTH_SHORT).show()
         }
 

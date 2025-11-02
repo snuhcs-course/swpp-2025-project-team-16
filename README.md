@@ -5,7 +5,7 @@ Sportify leverages smartphone cameras and AI models to provide real-time posture
 
 ![Application Screenshot](./docs/images/Screenshot_20251101_195125.png)
 
-### Screen video for iteration is provided in this link [video](./docs/video/Screen_Recording_20251005_185549_Sportify.mp4)
+### Screen video for iteration is provided in this link [video](https://drive.google.com/file/d/1yTbT5iAS6IawYoWdvj64U8ftuFSwOu17/view?usp=drive_link)
 
 ## Features
 

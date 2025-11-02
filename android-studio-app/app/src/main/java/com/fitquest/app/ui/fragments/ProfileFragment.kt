@@ -34,16 +34,6 @@ class ProfileFragment : Fragment() {
         val exercises: List<Exercise>
     )
 
-    private val dummyHistory = listOf(
-        HistoryDay(
-            "Oct 29", "+250 XP", "95%", "35 min",
-            listOf(
-                Exercise("💪", "Push-ups", "20 / 20", "+100 XP", "98%", "10 min"),
-                Exercise("🏋️", "Squats", "25 / 25", "+80 XP", "94%", "12 min"),
-                Exercise("🧘", "Plank", "3 min hold", "+70 XP", "93%", "13 min")
-            )
-        )
-    )
     private fun fetchHistoryFromServer() {
         val prefs = requireContext().getSharedPreferences("auth", 0)
         val token = prefs.getString("token", null) ?: return

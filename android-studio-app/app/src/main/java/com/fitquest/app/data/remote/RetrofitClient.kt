@@ -15,15 +15,17 @@ object RetrofitClient {
         .writeTimeout(30, TimeUnit.SECONDS)   // 요청 전송 최대 30초
         .build()
 
-    val apiService: ApiService by lazy {
+    private val retrofit: Retrofit by lazy {
         Retrofit.Builder()
             .baseUrl(BASE_URL)
-            .client(okHttpClient) // ✅ 여기에 커스텀 클라이언트 적용
+            .client(okHttpClient)
             .addConverterFactory(GsonConverterFactory.create())
             .build()
-            .create(ApiService::class.java)
     }
 
+    val apiService: ApiService by lazy {
+        retrofit.create(ApiService::class.java)
+    }
 
     val journeyApiService: JourneyApiService by lazy {
         retrofit.create(JourneyApiService::class.java)

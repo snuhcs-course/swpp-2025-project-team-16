@@ -55,9 +55,9 @@ class ScheduleViewModel : ViewModel() {
             val sdf = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
             val selectedDate = sdf.format(currentDate.time)
             val tempPlans: MutableList<Exercise> =mutableListOf()
-            tempPlans.add(Exercise("${3*i}","스쿼트","스쿼트",100,30,5,""))
-            tempPlans.add(Exercise("${3*i+1}","팔굽혀펴기","팔굽혀펴기",100,30,5,""))
-            tempPlans.add(Exercise("${3*i+2}","플랭크","플랭크",100,30,5,""))
+            tempPlans.add(Exercise("${3*i}","스쿼트","스쿼트","100","0","5",""))
+            tempPlans.add(Exercise("${3*i+1}","팔굽혀펴기","팔굽혀펴기","100","30","5",""))
+            tempPlans.add(Exercise("${3*i+2}","플랭크","플랭크","100","30","5",""))
 
             workoutPlans.add(WorkoutPlan(selectedDate,tempPlans,false,30,null))
             if(i==0){

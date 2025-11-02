@@ -69,101 +69,106 @@
     <!-- ===== MAIN SECTION: Left camera / Right guide/result ===== -->
     <LinearLayout
         android:id="@+id/mainContainer"
-        android:layout_width="376dp"
-        android:layout_height="500dp"
-        android:layout_marginTop="0dp"
-        android:gravity="center_horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_marginHorizontal="16dp"
+        android:gravity="center"
         android:orientation="horizontal"
         app:layout_constraintBottom_toTopOf="@id/feedbackCard"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/headerContainer">
 
-        <!-- Left: Camera Preview -->
-        <FrameLayout
-            android:id="@+id/cameraContainer"
-            android:layout_width="0dp"
-            android:layout_height="500dp"
-            android:layout_marginEnd="8dp"
-            android:layout_weight="1"
-            android:background="@color/surface_dark_translucent">
+    <!-- Left: Camera Preview -->
+    <FrameLayout
+        android:id="@+id/cameraContainer"
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
+        android:layout_marginEnd="8dp"
+        android:layout_weight="1"
+        android:background="@color/surface_dark_translucent">
 
-            <!-- Camera Preview (가장 뒤) -->
+    <androidx.camera.view.PreviewView
+        android:id="@+id/cameraPreview"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        app:scaleType="fitCenter"
+        android:elevation="0dp" />
 
-            <!-- Countdown -->
-            <androidx.camera.view.PreviewView
-                android:id="@+id/cameraPreview"
-                android:layout_width="match_parent"
-                android:layout_height="500dp"
-                android:elevation="0dp"
-                android:scaleType="fitCenter" />
+    <TextView
+        android:id="@+id/tvCountdown"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:gravity="center"
+        android:textColor="@color/cyan_bright"
+        android:textSize="64sp"
+        android:textStyle="bold"
+        android:visibility="gone"
+        android:elevation="5dp" />
 
-            <TextView
-                android:id="@+id/tvCountdown"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:gravity="center"
-                android:textColor="@color/cyan_bright"
-                android:textSize="64sp"
-                android:textStyle="bold"
-                android:visibility="gone"
-                android:elevation="5dp" />
+    <ImageButton
+        android:id="@+id/btnCapture"
+        android:layout_width="70dp"
+        android:layout_height="70dp"
+        android:layout_gravity="bottom|start"
+        android:layout_marginStart="16dp"
+        android:layout_marginBottom="16dp"
+        android:background="@drawable/bg_badge_cyan"
+        android:src="@drawable/ic_camera"
+        app:tint="@android:color/white"
+        android:elevation="10dp" />
 
-            <!-- Capture Button -->
-            <ImageButton
-                android:id="@+id/btnCapture"
-                android:layout_width="70dp"
-                android:layout_height="70dp"
-                android:layout_gravity="bottom|start"
-                android:layout_marginStart="16dp"
-                android:layout_marginBottom="16dp"
-                android:background="@drawable/bg_badge_cyan"
-                android:src="@drawable/ic_camera"
-                app:tint="@android:color/white"
-                android:elevation="10dp" />
+    <ImageButton
+        android:id="@+id/btnUpload"
+        android:layout_width="70dp"
+        android:layout_height="70dp"
+        android:layout_gravity="bottom|end"
+        android:layout_margin="16dp"
+        android:background="@drawable/bg_badge_gold"
+        android:src="@drawable/ic_upload"
+        app:tint="@android:color/white"
+        android:elevation="10dp" />
 
-            <!-- Upload Button -->
-            <ImageButton
-                android:id="@+id/btnUpload"
-                android:layout_width="70dp"
-                android:layout_height="70dp"
-                android:layout_gravity="bottom|end"
-                android:layout_margin="16dp"
-                android:background="@drawable/bg_badge_gold"
-                android:src="@drawable/ic_upload"
-                app:tint="@android:color/white"
-                android:elevation="10dp" />
-        </FrameLayout>
+    <ImageButton
+        android:id="@+id/btnSwitchCamera"
+        android:layout_width="56dp"
+        android:layout_height="56dp"
+        android:layout_gravity="top|end"
+        android:layout_margin="16dp"
+        android:background="@drawable/bg_badge_cyan"
+        android:src="@drawable/ic_switch_camera"
+        app:tint="@android:color/white"
+        android:elevation="10dp" />
+    </FrameLayout>
 
+    <!-- Right: Guide or Result -->
+    <FrameLayout
+    android:id="@+id/resultContainer"
+    android:layout_width="0dp"
+    android:layout_height="match_parent"
+    android:layout_weight="1"
+    android:background="@color/surface_dark_translucent">
 
-        <!-- Right: Guide or Result -->
-        <FrameLayout
-            android:id="@+id/resultContainer"
-            android:layout_width="0dp"
-            android:layout_height="match_parent"
-            android:layout_weight="1"
-            android:background="@color/surface_dark_translucent">
+    <!-- 안내 텍스트 (초기 표시) -->
+    <TextView
+    android:id="@+id/tvGuideText"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:gravity="center"
+    android:text="Take a picture and upload it"
+    android:textColor="@color/text_secondary"
+    android:textSize="14sp"
+    android:textStyle="italic" />
 
-            <!-- 안내 텍스트 (초기 표시) -->
-            <TextView
-                android:id="@+id/tvGuideText"
-                android:layout_width="match_parent"
-                android:layout_height="500dp"
-                android:gravity="center"
-                android:text="Take a picture and upload it"
-                android:textColor="@color/text_secondary"
-                android:textSize="14sp"
-                android:textStyle="italic" />
+    <!-- 분석 결과 이미지 (처음엔 숨김) -->
+    <ImageView
+    android:id="@+id/imgAnalysisResult"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:scaleType="fitCenter"
+    android:visibility="gone" />
 
-            <!-- 분석 결과 이미지 (처음엔 숨김) -->
-            <ImageView
-                android:id="@+id/imgAnalysisResult"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:scaleType="fitCenter"
-                android:visibility="gone" />
-
-        </FrameLayout>
+    </FrameLayout>
     </LinearLayout>
 
     <!-- ===== Feedback Section ===== -->
@@ -172,7 +177,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         app:cardCornerRadius="20dp"
-        app:cardElevation="1dp"
+        app:cardElevation="12dp"
         android:backgroundTint="@color/surface_dark_translucent"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -181,27 +186,27 @@
 
         <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="120dp"
+            android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:padding="10dp">
+            android:padding="16dp">
 
             <TextView
                 android:id="@+id/tvGoodPoints"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="4dp"
                 android:text="Good Point:"
                 android:textColor="@color/gold"
-                android:textSize="13sp" />
+                android:textSize="13sp"
+                android:layout_marginBottom="4dp"/>
 
             <TextView
                 android:id="@+id/tvImprovePoints"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="4dp"
                 android:text="Needs Improvement:"
                 android:textColor="@color/gold"
-                android:textSize="13sp" />
+                android:textSize="13sp"
+                android:layout_marginBottom="4dp"/>
 
             <TextView
                 android:id="@+id/tvCue"
@@ -209,8 +214,8 @@
                 android:layout_height="wrap_content"
                 android:text="💡 Cue:"
                 android:textColor="@color/cyan_bright"
-                android:textSize="13sp"
-                android:textStyle="italic" />
+                android:textStyle="italic"
+                android:textSize="13sp"/>
 
         </LinearLayout>
     </androidx.cardview.widget.CardView>

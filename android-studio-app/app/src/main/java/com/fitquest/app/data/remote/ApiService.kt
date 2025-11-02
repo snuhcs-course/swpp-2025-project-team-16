@@ -2,8 +2,11 @@ package com.fitquest.app.data.remote
 
 import retrofit2.Response
 import retrofit2.http.Body
-import retrofit2.http.Header
 import retrofit2.http.POST
+import retrofit2.http.Url
+
+// ====== 기존 로그인/회원가입 ======
+import retrofit2.http.Header
 
 // -------------------- Data Classes --------------------
 
@@ -23,6 +26,7 @@ data class LoginResponse(
 data class EmailCheckResponse(
     val exists: Boolean
 )
+
 
 data class SignupRequest(
     val name: String,
@@ -45,6 +49,18 @@ data class InitialCountResponse(
     val initial_reps: Int
 )
 
+// ====== 자세 평가용 추가 ======
+data class EvaluatePostureRequest(
+    val category: String,
+    val image_base64: String
+)
+
+data class EvaluatePostureResponse(
+    val status: String,
+    val good_points: String,
+    val improvement_points: String,
+    val improvement_methods: String
+)
 
 // -------------------- Retrofit Interface --------------------
 
@@ -74,4 +90,12 @@ interface ApiService {
         @Header("Authorization") token: String, // "Bearer <JWT>"
         @Body body: InitialCountRequest
     ): Response<InitialCountResponse>
+  
+      // ====== 자세 평가(동적 URL 사용) ======
+    // 예) fullUrl = "http://147.46.78.29:8004/evaluate_posture"
+    @POST
+    suspend fun evaluatePosture(
+        @Url fullUrl: String,
+        @Body request: EvaluatePostureRequest
+    ): Response<EvaluatePostureResponse>
 }

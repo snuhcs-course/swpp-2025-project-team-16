@@ -9,7 +9,7 @@
     android:background="@color/background_dark"
     tools:context=".ui.fragments.AiCoachFragment">
 
-    <!-- ===== Header (like the top bar in React) ===== -->
+    <!-- ===== Header (top bar) ===== -->
     <LinearLayout
         android:id="@+id/headerContainer"
         android:layout_width="0dp"
@@ -47,7 +47,7 @@
                 android:layout_marginTop="4dp" />
         </LinearLayout>
 
-        <!-- Animated status icon block (Activity icon in React) -->
+        <!-- Activity icon block -->
         <FrameLayout
             android:id="@+id/activityIconBox"
             android:layout_width="48dp"
@@ -65,7 +65,6 @@
                 android:layout_height="24dp"
                 android:src="@drawable/ic_activity"
                 android:contentDescription="Activity indicator"
-                android:layout_gravity="center"
                 app:tint="@android:color/white" />
         </FrameLayout>
     </LinearLayout>
@@ -125,9 +124,6 @@
                             app:tint="@color/cyan" />
 
                         <TextView
-
-
-
                             android:id="@+id/tvSelectExerciseLabel"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
@@ -138,7 +134,7 @@
                             android:textStyle="bold" />
                     </LinearLayout>
 
-                    <!-- Spinner (equivalent to Select in React) -->
+                    <!-- Spinner for exercise -->
                     <Spinner
                         android:id="@+id/spinnerExercise"
                         android:layout_width="match_parent"
@@ -165,13 +161,12 @@
                 app:strokeWidth="4dp"
                 app:cardElevation="12dp">
 
-                <!-- We'll use ConstraintLayout to enforce 3:4 aspect ratio like aspect-[3/4] -->
                 <androidx.constraintlayout.widget.ConstraintLayout
                     android:id="@+id/cameraCardRoot"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content">
 
-                    <!-- Wrapper whose height follows 3:4 ratio -->
+                    <!-- The previewWrapper enforces a 3:4 region -->
                     <androidx.constraintlayout.widget.ConstraintLayout
                         android:id="@+id/previewWrapper"
                         android:layout_width="0dp"
@@ -181,29 +176,33 @@
                         app:layout_constraintTop_toTopOf="parent"
                         app:layout_constraintStart_toStartOf="parent"
                         app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintBottom_toBottomOf="parent"
                         app:layout_constraintDimensionRatio="3:4">
 
-                        <!-- Camera Preview -->
-                        <androidx.camera.view.PreviewView
-                            android:id="@+id/cameraPreview"
+                        <!-- Camera preview + overlay -->
+                        <FrameLayout
+                            android:id="@+id/cameraContainer"
                             android:layout_width="0dp"
                             android:layout_height="0dp"
                             app:layout_constraintTop_toTopOf="parent"
                             app:layout_constraintBottom_toBottomOf="parent"
                             app:layout_constraintStart_toStartOf="parent"
-                            app:layout_constraintEnd_toEndOf="parent"
-                            tools:background="@android:color/darker_gray" />
+                            app:layout_constraintEnd_toEndOf="parent">
 
-                        <!-- Pose Overlay Canvas (skeleton drawing layer) -->
-                        <View
-                            android:id="@+id/poseOverlay"
-                            android:layout_width="0dp"
-                            android:layout_height="0dp"
-                            android:background="@android:color/transparent"
-                            app:layout_constraintTop_toTopOf="@id/cameraPreview"
-                            app:layout_constraintBottom_toBottomOf="@id/cameraPreview"
-                            app:layout_constraintStart_toStartOf="@id/cameraPreview"
-                            app:layout_constraintEnd_toEndOf="@id/cameraPreview" />
+                            <androidx.camera.view.PreviewView
+                                android:id="@+id/cameraPreview"
+                                android:layout_width="match_parent"
+                                android:layout_height="match_parent"
+                                android:keepScreenOn="true" />
+
+                            <com.fitquest.app.ui.coachutils.OverlayView
+                                android:id="@+id/overlay"
+                                android:layout_width="match_parent"
+                                android:layout_height="match_parent"
+                                android:clickable="false"
+                                android:importantForAccessibility="no"
+                                android:visibility="gone" />
+                        </FrameLayout>
 
                         <!-- HUD top overlays: Reps + XP -->
                         <LinearLayout
@@ -227,7 +226,6 @@
                                 android:layout_marginBottom="8dp"
                                 android:gravity="center_vertical">
 
-                                <!-- Left block: REPS label + count -->
                                 <LinearLayout
                                     android:layout_width="0dp"
                                     android:layout_height="wrap_content"
@@ -253,7 +251,6 @@
                                         android:textStyle="bold" />
                                 </LinearLayout>
 
-                                <!-- Emoji for current exercise -->
                                 <TextView
                                     android:id="@+id/tvCurrentExerciseEmoji"
                                     android:layout_width="wrap_content"
@@ -275,7 +272,6 @@
                                 android:background="@color/cyan_30"
                                 android:gravity="center_vertical">
 
-                                <!-- Left block: trophy icon + "XP Gained" -->
                                 <LinearLayout
                                     android:layout_width="0dp"
                                     android:layout_height="wrap_content"
@@ -301,7 +297,6 @@
                                         android:textSize="14sp" />
                                 </LinearLayout>
 
-                                <!-- Right block: +points -->
                                 <TextView
                                     android:id="@+id/tvXpPoints"
                                     android:layout_width="wrap_content"
@@ -334,7 +329,6 @@
                                 android:gravity="center_vertical"
                                 android:weightSum="1">
 
-                                <!-- "Form Quality" -->
                                 <TextView
                                     android:id="@+id/labelFormQuality"
                                     android:layout_width="0dp"
@@ -345,7 +339,6 @@
                                     android:textSize="14sp"
                                     android:textStyle="bold" />
 
-                                <!-- Lightning icon + % -->
                                 <LinearLayout
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
@@ -357,8 +350,8 @@
                                         android:layout_width="16dp"
                                         android:layout_height="16dp"
                                         android:src="@drawable/ic_zap"
-                                        android:tint="@color/gold"
-                                        android:contentDescription="Power" />
+                                        android:contentDescription="Power"
+                                        app:tint="@color/gold" />
 
                                     <TextView
                                         android:id="@+id/tvFormScore"
@@ -414,6 +407,25 @@
                                 android:textSize="12sp"
                                 android:textStyle="bold" />
                         </LinearLayout>
+
+                        <!-- ===== Countdown (on top of everything) ===== -->
+                        <TextView
+                            android:id="@+id/tvCountdown"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="10"
+                            android:textColor="@android:color/white"
+                            android:textStyle="bold"
+                            android:textSize="72sp"
+                            android:shadowColor="@android:color/black"
+                            android:shadowDx="0"
+                            android:shadowDy="0"
+                            android:shadowRadius="8"
+                            android:visibility="gone"
+                            app:layout_constraintTop_toTopOf="parent"
+                            app:layout_constraintBottom_toBottomOf="parent"
+                            app:layout_constraintStart_toStartOf="parent"
+                            app:layout_constraintEnd_toEndOf="parent"/>
                     </androidx.constraintlayout.widget.ConstraintLayout>
                 </androidx.constraintlayout.widget.ConstraintLayout>
             </com.google.android.material.card.MaterialCardView>
@@ -437,7 +449,6 @@
                     android:padding="16dp"
                     android:gravity="center_vertical">
 
-                    <!-- little animated icon box -->
                     <FrameLayout
                         android:layout_width="40dp"
                         android:layout_height="40dp"
@@ -450,8 +461,8 @@
                             android:layout_width="24dp"
                             android:layout_height="24dp"
                             android:src="@drawable/ic_activity"
-                            android:tint="@android:color/white"
-                            android:contentDescription="AI Coach icon"/>
+                            android:contentDescription="AI Coach icon"
+                            app:tint="@android:color/white" />
                     </FrameLayout>
 
                     <LinearLayout
@@ -489,7 +500,7 @@
                 android:orientation="vertical"
                 android:layout_marginBottom="16dp">
 
-                <!-- Start / Pause training -->
+                <!-- Begin Training / Pause Training -->
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btnStartWorkout"
                     android:layout_width="match_parent"
@@ -499,23 +510,27 @@
                     app:backgroundTint="@color/success_green"
                     app:cornerRadius="12dp"
                     android:layout_marginBottom="12dp"
-                    tools:text="Begin Training" />
+                    app:iconGravity="textStart"
+                    app:iconPadding="8dp"
+                    app:iconSize="28dp" />
 
-                <!-- Toggle camera -->
+                <!-- Switch Camera -->
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btnToggleCamera"
                     android:layout_width="match_parent"
                     android:layout_height="56dp"
-                    android:text="Activate Camera"
+                    android:text="Switch Camera"
                     android:textColor="@color/cyan"
                     app:backgroundTint="@color/surface_dark_translucent"
                     app:cornerRadius="12dp"
                     app:strokeWidth="2dp"
                     app:strokeColor="@color/cyan_30"
-                    tools:text="Activate Camera" />
+                    app:iconGravity="textStart"
+                    app:iconPadding="8dp"
+                    app:iconSize="28dp" />
             </LinearLayout>
 
-            <!-- ===== 5. Info Card (about AI Training System) ===== -->
+            <!-- ===== 5. Info Card ===== -->
             <com.google.android.material.card.MaterialCardView
                 android:id="@+id/cardInfo"
                 android:layout_width="match_parent"

@@ -1,384 +1,583 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout
+<androidx.constraintlayout.widget.ConstraintLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/aiCoachRoot"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:background="@color/background">
+    android:background="@color/background_dark"
+    tools:context=".ui.fragments.AiCoachFragment">
 
-    <!-- 검색/선택 영역 -->
+    <!-- ===== Header (like the top bar in React) ===== -->
     <LinearLayout
-        android:layout_width="match_parent"
+        android:id="@+id/headerContainer"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
         android:padding="16dp"
-        android:background="@color/card_background">
+        android:background="@drawable/gradient_overlay_top"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
 
-        <com.google.android.material.textfield.TextInputLayout
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:layout_marginEnd="8dp"
-            style="@style/Widget.Material3.TextInputLayout.OutlinedBox">
-
-            <com.google.android.material.textfield.TextInputEditText
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:hint="@string/search_exercise"
-                android:inputType="text"
-                app:drawableStartCompat="@drawable/ic_search" />
-
-        </com.google.android.material.textfield.TextInputLayout>
-
-        <Spinner
-            android:id="@+id/spinner_sport"
-            android:layout_width="100dp"
-            android:layout_height="48dp"
-            android:layout_gravity="center_vertical"
-            android:entries="@array/sports_array" />
-
-    </LinearLayout>
-
-    <!-- 카메라 비교 영역 -->
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="3"
-        android:orientation="horizontal"
-        android:background="@android:color/black">
-
-        <!-- 사용자 카메라 영역 -->
-        <FrameLayout
-            android:layout_width="0dp"
-            android:layout_height="match_parent"
-            android:layout_weight="1">
-
-            <!-- 카메라 프리뷰 -->
-            <androidx.camera.view.PreviewView
-                android:id="@+id/camera_preview"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent" />
-
-            <!-- 사용자 카메라 오버레이 -->
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:orientation="vertical">
-
-                <!-- 녹화 표시 -->
-                <LinearLayout
-                    android:id="@+id/recording_indicator"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_margin="12dp"
-                    android:background="@drawable/bg_recording_badge"
-                    android:orientation="horizontal"
-                    android:padding="6dp"
-                    android:visibility="gone">
-
-                    <View
-                        android:layout_width="8dp"
-                        android:layout_height="8dp"
-                        android:layout_marginEnd="4dp"
-                        android:layout_gravity="center_vertical"
-                        android:background="@drawable/bg_recording_dot" />
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="REC"
-                        android:textColor="@android:color/white"
-                        android:textSize="12sp"
-                        android:textStyle="bold" />
-
-                </LinearLayout>
-
-                <View
-                    android:layout_width="0dp"
-                    android:layout_height="0dp"
-                    android:layout_weight="1" />
-
-                <!-- 사용자 배지 -->
-                <LinearLayout
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_margin="12dp"
-                    android:background="@drawable/bg_user_badge"
-                    android:orientation="horizontal"
-                    android:padding="6dp">
-
-                    <ImageView
-                        android:layout_width="12dp"
-                        android:layout_height="12dp"
-                        android:layout_marginEnd="4dp"
-                        android:layout_gravity="center_vertical"
-                        android:src="@drawable/ic_user"
-                        android:contentDescription="@string/user_icon"
-                        app:tint="@android:color/white" />
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="@string/my_motion"
-                        android:textColor="@android:color/white"
-                        android:textSize="12sp" />
-
-                </LinearLayout>
-
-            </LinearLayout>
-
-        </FrameLayout>
-
-        <!-- 구분선 -->
-        <View
-            android:layout_width="1dp"
-            android:layout_height="match_parent"
-            android:background="#333333" />
-
-        <!-- AI 가이드 영역 -->
-        <FrameLayout
-            android:id="@+id/ai_guide_area"
-            android:layout_width="0dp"
-            android:layout_height="match_parent"
-            android:layout_weight="1"
-            android:background="#1a1a1a"
-            android:visibility="gone">
-
-            <!-- AI 가이드 오버레이 -->
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:orientation="vertical">
-
-                <!-- 점수 배지 -->
-                <LinearLayout
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="end"
-                    android:layout_margin="12dp"
-                    android:background="@drawable/bg_score_badge"
-                    android:padding="8dp">
-
-                    <TextView
-                        android:id="@+id/text_score"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:textColor="@android:color/white"
-                        android:textSize="18sp"
-                        android:textStyle="bold"
-                        tools:text="85%" />
-
-                </LinearLayout>
-
-                <View
-                    android:layout_width="0dp"
-                    android:layout_height="0dp"
-                    android:layout_weight="1" />
-
-                <!-- AI 가이드 배지 -->
-                <LinearLayout
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_margin="12dp"
-                    android:background="@drawable/bg_ai_badge"
-                    android:orientation="horizontal"
-                    android:padding="6dp">
-
-                    <ImageView
-                        android:layout_width="12dp"
-                        android:layout_height="12dp"
-                        android:layout_marginEnd="4dp"
-                        android:layout_gravity="center_vertical"
-                        android:src="@drawable/ic_target"
-                        android:contentDescription="@string/ai_guide_icon"
-                        app:tint="@android:color/white" />
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="@string/ai_guide"
-                        android:textColor="@android:color/white"
-                        android:textSize="12sp" />
-
-                </LinearLayout>
-
-            </LinearLayout>
-
-        </FrameLayout>
-
-    </LinearLayout>
-
-    <!-- 단계 표시기 -->
-    <LinearLayout
-        android:id="@+id/phase_indicator"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:background="@drawable/bg_phase_indicator"
-        android:orientation="vertical"
-        android:padding="12dp"
-        android:visibility="gone">
-
-        <TextView
-            android:id="@+id/text_current_phase"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="8dp"
-            android:background="@drawable/bg_phase_badge"
-            android:padding="6dp"
-            android:textColor="@android:color/white"
-            android:textSize="12sp"
-            android:textStyle="bold"
-            tools:text="현재 단계: 어드레스" />
-
+        <!-- Left text block -->
         <LinearLayout
-            android:layout_width="match_parent"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:orientation="horizontal">
+            android:layout_weight="1"
+            android:orientation="vertical">
 
             <TextView
+                android:id="@+id/tvSystemTitle"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginEnd="8dp"
-                android:text="@string/accuracy"
-                android:textColor="@android:color/white"
+                android:text="AI TRAINING SYSTEM"
+                android:textColor="@color/cyan"
                 android:textSize="12sp" />
 
-            <ProgressBar
-                android:id="@+id/progress_score"
-                style="?android:attr/progressBarStyleHorizontal"
-                android:layout_width="0dp"
-                android:layout_height="8dp"
-                android:layout_weight="1"
-                android:layout_marginEnd="8dp"
-                android:layout_gravity="center_vertical"
-                android:progressTint="@color/primary"
-                android:progressBackgroundTint="#333333"
-                tools:progress="85" />
-
             <TextView
-                android:id="@+id/text_accuracy_percent"
+                android:id="@+id/tvSystemSubtitle"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:textColor="@android:color/white"
-                android:textSize="12sp"
-                tools:text="85%" />
-
+                android:text="Real-time Analysis"
+                android:textColor="@color/text_primary"
+                android:textSize="20sp"
+                android:textStyle="bold"
+                android:layout_marginTop="4dp" />
         </LinearLayout>
 
+        <!-- Animated status icon block (Activity icon in React) -->
+        <FrameLayout
+            android:id="@+id/activityIconBox"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:background="@color/cyan_30"
+            android:foreground="?attr/selectableItemBackgroundBorderless"
+            android:padding="8dp"
+            android:layout_marginStart="12dp"
+            android:layout_gravity="center_vertical"
+            android:clipToPadding="false">
+
+            <ImageView
+                android:id="@+id/icActivity"
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:src="@drawable/ic_activity"
+                android:contentDescription="Activity indicator"
+                android:layout_gravity="center"
+                app:tint="@android:color/white" />
+        </FrameLayout>
     </LinearLayout>
 
-    <!-- 컨트롤 버튼들 -->
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:padding="16dp"
-        android:background="@color/card_background">
-
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/btn_start_analysis"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:layout_marginEnd="8dp"
-            android:text="@string/start_analysis"
-            android:backgroundTint="@color/primary"
-            android:textColor="@android:color/white"
-            app:icon="@drawable/ic_play"
-            app:iconTint="@android:color/white" />
-
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/btn_reset"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="4dp"
-            android:layout_marginEnd="4dp"
-            android:text="@string/reset"
-            android:textColor="@color/primary"
-            app:icon="@drawable/ic_refresh"
-            app:iconTint="@color/primary"
-            app:strokeColor="@color/primary"
-            app:strokeWidth="1dp"
-            style="@style/Widget.Material3.Button.OutlinedButton" />
-
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/btn_flip_camera"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="4dp"
-            app:icon="@drawable/ic_flip_camera"
-            app:iconTint="@color/primary"
-            app:strokeColor="@color/primary"
-            app:strokeWidth="1dp"
-            style="@style/Widget.Material3.Button.OutlinedButton" />
-
-    </LinearLayout>
-
-    <!-- 피드백 섹션 -->
+    <!-- ===== Scrollable content below header ===== -->
     <ScrollView
-        android:layout_width="match_parent"
+        android:id="@+id/contentScroll"
+        android:layout_width="0dp"
         android:layout_height="0dp"
-        android:layout_weight="2"
-        android:fillViewport="true">
+        android:fillViewport="true"
+        android:padding="16dp"
+        app:layout_constraintTop_toBottomOf="@id/headerContainer"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
 
         <LinearLayout
+            android:id="@+id/contentColumn"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:padding="16dp">
+            android:paddingBottom="32dp"
+            android:clipToPadding="false">
 
-            <TextView
+            <!-- ===== 1. Exercise Selection Card ===== -->
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/cardExerciseSelect"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="16dp"
-                android:gravity="center"
-                android:text="@string/text_feedback"
-                android:textSize="18sp"
-                android:textStyle="bold"
-                android:textColor="@color/text_primary" />
+                app:cardBackgroundColor="@color/surface_dark_translucent"
+                app:cardCornerRadius="16dp"
+                app:strokeColor="@color/cyan_30"
+                app:strokeWidth="2dp"
+                app:cardElevation="8dp">
 
-            <!-- 빈 상태 메시지 -->
-            <LinearLayout
-                android:id="@+id/empty_feedback_layout"
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="16dp">
+
+                    <!-- Title row -->
+                    <LinearLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical"
+                        android:layout_marginBottom="12dp">
+
+                        <ImageView
+                            android:id="@+id/iconTarget"
+                            android:layout_width="20dp"
+                            android:layout_height="20dp"
+                            android:src="@drawable/ic_target"
+                            android:contentDescription="Target icon"
+                            app:tint="@color/cyan" />
+
+                        <TextView
+
+
+
+                            android:id="@+id/tvSelectExerciseLabel"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="8dp"
+                            android:text="Select Exercise"
+                            android:textColor="@color/text_primary"
+                            android:textSize="16sp"
+                            android:textStyle="bold" />
+                    </LinearLayout>
+
+                    <!-- Spinner (equivalent to Select in React) -->
+                    <Spinner
+                        android:id="@+id/spinnerExercise"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:spinnerMode="dropdown"
+                        android:popupBackground="@color/surface_dark"
+                        android:padding="12dp"
+                        android:background="@color/background_dark"
+                        android:entries="@array/exercise_options"
+                        android:theme="@style/ThemeOverlay.MaterialComponents.Dark"
+                        tools:text="Push-ups" />
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- ===== 2. Camera / Preview Card (with HUD overlays) ===== -->
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/cardCamera"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:gravity="center"
-                android:orientation="vertical"
-                android:padding="32dp">
+                android:layout_marginBottom="16dp"
+                app:cardBackgroundColor="@android:color/transparent"
+                app:cardCornerRadius="16dp"
+                app:strokeColor="@color/cyan_30"
+                app:strokeWidth="4dp"
+                app:cardElevation="12dp">
 
-                <ImageView
-                    android:layout_width="48dp"
-                    android:layout_height="48dp"
-                    android:src="@drawable/ic_camera"
-                    android:alpha="0.6"
-                    android:contentDescription="@string/camera_icon"
-                    app:tint="@color/text_secondary" />
+                <!-- We'll use ConstraintLayout to enforce 3:4 aspect ratio like aspect-[3/4] -->
+                <androidx.constraintlayout.widget.ConstraintLayout
+                    android:id="@+id/cameraCardRoot"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content">
 
-                <TextView
-                    android:layout_width="wrap_content"
+                    <!-- Wrapper whose height follows 3:4 ratio -->
+                    <androidx.constraintlayout.widget.ConstraintLayout
+                        android:id="@+id/previewWrapper"
+                        android:layout_width="0dp"
+                        android:layout_height="0dp"
+                        android:background="@color/background_dark"
+                        android:keepScreenOn="true"
+                        app:layout_constraintTop_toTopOf="parent"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintDimensionRatio="3:4">
+
+                        <!-- Camera Preview -->
+                        <androidx.camera.view.PreviewView
+                            android:id="@+id/cameraPreview"
+                            android:layout_width="0dp"
+                            android:layout_height="0dp"
+                            app:layout_constraintTop_toTopOf="parent"
+                            app:layout_constraintBottom_toBottomOf="parent"
+                            app:layout_constraintStart_toStartOf="parent"
+                            app:layout_constraintEnd_toEndOf="parent"
+                            tools:background="@android:color/darker_gray" />
+
+                        <!-- Pose Overlay Canvas (skeleton drawing layer) -->
+                        <View
+                            android:id="@+id/poseOverlay"
+                            android:layout_width="0dp"
+                            android:layout_height="0dp"
+                            android:background="@android:color/transparent"
+                            app:layout_constraintTop_toTopOf="@id/cameraPreview"
+                            app:layout_constraintBottom_toBottomOf="@id/cameraPreview"
+                            app:layout_constraintStart_toStartOf="@id/cameraPreview"
+                            app:layout_constraintEnd_toEndOf="@id/cameraPreview" />
+
+                        <!-- HUD top overlays: Reps + XP -->
+                        <LinearLayout
+                            android:id="@+id/hudTopContainer"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:orientation="vertical"
+                            android:padding="16dp"
+                            app:layout_constraintTop_toTopOf="parent"
+                            app:layout_constraintStart_toStartOf="parent"
+                            app:layout_constraintEnd_toEndOf="parent">
+
+                            <!-- Rep Counter Card -->
+                            <LinearLayout
+                                android:id="@+id/repCounterCard"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:orientation="horizontal"
+                                android:padding="12dp"
+                                android:background="@color/gold"
+                                android:layout_marginBottom="8dp"
+                                android:gravity="center_vertical">
+
+                                <!-- Left block: REPS label + count -->
+                                <LinearLayout
+                                    android:layout_width="0dp"
+                                    android:layout_height="wrap_content"
+                                    android:layout_weight="1"
+                                    android:orientation="vertical">
+
+                                    <TextView
+                                        android:id="@+id/labelReps"
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:text="REPS"
+                                        android:textColor="@color/background_dark"
+                                        android:textSize="12sp"
+                                        android:textStyle="bold" />
+
+                                    <TextView
+                                        android:id="@+id/tvRepCount"
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:text="0"
+                                        android:textColor="@android:color/white"
+                                        android:textSize="24sp"
+                                        android:textStyle="bold" />
+                                </LinearLayout>
+
+                                <!-- Emoji for current exercise -->
+                                <TextView
+                                    android:id="@+id/tvCurrentExerciseEmoji"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="💪"
+                                    android:textColor="@android:color/white"
+                                    android:textSize="32sp"
+                                    android:textStyle="bold"
+                                    android:layout_marginStart="8dp" />
+                            </LinearLayout>
+
+                            <!-- XP Counter Card -->
+                            <LinearLayout
+                                android:id="@+id/xpCounterCard"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:orientation="horizontal"
+                                android:padding="12dp"
+                                android:background="@color/cyan_30"
+                                android:gravity="center_vertical">
+
+                                <!-- Left block: trophy icon + "XP Gained" -->
+                                <LinearLayout
+                                    android:layout_width="0dp"
+                                    android:layout_height="wrap_content"
+                                    android:layout_weight="1"
+                                    android:orientation="horizontal"
+                                    android:gravity="center_vertical">
+
+                                    <ImageView
+                                        android:id="@+id/iconTrophy"
+                                        android:layout_width="20dp"
+                                        android:layout_height="20dp"
+                                        android:src="@drawable/ic_trophy"
+                                        android:contentDescription="Trophy"
+                                        android:layout_marginEnd="6dp"
+                                        app:tint="@color/gold" />
+
+                                    <TextView
+                                        android:id="@+id/labelXp"
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:text="XP Gained"
+                                        android:textColor="@android:color/white"
+                                        android:textSize="14sp" />
+                                </LinearLayout>
+
+                                <!-- Right block: +points -->
+                                <TextView
+                                    android:id="@+id/tvXpPoints"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="+0"
+                                    android:textColor="@android:color/white"
+                                    android:textSize="20sp"
+                                    android:textStyle="bold" />
+                            </LinearLayout>
+                        </LinearLayout>
+
+                        <!-- Form Quality bottom overlay -->
+                        <LinearLayout
+                            android:id="@+id/formScoreContainer"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:orientation="vertical"
+                            android:padding="12dp"
+                            android:layout_margin="16dp"
+                            android:background="@color/surface_dark_translucent"
+                            app:layout_constraintBottom_toBottomOf="parent"
+                            app:layout_constraintStart_toStartOf="parent"
+                            app:layout_constraintEnd_toEndOf="parent"
+                            tools:visibility="visible">
+
+                            <LinearLayout
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:orientation="horizontal"
+                                android:gravity="center_vertical"
+                                android:weightSum="1">
+
+                                <!-- "Form Quality" -->
+                                <TextView
+                                    android:id="@+id/labelFormQuality"
+                                    android:layout_width="0dp"
+                                    android:layout_height="wrap_content"
+                                    android:layout_weight="1"
+                                    android:text="Form Quality"
+                                    android:textColor="@color/cyan"
+                                    android:textSize="14sp"
+                                    android:textStyle="bold" />
+
+                                <!-- Lightning icon + % -->
+                                <LinearLayout
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:orientation="horizontal"
+                                    android:gravity="center_vertical">
+
+                                    <ImageView
+                                        android:id="@+id/iconZap"
+                                        android:layout_width="16dp"
+                                        android:layout_height="16dp"
+                                        android:src="@drawable/ic_zap"
+                                        android:tint="@color/gold"
+                                        android:contentDescription="Power" />
+
+                                    <TextView
+                                        android:id="@+id/tvFormScore"
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:layout_marginStart="4dp"
+                                        android:text="0%"
+                                        android:textColor="@android:color/white"
+                                        android:textSize="14sp"
+                                        android:textStyle="bold" />
+                                </LinearLayout>
+                            </LinearLayout>
+
+                            <com.google.android.material.progressindicator.LinearProgressIndicator
+                                android:id="@+id/progressFormQuality"
+                                android:layout_width="match_parent"
+                                android:layout_height="6dp"
+                                android:layout_marginTop="8dp"
+                                app:indicatorColor="@color/cyan"
+                                app:trackColor="@color/surface_dark"
+                                app:trackCornerRadius="4dp" />
+                        </LinearLayout>
+
+                        <!-- Recording Indicator (ANALYZING badge) -->
+                        <LinearLayout
+                            android:id="@+id/recordingIndicator"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal"
+                            android:paddingLeft="12dp"
+                            android:paddingRight="12dp"
+                            android:paddingTop="6dp"
+                            android:paddingBottom="6dp"
+                            android:layout_margin="16dp"
+                            android:background="@color/error_red"
+                            android:gravity="center_vertical"
+                            app:layout_constraintTop_toTopOf="parent"
+                            app:layout_constraintEnd_toEndOf="parent"
+                            tools:visibility="visible">
+
+                            <View
+                                android:layout_width="6dp"
+                                android:layout_height="6dp"
+                                android:layout_marginEnd="6dp"
+                                android:background="@android:color/white" />
+
+                            <TextView
+                                android:id="@+id/tvAnalyzing"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="ANALYZING"
+                                android:textColor="@android:color/white"
+                                android:textSize="12sp"
+                                android:textStyle="bold" />
+                        </LinearLayout>
+                    </androidx.constraintlayout.widget.ConstraintLayout>
+                </androidx.constraintlayout.widget.ConstraintLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- ===== 3. AI Feedback Card ===== -->
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/cardFeedback"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="16dp"
+                app:cardBackgroundColor="@color/cyan_30"
+                app:cardCornerRadius="16dp"
+                app:strokeColor="@color/cyan"
+                app:strokeWidth="2dp"
+                app:cardElevation="8dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="16dp"
-                    android:text="@string/empty_feedback_message"
-                    android:textColor="@color/text_secondary"
-                    android:textSize="14sp"
-                    android:gravity="center" />
+                    android:orientation="horizontal"
+                    android:padding="16dp"
+                    android:gravity="center_vertical">
 
+                    <!-- little animated icon box -->
+                    <FrameLayout
+                        android:layout_width="40dp"
+                        android:layout_height="40dp"
+                        android:background="@color/cyan_20"
+                        android:layout_marginEnd="12dp"
+                        android:gravity="center">
+
+                        <ImageView
+                            android:id="@+id/iconActivitySmall"
+                            android:layout_width="24dp"
+                            android:layout_height="24dp"
+                            android:src="@drawable/ic_activity"
+                            android:tint="@android:color/white"
+                            android:contentDescription="AI Coach icon"/>
+                    </FrameLayout>
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:id="@+id/tvAiCoachLabel"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="AI Coach"
+                            android:textColor="@color/cyan"
+                            android:textSize="12sp" />
+
+                        <TextView
+                            android:id="@+id/tvFeedback"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Position yourself in frame"
+                            android:textColor="@color/text_primary"
+                            android:textSize="14sp"
+                            android:layout_marginTop="4dp"
+                            tools:text="Keep core engaged and drive knees out." />
+                    </LinearLayout>
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- ===== 4. Control Buttons (Begin/Pause, Camera toggle) ===== -->
+            <LinearLayout
+                android:id="@+id/controlButtonsContainer"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:layout_marginBottom="16dp">
+
+                <!-- Start / Pause training -->
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnStartWorkout"
+                    android:layout_width="match_parent"
+                    android:layout_height="56dp"
+                    android:text="Begin Training"
+                    android:textColor="@android:color/white"
+                    app:backgroundTint="@color/success_green"
+                    app:cornerRadius="12dp"
+                    android:layout_marginBottom="12dp"
+                    tools:text="Begin Training" />
+
+                <!-- Toggle camera -->
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnToggleCamera"
+                    android:layout_width="match_parent"
+                    android:layout_height="56dp"
+                    android:text="Activate Camera"
+                    android:textColor="@color/cyan"
+                    app:backgroundTint="@color/surface_dark_translucent"
+                    app:cornerRadius="12dp"
+                    app:strokeWidth="2dp"
+                    app:strokeColor="@color/cyan_30"
+                    tools:text="Activate Camera" />
             </LinearLayout>
 
-            <!-- TODO: 실제 피드백 리스트 RecyclerView 추가 -->
-            <!--
-            <androidx.recyclerview.widget.RecyclerView
-                android:id="@+id/recycler_view_feedback"
+            <!-- ===== 5. Info Card (about AI Training System) ===== -->
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/cardInfo"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:visibility="gone"
-                tools:listitem="@layout/item_feedback" />
-            -->
+                android:layout_marginBottom="16dp"
+                app:cardBackgroundColor="@color/surface_dark_translucent"
+                app:cardCornerRadius="16dp"
+                app:strokeColor="@color/gold"
+                app:strokeWidth="2dp"
+                app:cardElevation="6dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:padding="16dp"
+                    android:gravity="center_vertical">
+
+                    <FrameLayout
+                        android:layout_width="40dp"
+                        android:layout_height="40dp"
+                        android:background="@color/gold"
+                        android:layout_marginEnd="12dp"
+                        android:gravity="center">
+
+                        <ImageView
+                            android:id="@+id/iconZapInfo"
+                            android:layout_width="24dp"
+                            android:layout_height="24dp"
+                            android:src="@drawable/ic_zap"
+                            android:contentDescription="Zap icon"
+                            app:tint="@color/background_dark" />
+                    </FrameLayout>
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:id="@+id/tvInfoTitle"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="AI Training System"
+                            android:textColor="@color/gold"
+                            android:textSize="14sp"
+                            android:textStyle="bold" />
+
+                        <TextView
+                            android:id="@+id/tvInfoDesc"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Advanced pose detection analyzes your movements in real-time, counts reps automatically, and provides instant form feedback. Earn XP for perfect execution!"
+                            android:textColor="@color/text_secondary"
+                            android:textSize="13sp"
+                            android:layout_marginTop="4dp" />
+                    </LinearLayout>
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
 
         </LinearLayout>
-
     </ScrollView>
 
-</LinearLayout>
+</androidx.constraintlayout.widget.ConstraintLayout>

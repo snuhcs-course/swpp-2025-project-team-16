@@ -1,53 +1,237 @@
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:gravity="center"
-    android:orientation="vertical"
-    android:padding="24dp">
+    xmlns:tools="http://schemas.android.com/tools"
+    android:background="@drawable/bg_gradient_dark"
+    tools:context=".ui.fragments.login.SignupStep1Fragment">
 
-    <!-- 로고 -->
-    <ImageView
-        android:id="@+id/img_logo"
-        android:layout_width="96dp"
-        android:layout_height="96dp"
-        android:src="@drawable/ic_logo"
-        android:contentDescription="@string/app_name"
-        android:layout_marginBottom="32dp"/>
-
-    <EditText
-        android:id="@+id/et_name"
-        android:layout_width="match_parent"
+    <!-- Outer Glow Wrapper -->
+    <FrameLayout
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:hint="이름"
-        android:layout_marginBottom="12dp"/>
+        android:layout_gravity="center"
+        android:padding="3dp"
+        android:background="@drawable/card_glow_outer">
 
-    <EditText
-        android:id="@+id/et_email"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:hint="이메일"
-        android:inputType="textEmailAddress"
-        android:layout_marginBottom="12dp"/>
+        <!-- Center Card -->
+        <androidx.cardview.widget.CardView
+            android:layout_width="360dp"
+            android:layout_height="wrap_content"
+            android:padding="32dp"
+            app:cardCornerRadius="20dp"
+            app:cardElevation="22dp"
+            android:backgroundTint="@color/surface_dark_translucent"
+            app:strokeColor="@color/cyan_20"
+            app:strokeWidth="1dp">
 
-    <EditText
-        android:id="@+id/et_password"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:hint="비밀번호"
-        android:inputType="textPassword"
-        android:layout_marginBottom="12dp"/>
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:gravity="center_horizontal"
+                android:padding="25dp">
 
-    <EditText
-        android:id="@+id/et_password_confirm"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:hint="비밀번호 확인"
-        android:inputType="textPassword"
-        android:layout_marginBottom="24dp"/>
+                <!-- Logo -->
+                <ImageView
+                    android:layout_width="64dp"
+                    android:layout_height="64dp"
+                    android:layout_marginBottom="16dp"
+                    android:src="@drawable/ic_fitquest_logo_rounded"
+                    android:contentDescription="FitQuest Logo" />
 
-    <Button
-        android:id="@+id/btn_next"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="다음"/>
-</LinearLayout>
+                <!-- Title -->
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="FitQuest"
+                    android:textColor="@android:color/white"
+                    android:textSize="20sp"
+                    android:textStyle="bold" />
+
+                <!-- Subtitle -->
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="2dp"
+                    android:layout_marginBottom="28dp"
+                    android:text="Begin Your Transformation"
+                    android:textColor="@color/cyan_bright"
+                    android:textSize="13sp"
+                    android:fontFamily="sans-serif-medium" />
+
+                <!-- Header Box -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="48dp"
+                    android:background="@drawable/box_outline_cyan"
+                    android:gravity="center_vertical"
+                    android:paddingHorizontal="16dp"
+                    android:layout_marginBottom="20dp">
+
+                    <ImageView
+                        android:layout_width="18dp"
+                        android:layout_height="18dp"
+                        android:src="@drawable/ic_bolt"
+                        app:tint="@color/cyan_bright" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="  Create Your Account"
+                        android:textColor="@color/cyan_bright"
+                        android:textSize="14sp"
+                        android:textStyle="bold" />
+                </LinearLayout>
+
+                <!-- Email -->
+                <com.google.android.material.textfield.TextInputLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    app:boxBackgroundMode="filled"
+                    app:boxStrokeColor="@color/cyan_bright"
+                    app:boxStrokeWidth="3dp"
+                    app:boxCornerRadiusTopStart="8dp"
+                    app:boxCornerRadiusTopEnd="8dp"
+                    app:boxCornerRadiusBottomStart="8dp"
+                    app:boxCornerRadiusBottomEnd="8dp"
+                    app:boxBackgroundColor="@color/input_bg_stronger"
+                    android:layout_marginBottom="16dp">
+
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/etEmail"
+                        android:layout_width="match_parent"
+                        android:layout_height="48dp"
+                        android:hint="Email Address"
+                        android:inputType="textEmailAddress"
+                        android:gravity="center_vertical"
+                        android:textColor="@android:color/white"
+                        android:textColorHint="@color/text_secondary"
+                        android:textSize="13sp" />
+                </com.google.android.material.textfield.TextInputLayout>
+
+                <!-- Hero Name -->
+                <com.google.android.material.textfield.TextInputLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    app:boxBackgroundMode="filled"
+                    app:boxStrokeColor="@color/cyan_bright"
+                    app:boxStrokeWidth="3dp"
+                    app:boxCornerRadiusTopStart="8dp"
+                    app:boxCornerRadiusTopEnd="8dp"
+                    app:boxCornerRadiusBottomStart="8dp"
+                    app:boxCornerRadiusBottomEnd="8dp"
+                    app:boxBackgroundColor="@color/input_bg_stronger"
+                    android:layout_marginBottom="16dp">
+
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/etHeroName"
+                        android:layout_width="match_parent"
+                        android:layout_height="48dp"
+                        android:hint="Name"
+                        android:inputType="textPersonName"
+                        android:gravity="center_vertical"
+                        android:textColor="@android:color/white"
+                        android:textColorHint="@color/text_secondary"
+                        android:textSize="13sp" />
+                </com.google.android.material.textfield.TextInputLayout>
+
+                <!-- Password -->
+                <com.google.android.material.textfield.TextInputLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    app:boxBackgroundMode="filled"
+                    app:boxStrokeColor="@color/cyan_bright"
+                    app:boxStrokeWidth="3dp"
+                    app:passwordToggleEnabled="true"
+                    app:passwordToggleTint="@color/cyan_bright"
+                    app:boxCornerRadiusTopStart="8dp"
+                    app:boxCornerRadiusTopEnd="8dp"
+                    app:boxCornerRadiusBottomStart="8dp"
+                    app:boxCornerRadiusBottomEnd="8dp"
+                    app:boxBackgroundColor="@color/input_bg_stronger"
+                    android:layout_marginBottom="16dp">
+
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/etPassword"
+                        android:layout_width="match_parent"
+                        android:layout_height="48dp"
+                        android:hint="Password"
+                        android:inputType="textPassword"
+                        android:gravity="center_vertical"
+                        android:textColor="@android:color/white"
+                        android:textColorHint="@color/text_secondary"
+                        android:textSize="13sp" />
+                </com.google.android.material.textfield.TextInputLayout>
+
+                <!-- Confirm Password -->
+                <com.google.android.material.textfield.TextInputLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    app:boxBackgroundMode="filled"
+                    app:boxStrokeColor="@color/cyan_bright"
+                    app:boxStrokeWidth="3dp"
+                    app:passwordToggleEnabled="true"
+                    app:passwordToggleTint="@color/cyan_bright"
+                    app:boxCornerRadiusTopStart="8dp"
+                    app:boxCornerRadiusTopEnd="8dp"
+                    app:boxCornerRadiusBottomStart="8dp"
+                    app:boxCornerRadiusBottomEnd="8dp"
+                    app:boxBackgroundColor="@color/input_bg_stronger"
+                    android:layout_marginBottom="24dp">
+
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/etConfirmPassword"
+                        android:layout_width="match_parent"
+                        android:layout_height="48dp"
+                        android:hint="Confirm Password"
+                        android:inputType="textPassword"
+                        android:gravity="center_vertical"
+                        android:textColor="@android:color/white"
+                        android:textColorHint="@color/text_secondary"
+                        android:textSize="13sp" />
+                </com.google.android.material.textfield.TextInputLayout>
+
+                <!-- Buttons -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center">
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnBack"
+                        android:layout_width="0dp"
+                        android:layout_height="50dp"
+                        android:layout_weight="1"
+                        android:text="Back"
+                        android:textSize="13sp"
+                        android:gravity="center"
+                        android:textAlignment="center"
+                        android:backgroundTint="@color/input_bg_stronger"
+                        android:textColor="@color/text_secondary"
+                        app:cornerRadius="12dp" />
+
+                    <View
+                        android:layout_width="12dp"
+                        android:layout_height="0dp" />
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnContinue"
+                        android:layout_width="0dp"
+                        android:layout_height="50dp"
+                        android:layout_weight="1"
+                        android:text="Continue"
+                        android:textSize="13sp"
+                        android:gravity="center"
+                        android:textAlignment="center"
+                        android:textColor="@android:color/white"
+                        android:background="@drawable/btn_gradient_blue"
+                        app:cornerRadius="12dp" />
+                </LinearLayout>
+
+            </LinearLayout>
+        </androidx.cardview.widget.CardView>
+    </FrameLayout>
+</FrameLayout>

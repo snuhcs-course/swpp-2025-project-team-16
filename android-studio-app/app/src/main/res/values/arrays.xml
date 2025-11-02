@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="exercise_options">
+        <item>💪 Push-ups</item>
+        <item>🦵 Squats</item>
+        <item>⚡ Plank</item>
+        <item>🦿 Lunges</item>
+        <item>💥 Burpees</item>
+        <item>🚀 Jump Squats</item>
+    </string-array>
+</resources>

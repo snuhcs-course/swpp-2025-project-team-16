@@ -1,48 +1,117 @@
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:gravity="center"
-    android:orientation="vertical"
-    android:padding="24dp">
+    xmlns:tools="http://schemas.android.com/tools"
+    android:background="@drawable/bg_gradient_dark"
+    tools:context=".ui.fragments.login.SignupStep2Fragment">
 
-    <!-- 로고 -->
-    <ImageView
-        android:id="@+id/img_logo"
-        android:layout_width="96dp"
-        android:layout_height="96dp"
-        android:src="@drawable/ic_logo"
-        android:contentDescription="@string/app_name"
-        android:layout_marginBottom="32dp"/>
-
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="관심 운동을 선택하세요"
-        android:textSize="18sp"
-        android:layout_marginBottom="16dp"/>
-
-    <CheckBox
-        android:id="@+id/cb_soccer"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="축구"/>
-
-    <CheckBox
-        android:id="@+id/cb_basketball"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="농구"/>
-
-    <CheckBox
-        android:id="@+id/cb_fitness"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="헬스"/>
-
-    <Button
-        android:id="@+id/btn_next"
+    <!-- 상단 안내 문구 -->
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="다음"
-        android:layout_marginTop="24dp"/>
-</LinearLayout>
+        android:orientation="vertical"
+        android:gravity="center_horizontal"
+        android:paddingTop="60dp"
+        android:paddingBottom="16dp">
+
+        <TextView
+            android:id="@+id/tvGreeting"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Ready for your session?"
+            android:textColor="@color/text_secondary"
+            android:textSize="14sp" />
+
+        <TextView
+            android:id="@+id/tvMission"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Do as many squats as you can!"
+            android:textColor="@color/cyan_bright"
+            android:textSize="20sp"
+            android:textStyle="bold"
+            android:layout_marginTop="4dp" />
+    </LinearLayout>
+
+    <!-- 카메라 뷰 -->
+    <androidx.cardview.widget.CardView
+        android:id="@+id/cameraCard"
+        android:layout_width="320dp"
+        android:layout_height="420dp"
+        android:layout_gravity="center"
+        app:cardCornerRadius="20dp"
+        app:cardElevation="18dp"
+        android:backgroundTint="@color/surface_dark_translucent"
+        app:strokeColor="@color/cyan_20"
+        app:strokeWidth="1dp">
+
+        <TextureView
+            android:id="@+id/textureView"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:scaleType="centerCrop" />
+
+        <View
+            android:id="@+id/overlayView"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="@android:color/transparent" />
+    </androidx.cardview.widget.CardView>
+
+    <!-- 하단 컨트롤 -->
+    <LinearLayout
+        android:id="@+id/controlPanel"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom"
+        android:orientation="horizontal"
+        android:gravity="center"
+        android:padding="24dp">
+
+        <TextView
+            android:id="@+id/tvCountLabel"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Count : "
+            android:textColor="@color/gold"
+            android:textSize="24sp"
+            android:textStyle="bold" />
+
+        <!-- 횟수 표시 -->
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:gravity="center"
+            android:layout_marginEnd="24dp">
+
+            <TextView
+                android:id="@+id/tvCountNumber"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="0"
+                android:textColor="@color/gold"
+                android:textSize="26sp"
+                android:textStyle="bold" />
+
+        </LinearLayout>
+
+        <!-- Stop 버튼 -->
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnStop"
+            android:layout_width="160dp"
+            android:layout_height="56dp"
+            android:background="@drawable/btn_gradient_blue"
+            android:elevation="6dp"
+            android:text="Stop"
+            android:textColor="@android:color/white"
+            android:textSize="15sp"
+            app:cornerRadius="12dp"
+            app:strokeColor="@color/cyan_30"
+            app:strokeWidth="1dp" />
+
+    </LinearLayout>
+</FrameLayout>

@@ -1,57 +1,46 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources xmlns:tools="http://schemas.android.com/tools">
-    <!-- Base application theme. -->
-    <style name="Base.Theme.AISportsPT" parent="Theme.Material3.DayNight">
+<resources>
+    <!-- FitQuest RPG Theme -->
+    <style name="Theme.FitQuest" parent="Theme.Material3.Dark.NoActionBar">
         <!-- Primary colors -->
-        <item name="colorPrimary">@color/achievement_silver</item>
-        <item name="colorPrimaryVariant">@color/achievement_silver</item>
-        <item name="colorOnPrimary">@android:color/white</item>
+        <item name="colorPrimary">@color/primary_blue</item>
+        <item name="colorPrimaryVariant">@color/primary_blue</item>
+        <item name="colorOnPrimary">@color/text_primary</item>
         
         <!-- Secondary colors -->
-        <item name="colorSecondary">#4D4D4D</item>
-        <item name="colorSecondaryVariant">#4D4D4D</item>
-        <item name="colorOnSecondary">@android:color/white</item>
+        <item name="colorSecondary">@color/gold</item>
+        <item name="colorSecondaryVariant">@color/gold</item>
+        <item name="colorOnSecondary">@color/background_dark</item>
         
-        <!-- Surface colors -->
-        <item name="colorSurface">@color/card_background</item>
-        <item name="colorOnSurface">@color/text_primary</item>
+        <!-- Tertiary colors -->
+        <item name="colorTertiary">@color/cyan</item>
+        <item name="colorOnTertiary">@color/background_dark</item>
         
         <!-- Background colors -->
-        <item name="android:colorBackground">@color/background</item>
-        <item name="colorOnBackground">@color/text_primary</item>
-        
-        <!-- Error colors -->
-        <item name="colorError">@color/error</item>
-        <item name="colorOnError">@android:color/white</item>
+        <item name="android:colorBackground">@color/background_dark</item>
+        <item name="colorSurface">@color/surface_dark</item>
+        <item name="colorOnSurface">@color/text_primary</item>
         
         <!-- Status bar -->
-        <item name="android:statusBarColor">@color/primary</item>
+        <item name="android:statusBarColor">@color/background_dark</item>
+        <item name="android:windowLightStatusBar">false</item>
+        
+        <!-- Navigation bar -->
+        <item name="android:navigationBarColor">@color/surface_dark</item>
+        
+        <!-- Typography -->
+        <item name="android:textColorPrimary">@color/text_primary</item>
+        <item name="android:textColorSecondary">@color/text_secondary</item>
     </style>
 
-    <style name="Theme.AISportsPT" parent="Base.Theme.AISportsPT" />
-    
-    <!-- 커스텀 버튼 스타일 -->
-    <style name="Widget.AISportsPT.Button" parent="Widget.Material3.Button">
-        <item name="android:textAllCaps">false</item>
-        <item name="cornerRadius">8dp</item>
+    <style name="BottomSheetDialogTheme" parent="ThemeOverlay.Material3.BottomSheetDialog">
+        <item name="bottomSheetStyle">@style/AppBottomSheetStyle</item>
     </style>
-    
-    <style name="Widget.AISportsPT.Button.Outlined" parent="Widget.Material3.Button.OutlinedButton">
-        <item name="android:textAllCaps">false</item>
-        <item name="cornerRadius">8dp</item>
+
+    <style name="AppBottomSheetStyle" parent="Widget.Material3.BottomSheet">
+        <!-- 둥근 모서리/배경 -->
+        <item name="shapeAppearance">@style/ShapeAppearance.Material3.Corner.Medium</item>
+        <item name="backgroundTint">@color/surface_dark_translucent</item>
     </style>
-    
-    <!-- 카드 스타일 -->
-    <style name="Widget.AISportsPT.CardView" parent="Widget.Material3.CardView.Elevated">
-        <item name="cardCornerRadius">12dp</item>
-        <item name="cardElevation">4dp</item>
-        <item name="cardBackgroundColor">@color/card_background</item>
-    </style>
-    
-    <!-- Chip 스타일 -->
-    <style name="Widget.AISportsPT.Chip" parent="Widget.Material3.Chip.Filter">
-        <item name="chipBackgroundColor">@color/primary</item>
-        <item name="android:textColor">@color/accent_foreground</item>
-    </style>
-    
+
 </resources>

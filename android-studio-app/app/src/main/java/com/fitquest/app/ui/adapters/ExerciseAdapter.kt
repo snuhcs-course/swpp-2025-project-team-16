@@ -30,20 +30,20 @@ class ExerciseAdapter(
 
     override fun onBindViewHolder(holder: ExerciseViewHolder, position: Int) {
         val exercise = exercises[position]
-        
+//
 //        holder.emojiText.text = exercise.emoji
 //        holder.nameText.text = exercise.name
-        
-        val details = buildString {
-            if (exercise.reps != null) append("${exercise.reps} reps")
-            if (exercise.duration != null) append("${exercise.duration}s")
-            if (exercise.sets != null) append(" × ${exercise.sets} sets")
-        }
-        holder.detailsText.text = details
-
-        holder.itemView.setOnClickListener {
-            onExerciseClick(exercise)
-        }
+//
+//        val details = buildString {
+//            if (exercise.reps != null) append("${exercise.reps} reps")
+//            if (exercise.duration != null) append("${exercise.duration}s")
+//            if (exercise.sets != null) append(" × ${exercise.sets} sets")
+//        }
+//        holder.detailsText.text = details
+//
+//        holder.itemView.setOnClickListener {
+//            onExerciseClick(exercise)
+//        }
     }
 
     override fun getItemCount() = exercises.size

@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ImageButton
 import android.widget.TextView
 import android.widget.Toast
 import androidx.fragment.app.Fragment
@@ -30,7 +31,7 @@ class LoginPasswordFragment : Fragment() {
     private lateinit var emailText: TextView
     private lateinit var passwordInput: TextInputEditText
     private lateinit var loginButton: MaterialButton
-    private lateinit var backButton: MaterialButton
+    private lateinit var backButton: ImageButton
 
     private var email: String = ""
 
@@ -64,7 +65,7 @@ class LoginPasswordFragment : Fragment() {
 
         emailText = view.findViewById(R.id.tvEmail)
         passwordInput = view.findViewById(R.id.etPassword)
-        loginButton = view.findViewById(R.id.btnLogin)
+        loginButton = view.findViewById(R.id.btnPasswordLogin)
         backButton = view.findViewById(R.id.btnBack)
 
         emailText.text = email

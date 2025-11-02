@@ -157,4 +157,22 @@ class SignupStep1Fragment : Fragment() {
             }
         }
     }
+
+    // SignupStep1Fragment.kt 안에 추가 (validateInputs 아래쪽에)
+    internal fun validateInputsForTest(
+        email: String,
+        username: String,
+        password: String,
+        confirm: String
+    ): Boolean {
+        return when {
+            email.isEmpty() -> false
+            username.isEmpty() -> false
+            password.isEmpty() -> false
+            password != confirm -> false
+            password.length < 6 -> false
+            else -> true
+        }
+    }
+
 }

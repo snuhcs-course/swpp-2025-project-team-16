@@ -106,7 +106,7 @@ class SignupStep2Fragment : Fragment() {
         }, ContextCompat.getMainExecutor(requireContext()))
     }
     private fun stopSession() {
-        val initialCount = 20  // 예시
+        val initialCount = 0  // 예시
 
         val prefs = requireContext().getSharedPreferences("auth", 0)
         val token = prefs.getString("token", null) ?: return

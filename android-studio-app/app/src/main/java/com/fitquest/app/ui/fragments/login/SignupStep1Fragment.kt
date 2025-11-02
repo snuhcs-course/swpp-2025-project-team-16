@@ -17,6 +17,8 @@ import com.google.android.material.textfield.TextInputEditText
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import androidx.core.content.edit
+
 
 /**
  * SignupStep1Fragment - Step 3-1 of signup flow
@@ -132,6 +134,14 @@ class SignupStep1Fragment : Fragment() {
 
                 if (response.isSuccessful) {
                     val body: SignupResponse? = response.body()
+                    if (body?.token != null) {
+                        val prefs = requireContext().getSharedPreferences("auth", 0)
+                        prefs.edit {
+                            putString("token", body.token)
+                            putString("email", email)
+                            putString("name", username)
+                        }
+                    }
                     Toast.makeText(requireContext(), body?.message ?: "Signup success!", Toast.LENGTH_SHORT).show()
 
                     // 회원가입 성공 시 → 다음 단계로 이동

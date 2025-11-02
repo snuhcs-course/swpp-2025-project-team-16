@@ -31,8 +31,10 @@ data class SignupRequest(
 )
 
 data class SignupResponse(
-    val message: String
+    val message: String,
+    val token: String? = null
 )
+
 
 data class InitialCountRequest(
     val initial_reps: Int

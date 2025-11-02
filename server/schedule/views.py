@@ -1,4 +1,5 @@
-from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework import status
 from django.shortcuts import get_object_or_404
@@ -63,3 +64,49 @@ def schedule_list(request):
         schedule = get_object_or_404(Schedule, id=schedule_id, user=user)
         schedule.delete()
         return Response({'message': 'Schedule deleted successfully'}, status=status.HTTP_200_OK)
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def user_schedule(request):
+    """
+    GET /api/schedules/
+    Response:
+    [
+      {
+        "date": "2025-11-01",
+        "xp": 250,
+        "exercises": [
+          {"name": "Push-up", "detail": "15 reps × 3 sets", "status": "Ready"}
+        ]
+      }
+    ]
+    """
+    schedules = Schedule.objects.filter(user=request.user).select_related('session__sport').order_by('-date')
+    serializer = ScheduleSerializer(schedules, many=True)
+
+    grouped = {}
+    for item in serializer.data:
+        date = item["date"]
+        if date not in grouped:
+            grouped[date] = {"date": date, "xp": 0, "exercises": []}
+        grouped[date]["exercises"].append({
+            "name": item["name"],
+            "detail": f"{item['session']} | {item['start_time']}–{item['end_time']}",
+            "status": "Completed" if item["is_finished"] else "Ready"
+        })
+        grouped[date]["xp"] += 100  # ⚙️ 단순 가중치 (원하면 나중에 계산 로직 연결)
+
+    result = list(grouped.values())
+    return Response(result)
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def user_history(request):
+    """
+    GET /api/accounts/history/
+    사용자 운동 기록 반환
+    """
+    schedules = Schedule.objects.filter(user=request.user).order_by('-date')
+    serializer = ScheduleSerializer(schedules, many=True)
+    return Response(serializer.data)

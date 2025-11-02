@@ -1,11 +1,13 @@
 package com.fitquest.app.model
 
 data class Exercise(
-    val id: String,
-    val name: String,
-    val type: String,
-    val reps: Int? = null,
-    val duration: Int? = null,
-    val sets: Int? = null,
-    val emoji: String
+    val emoji: String = "💪",
+    val name: String = "",
+    val done: String = "",
+    val xp: String = "",
+    val accuracy: String = "",
+    val duration: String = "",
+    val detail: String = "",
+    val status: String = "Ready",
+    val id: String = "",
 )

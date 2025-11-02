@@ -106,6 +106,7 @@
                         android:id="@+id/etEmail"
                         android:layout_width="match_parent"
                         android:layout_height="48dp"
+                        android:hint ="Enter your email"
                         android:gravity="center_vertical"
                         android:inputType="textEmailAddress"
                         android:textColor="@android:color/white"

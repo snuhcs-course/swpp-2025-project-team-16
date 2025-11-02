@@ -1,15 +1,24 @@
 package com.fitquest.app.ui.fragments
 
+import android.icu.text.SimpleDateFormat
+import android.icu.util.Calendar
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
 import android.widget.CalendarView
+import android.widget.Toast
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.viewModels
+import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.fitquest.app.R
 import com.fitquest.app.ui.adapters.ExerciseAdapter
+import com.fitquest.app.ui.viewmodels.ScheduleViewModel
+import com.prolificinteractive.materialcalendarview.MaterialCalendarView
+import java.util.Locale
 
 /**
  * ScheduleFragment - Screen 2 (TRAINING PLANNER)
@@ -30,12 +39,13 @@ import com.fitquest.app.ui.adapters.ExerciseAdapter
  */
 class ScheduleFragment : Fragment() {
 
-    private lateinit var calendarView: CalendarView
+    private lateinit var calendarView: MaterialCalendarView
     private lateinit var exerciseRecyclerView: RecyclerView
     private lateinit var exerciseAdapter: ExerciseAdapter
+    private lateinit var emptyState:View
     private lateinit var autoGenerateButton: Button
     private lateinit var customPlanButton: Button
-    private lateinit var saveButton: Button
+    private val viewModel: ScheduleViewModel by viewModels()
     
     private var selectedDate: String = ""
 
@@ -54,40 +64,47 @@ class ScheduleFragment : Fragment() {
         exerciseRecyclerView = view.findViewById(R.id.exercise_recycler_view)
         autoGenerateButton = view.findViewById(R.id.auto_generate_button)
         customPlanButton = view.findViewById(R.id.custom_plan_button)
-        saveButton = view.findViewById(R.id.save_button)
-
-        calendarView.setOnDateChangeListener { _, year, month, dayOfMonth ->
-            selectedDate = "$year-${month + 1}-$dayOfMonth"
-            loadScheduleForDate(selectedDate)
+        exerciseRecyclerView.layoutManager = LinearLayoutManager(context)
+        emptyState=view.findViewById(R.id.emptyState)
+        exerciseAdapter= ExerciseAdapter(
+            { showExerciseLibrary() })
+        exerciseRecyclerView.adapter=exerciseAdapter
+        viewModel.exercises.observe(viewLifecycleOwner){list->
+            if(list.isNullOrEmpty()){
+                exerciseRecyclerView.visibility=View.GONE
+                emptyState.visibility=View.VISIBLE
+            }else{
+                emptyState.visibility=View.GONE
+                exerciseRecyclerView.visibility=View.VISIBLE
+                exerciseAdapter.submitList(list)
+            }
+        }
+        val cal=Calendar.getInstance()
+        val sdf = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
+        selectedDate = sdf.format(cal.time)
+        viewModel.loadScheduleForDate(selectedDate)
+        calendarView.setOnDateChangedListener { _, date,_ ->
+            val sdf = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
+            cal.set(date.year,date.month,date.day)
+            selectedDate = sdf.format(cal.time)
+            viewModel.loadScheduleForDate(selectedDate)
         }
 
         autoGenerateButton.setOnClickListener {
-            generateSchedule()
+            viewModel.generateSchedule()
+            viewModel.loadScheduleForDate(selectedDate)
+            Toast.makeText(requireContext(),"계획이 생성되었습니다!",Toast.LENGTH_SHORT).show()
         }
 
         customPlanButton.setOnClickListener {
             showExerciseLibrary()
         }
-
-        saveButton.setOnClickListener {
-            saveSchedule()
-        }
     }
 
-    private fun loadScheduleForDate(date: String) {
-        // TODO: Backend - Load existing schedule for selected date
-    }
 
-    private fun generateSchedule() {
-        // TODO: Backend - Generate AI-based workout schedule for selected date
-    }
 
     private fun showExerciseLibrary() {
         // TODO: Show dialog/bottom sheet with exercise library
         // User can select exercises to add to schedule
-    }
-
-    private fun saveSchedule() {
-        // TODO: Backend - Save schedule to database
     }
 }

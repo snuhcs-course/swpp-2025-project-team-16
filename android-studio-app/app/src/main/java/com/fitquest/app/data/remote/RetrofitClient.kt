@@ -23,4 +23,14 @@ object RetrofitClient {
             .build()
             .create(ApiService::class.java)
     }
+
+
+    val journeyApiService: JourneyApiService by lazy {
+        retrofit.create(JourneyApiService::class.java)
+    }
+
+    val profileApiService: ProfileApiService by lazy {
+        retrofit.create(ProfileApiService::class.java)
+    }
+
 }

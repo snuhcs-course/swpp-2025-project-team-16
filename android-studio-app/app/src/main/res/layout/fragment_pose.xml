@@ -1,0 +1,222 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/fragmentPose"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/background_dark"
+    tools:context=".ui.fragments.PoseFragment">
+
+    <!-- ===== Header ===== -->
+    <LinearLayout
+        android:id="@+id/headerContainer"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:padding="16dp"
+        android:background="@drawable/gradient_overlay_top"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/tvSystemTitle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="POSE ESTIMATION"
+                android:textColor="@color/cyan"
+                android:textSize="12sp"
+                android:textStyle="bold"/>
+
+            <TextView
+                android:id="@+id/tvSystemSubtitle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Evaluate your pose"
+                android:textColor="@color/text_primary"
+                android:textSize="20sp"
+                android:textStyle="bold"
+                android:layout_marginTop="4dp" />
+        </LinearLayout>
+
+        <FrameLayout
+            android:id="@+id/activityIconBox"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:clipToOutline="true"
+            android:background="@drawable/rounded_rect_shape"
+            android:backgroundTint="@color/cyan_30"
+            android:layout_gravity="center">
+
+            <ImageView
+                android:id="@+id/icActivity"
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:layout_gravity="center"
+                android:src="@drawable/ic_check"
+                app:tint="@android:color/white" />
+        </FrameLayout>
+    </LinearLayout>
+
+    <!-- ===== MAIN SECTION: Left camera / Right guide/result ===== -->
+    <LinearLayout
+        android:id="@+id/mainContainer"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_marginHorizontal="16dp"
+        android:gravity="center"
+        android:orientation="horizontal"
+        app:layout_constraintBottom_toTopOf="@id/feedbackCard"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/headerContainer">
+
+    <!-- Left: Camera Preview -->
+    <FrameLayout
+        android:id="@+id/cameraContainer"
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
+        android:layout_marginEnd="8dp"
+        android:layout_weight="1"
+        android:background="@color/surface_dark_translucent">
+
+    <androidx.camera.view.PreviewView
+        android:id="@+id/cameraPreview"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        app:scaleType="fitCenter"
+        android:elevation="0dp" />
+
+    <TextView
+        android:id="@+id/tvCountdown"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:gravity="center"
+        android:textColor="@color/cyan_bright"
+        android:textSize="64sp"
+        android:textStyle="bold"
+        android:visibility="gone"
+        android:elevation="5dp" />
+
+    <ImageButton
+        android:id="@+id/btnCapture"
+        android:layout_width="70dp"
+        android:layout_height="70dp"
+        android:layout_gravity="bottom|start"
+        android:layout_marginStart="16dp"
+        android:layout_marginBottom="16dp"
+        android:background="@drawable/bg_badge_cyan"
+        android:src="@drawable/ic_camera"
+        app:tint="@android:color/white"
+        android:elevation="10dp" />
+
+    <ImageButton
+        android:id="@+id/btnUpload"
+        android:layout_width="70dp"
+        android:layout_height="70dp"
+        android:layout_gravity="bottom|end"
+        android:layout_margin="16dp"
+        android:background="@drawable/bg_badge_gold"
+        android:src="@drawable/ic_upload"
+        app:tint="@android:color/white"
+        android:elevation="10dp" />
+
+    <ImageButton
+        android:id="@+id/btnSwitchCamera"
+        android:layout_width="56dp"
+        android:layout_height="56dp"
+        android:layout_gravity="top|end"
+        android:layout_margin="16dp"
+        android:background="@drawable/bg_badge_cyan"
+        android:src="@drawable/ic_switch_camera"
+        app:tint="@android:color/white"
+        android:elevation="10dp" />
+    </FrameLayout>
+
+    <!-- Right: Guide or Result -->
+    <FrameLayout
+    android:id="@+id/resultContainer"
+    android:layout_width="0dp"
+    android:layout_height="match_parent"
+    android:layout_weight="1"
+    android:background="@color/surface_dark_translucent">
+
+    <!-- 안내 텍스트 (초기 표시) -->
+    <TextView
+    android:id="@+id/tvGuideText"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:gravity="center"
+    android:text="Take a picture and upload it"
+    android:textColor="@color/text_secondary"
+    android:textSize="14sp"
+    android:textStyle="italic" />
+
+    <!-- 분석 결과 이미지 (처음엔 숨김) -->
+    <ImageView
+    android:id="@+id/imgAnalysisResult"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:scaleType="fitCenter"
+    android:visibility="gone" />
+
+    </FrameLayout>
+    </LinearLayout>
+
+    <!-- ===== Feedback Section ===== -->
+    <androidx.cardview.widget.CardView
+        android:id="@+id/feedbackCard"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:cardCornerRadius="20dp"
+        app:cardElevation="12dp"
+        android:backgroundTint="@color/surface_dark_translucent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_margin="16dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="16dp">
+
+            <TextView
+                android:id="@+id/tvGoodPoints"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Good Point:"
+                android:textColor="@color/gold"
+                android:textSize="13sp"
+                android:layout_marginBottom="4dp"/>
+
+            <TextView
+                android:id="@+id/tvImprovePoints"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Needs Improvement:"
+                android:textColor="@color/gold"
+                android:textSize="13sp"
+                android:layout_marginBottom="4dp"/>
+
+            <TextView
+                android:id="@+id/tvCue"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="💡 Cue:"
+                android:textColor="@color/cyan_bright"
+                android:textStyle="italic"
+                android:textSize="13sp"/>
+
+        </LinearLayout>
+    </androidx.cardview.widget.CardView>
+</androidx.constraintlayout.widget.ConstraintLayout>

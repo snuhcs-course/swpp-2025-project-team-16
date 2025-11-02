@@ -1,0 +1,46 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:paddingVertical="20dp">
+
+    <!-- 노드 원 -->
+    <FrameLayout
+        android:id="@+id/nodeCircle"
+        android:layout_width="28dp"
+        android:layout_height="28dp"
+        android:layout_centerHorizontal="true"
+        android:background="@drawable/bg_badge_gold">
+        <ImageView
+            android:id="@+id/icActivity"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:layout_gravity="center"
+            android:src="@drawable/ic_target"
+            app:tint="@android:color/white" />
+
+    </FrameLayout>
+
+    <!-- 오른쪽 카드 -->
+    <include
+        layout="@layout/item_journey_day"
+        android:id="@+id/summaryCardRight"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_toRightOf="@id/nodeCircle"
+        android:layout_marginStart="5dp"
+        android:layout_marginEnd="8dp"
+        android:layout_centerVertical="true" />
+
+    <!-- 왼쪽 카드 -->
+    <include
+        layout="@layout/item_journey_day"
+        android:id="@+id/summaryCardLeft"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_toLeftOf="@id/nodeCircle"
+        android:layout_marginStart="8dp"
+        android:layout_marginEnd="5dp"
+        android:layout_centerVertical="true"
+        android:visibility="gone" />
+</RelativeLayout>

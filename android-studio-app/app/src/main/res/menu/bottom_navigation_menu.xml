@@ -14,6 +14,11 @@
         android:id="@+id/nav_ai_coach"
         android:icon="@drawable/ic_ai_coach"
         android:title="@string/nav_ai_coach" />
+
+    <item
+        android:id="@+id/nav_pose"
+        android:icon="@drawable/ic_pose"
+        android:title="@string/pose" />
     
     <item
         android:id="@+id/nav_profile"

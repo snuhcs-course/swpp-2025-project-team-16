@@ -28,3 +28,4 @@ server/recommendation/__pycache__
 server/recommendation/migrations/__pycache__
 server/.env
 server/sportify/__pycache__
+pose_vlm/models/.env

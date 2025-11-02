@@ -23,33 +23,19 @@ import androidx.fragment.app.activityViewModels
 import com.fitquest.app.R
 import com.fitquest.app.ui.coachutils.OverlayView
 import com.fitquest.app.ui.coachutils.PoseLandmarkerHelper
+import com.fitquest.app.ui.coachutils.counter.BaseCounter
+import com.fitquest.app.ui.coachutils.counter.SquatCounter
 import com.fitquest.app.ui.viewmodels.AiCoachViewModel
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.progressindicator.LinearProgressIndicator
 import com.google.mediapipe.tasks.vision.core.RunningMode
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
+import android.os.CountDownTimer
 
-/**
- * AiCoachFragment
- *
- * - Begin Training ↔ Pause Training 버튼
- *   · Begin Training: 초록/▶  -> 훈련 시작, pose 분석 시작, HUD/Overlay 표시
- *   · Pause Training: 빨강/■ -> 훈련 일시정지, pose 분석 중단, HUD/Overlay 숨김
- *
- * - Switch Camera: 전/후면 전환
- *
- * - HUD: Reps/XP 카드, ANALYZING 배지, Form Quality Progress bar
- *   -> 훈련 중일 때만 보여줌
- *
- * - AI Coach 메시지:
- *   · idle: "Position yourself in frame"
- *   · training: "Analyzing form... 🔍"
- *
- * - PoseLandmarkerHelper:
- *   CameraX ImageAnalysis에서 프레임을 받고,
- *   관절 landmarks 결과를 OverlayView에 그려준다.
- */
+
+
+
 class AiCoachFragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener {
 
     // --- UI refs ---
@@ -67,10 +53,10 @@ class AiCoachFragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener {
     private lateinit var feedbackText: TextView      // tvFeedback
     private lateinit var progressBar: LinearProgressIndicator // progressFormQuality
 
-    // HUD 컨테이너들 (훈련 중일 때만 보여줄 큰 블럭)
-    private lateinit var hudTopContainer: View       // Reps / XP 카드
-    private lateinit var recordingIndicator: View    // ANALYZING 빨간 배지
-    private lateinit var formScoreContainer: View    // Form Quality 영역 전체
+    // HUD 컨테이너
+    private lateinit var hudTopContainer: View
+    private lateinit var recordingIndicator: View
+    private lateinit var formScoreContainer: View
 
     // --- Camera / Pose ---
     private lateinit var cameraExecutor: ExecutorService
@@ -80,13 +66,21 @@ class AiCoachFragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener {
 
     private lateinit var poseLandmarkerHelper: PoseLandmarkerHelper
 
+    private lateinit var tvCountdown: TextView
+    private var countdownTimer: CountDownTimer? = null
+    private var isCountingDown = false
+
+
     // --- ViewModel ---
     private val coachViewModel: AiCoachViewModel by activityViewModels()
 
-    // --- Local state mirrored to UI ---
+    // --- Local state ---
     private var isTraining = false
     private var repCount = 0
     private var points = 0
+
+    // --- Counter (추가) ---
+    private var counter: BaseCounter? = null
 
     private val COACH_MSG_IDLE = "Position yourself in frame"
     private val COACH_MSG_ANALYZING = "Analyzing form... 🔍"
@@ -120,10 +114,13 @@ class AiCoachFragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener {
         recordingIndicator = view.findViewById(R.id.recordingIndicator)
         formScoreContainer = view.findViewById(R.id.formScoreContainer)
 
+        tvCountdown = view.findViewById(R.id.tvCountdown)
+
+
         // 2. Camera executor
         cameraExecutor = Executors.newSingleThreadExecutor()
 
-        // 3. PoseLandmarkerHelper 초기화 (GPU delegate 등은 ViewModel 값 사용)
+        // 3. PoseLandmarkerHelper 초기화
         cameraExecutor.execute {
             poseLandmarkerHelper = PoseLandmarkerHelper(
                 minPoseDetectionConfidence = coachViewModel.currentMinPoseDetectionConfidence,
@@ -150,14 +147,19 @@ class AiCoachFragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener {
 
         // 5. Button listeners
         startPauseButton.setOnClickListener {
-            toggleTraining()
+            if (isTraining) {
+                // 진행 중이면 일시정지
+                pauseWorkout()
+            } else {
+                // 아직 훈련 전이면 10초 카운트다운 후 시작
+                startCountdownThenBegin(10)
+            }
         }
 
-        switchCameraButton.setOnClickListener {
-            toggleCameraLens()
+        switchCameraButton.setOnClickListener { toggleCameraLens()
         }
 
-        // switch camera 아이콘 (왼쪽에 아이콘 -> 텍스트)
+        // switch camera 아이콘
         switchCameraButton.icon = ContextCompat.getDrawable(
             requireContext(),
             R.drawable.ic_switch_camera
@@ -172,6 +174,7 @@ class AiCoachFragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener {
         feedbackText.text = COACH_MSG_IDLE
         applyTrainingButtonStyle()
         updateTrainingUiState()
+
     }
 
     // =======================
@@ -182,23 +185,17 @@ class AiCoachFragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener {
         val cameraProviderFuture = ProcessCameraProvider.getInstance(requireContext())
         cameraProviderFuture.addListener({
             cameraProvider = cameraProviderFuture.get()
-            // 처음엔 훈련 전이니까 분석 없이 Preview만
+            // 처음엔 훈련 전이므로 Preview만
             bindCameraUseCases(includeAnalyzer = false)
         }, ContextCompat.getMainExecutor(requireContext()))
     }
 
-    /**
-     * includeAnalyzer=true 면 Pose 분석기(ImageAnalysis)까지 바인딩,
-     * false면 Preview만 바인딩.
-     */
     private fun bindCameraUseCases(includeAnalyzer: Boolean) {
         val provider = cameraProvider ?: return
 
         val preview = Preview.Builder()
             .build()
-            .also {
-                it.setSurfaceProvider(previewView.surfaceProvider)
-            }
+            .also { it.setSurfaceProvider(previewView.surfaceProvider) }
 
         imageAnalyzer = if (includeAnalyzer) {
             ImageAnalysis.Builder()
@@ -212,9 +209,7 @@ class AiCoachFragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener {
                         detectPose(imageProxy)
                     }
                 }
-        } else {
-            null
-        }
+        } else null
 
         val cameraSelector = CameraSelector.Builder()
             .requireLensFacing(lensFacing)
@@ -222,10 +217,8 @@ class AiCoachFragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener {
 
         try {
             provider.unbindAll()
-
             val useCases = mutableListOf<UseCase>(preview)
             imageAnalyzer?.let { useCases.add(it) }
-
             provider.bindToLifecycle(
                 this,
                 cameraSelector,
@@ -237,13 +230,8 @@ class AiCoachFragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener {
     }
 
     private fun toggleCameraLens() {
-        lensFacing = if (lensFacing == CameraSelector.LENS_FACING_FRONT) {
-            CameraSelector.LENS_FACING_BACK
-        } else {
-            CameraSelector.LENS_FACING_FRONT
-        }
-
-        // 현재 isTraining 상태를 유지한 채로 다시 바인딩
+        lensFacing = if (lensFacing == CameraSelector.LENS_FACING_FRONT)
+            CameraSelector.LENS_FACING_BACK else CameraSelector.LENS_FACING_FRONT
         bindCameraUseCases(includeAnalyzer = isTraining)
     }
 
@@ -251,11 +239,6 @@ class AiCoachFragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener {
     // Pose inference callbacks
     // =======================
 
-    /**
-     * CameraX analyzer에서 프레임마다 불림.
-     * 프레임을 PoseLandmarkerHelper에 던져주면,
-     * onResults()에서 landmark 결과를 받을 수 있다.
-     */
     private fun detectPose(imageProxy: ImageProxy) {
         if (isTraining && ::poseLandmarkerHelper.isInitialized) {
             poseLandmarkerHelper.detectLiveStream(
@@ -267,16 +250,13 @@ class AiCoachFragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener {
         }
     }
 
-    /**
-     * PoseLandmarkerHelper.LandmarkerListener 구현부:
-     * MediaPipe가 landmark 결과를 내릴 때마다 호출된다.
-     * 여기서 OverlayView에 스켈레톤과 각도 텍스트를 그린다.
-     */
     override fun onResults(resultBundle: PoseLandmarkerHelper.ResultBundle) {
         activity?.runOnUiThread {
             if (!isTraining) return@runOnUiThread
 
             val result = resultBundle.results.firstOrNull() ?: return@runOnUiThread
+
+            // 1) 오버레이 갱신 (스켈레톤/각도 텍스트)
             overlayView.setResults(
                 result,
                 resultBundle.inputImageHeight,
@@ -284,11 +264,26 @@ class AiCoachFragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener {
                 RunningMode.LIVE_STREAM
             )
             overlayView.invalidate()
+
+            // 2) 카운터 갱신 (정규화 랜드마크 → float[33*3])
+            val lm = result.landmarks().firstOrNull() ?: return@runOnUiThread
+            val pts = FloatArray(lm.size * 3)
+            for (i in lm.indices) {
+                pts[3 * i]     = lm[i].x()
+                pts[3 * i + 1] = lm[i].y()
+                pts[3 * i + 2] = lm[i].z()
+            }
+            val now = System.currentTimeMillis()
+            counter?.update(pts, now)
+
+            // 3) UI 반영 (reps/points/phase)
+            updateRepCount(counter?.count ?: 0)
+            feedbackText.text = "Phase: ${counter?.phase ?: "-"}"
         }
     }
 
     override fun onError(error: String, errorCode: Int) {
-        // TODO: Log / Toast if you want
+        // 필요 시 로깅/토스트
     }
 
     // =======================
@@ -296,11 +291,7 @@ class AiCoachFragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener {
     // =======================
 
     private fun toggleTraining() {
-        if (isTraining) {
-            pauseWorkout()
-        } else {
-            beginWorkout()
-        }
+        if (isTraining) pauseWorkout() else beginWorkout()
     }
 
     private fun beginWorkout() {
@@ -308,116 +299,79 @@ class AiCoachFragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener {
         repCount = 0
         points = 0
 
-        // ViewModel에도 반영 (세션 상태 유지용)
+        // 기본: 스쿼트 카운터 사용 (운동선택 UI 붙이면 분기)
+        counter = SquatCounter().also { it.reset(System.currentTimeMillis()) }
+
         coachViewModel.beginTraining()
-
-        // 코치 텍스트 -> Analyzing...
         feedbackText.text = COACH_MSG_ANALYZING
-
-        // 버튼 스타일: Pause Training (빨강/■)
         applyTrainingButtonStyle()
-
-        // HUD & Overlay 보여주기
         updateTrainingUiState()
 
-        // 카메라 다시 바인딩 (이번엔 analyzer 포함해서 pose 모델 활성화)
+        // 분석 켜기
         bindCameraUseCases(includeAnalyzer = true)
     }
 
     private fun pauseWorkout() {
+        // 카운트다운 중이었다면 취소
+        if (isCountingDown) cancelCountdown()
+
         isTraining = false
-
         coachViewModel.pauseTraining()
-
-        // 코치 텍스트 -> idle 멘트로 복귀
         feedbackText.text = COACH_MSG_IDLE
-
-        // 버튼 스타일: Begin Training (초록/▶)
         applyTrainingButtonStyle()
-
-        // HUD & Overlay 숨기기
         updateTrainingUiState()
 
-        // 오버레이 지우기 (스켈레톤 안 남게)
         overlayView.clear()
-
-        // 카메라를 다시 바인딩하되 analyzer 제거해서 pose 중단
+        counter = null
         bindCameraUseCases(includeAnalyzer = false)
     }
 
-    /**
-     * isTraining에 따라 HUD 카드들 + overlayView 자체를 show/hide.
-     * - hudTopContainer : Reps/XP 카드
-     * - recordingIndicator : 빨간 ANALYZING 배지
-     * - formScoreContainer : Form Quality 박스
-     * - overlayView : 스켈레톤 오버레이
-     */
+
     private fun updateTrainingUiState() {
         val hudVisibility = if (isTraining) View.VISIBLE else View.GONE
-
         hudTopContainer.visibility = hudVisibility
         recordingIndicator.visibility = hudVisibility
         formScoreContainer.visibility = hudVisibility
         overlayView.visibility = hudVisibility
     }
 
-    /**
-     * Begin / Pause 버튼 비주얼(색상, 아이콘, 텍스트) 업데이트
-     */
     private fun applyTrainingButtonStyle() {
         if (isTraining) {
-            // Pause Training 스타일 (빨강, 정지 사각형)
             startPauseButton.text = "Pause Training"
             startPauseButton.icon = ContextCompat.getDrawable(
-                requireContext(),
-                R.drawable.ic_pause_square
+                requireContext(), R.drawable.ic_pause_square
             )
             startPauseButton.backgroundTintList = ContextCompat.getColorStateList(
-                requireContext(),
-                R.color.error_red
+                requireContext(), R.color.error_red
             )
             startPauseButton.setTextColor(Color.WHITE)
             startPauseButton.iconTint = ContextCompat.getColorStateList(
-                requireContext(),
-                android.R.color.white
+                requireContext(), android.R.color.white
             )
             startPauseButton.iconGravity = MaterialButton.ICON_GRAVITY_TEXT_START
         } else {
-            // Begin Training 스타일 (초록, ▶)
             startPauseButton.text = "Begin Training"
             startPauseButton.icon = ContextCompat.getDrawable(
-                requireContext(),
-                R.drawable.ic_begin_triangle
+                requireContext(), R.drawable.ic_begin_triangle
             )
             startPauseButton.backgroundTintList = ContextCompat.getColorStateList(
-                requireContext(),
-                R.color.success_green
+                requireContext(), R.color.success_green
             )
             startPauseButton.setTextColor(Color.WHITE)
             startPauseButton.iconTint = ContextCompat.getColorStateList(
-                requireContext(),
-                android.R.color.white
+                requireContext(), android.R.color.white
             )
             startPauseButton.iconGravity = MaterialButton.ICON_GRAVITY_TEXT_START
         }
     }
 
-    // HUD 숫자/폼 점수 업데이트 도우미 (나중에 Pose logic이 reps/폼 계산하면 여기 호출)
+    // HUD 숫자 업데이트 (ViewModel 연동 그대로 유지)
     fun updateRepCount(count: Int) {
         repCount = count
         points = count * 10
-
         coachViewModel.updateRepCount(count)
-
         repCountText.text = count.toString()
         pointsText.text = "+$points"
-    }
-
-    fun updateFormFeedback(feedback: String, score: Int) {
-        coachViewModel.updateFormFeedback(feedback, score)
-
-        feedbackText.text = feedback
-        progressBar.progress = score
     }
 
     // =======================
@@ -425,10 +379,7 @@ class AiCoachFragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener {
     // =======================
 
     private fun allPermissionsGranted() = REQUIRED_PERMISSIONS.all {
-        ContextCompat.checkSelfPermission(
-            requireContext(),
-            it
-        ) == PackageManager.PERMISSION_GRANTED
+        ContextCompat.checkSelfPermission(requireContext(), it) == PackageManager.PERMISSION_GRANTED
     }
 
     override fun onRequestPermissionsResult(
@@ -437,14 +388,84 @@ class AiCoachFragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener {
         grantResults: IntArray
     ) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-
         if (requestCode == REQUEST_CODE_PERMISSIONS && allPermissionsGranted()) {
             setupCameraProvider()
         }
     }
 
+    private fun startCountdownThenBegin(seconds: Int = 10) {
+        if (isCountingDown) return
+        isCountingDown = true
+
+        // 카운트다운 동안 HUD/오버레이는 숨기고 버튼 비활성화
+        updateTrainingUiStateForCountdown(show = true)
+        startPauseButton.isEnabled = false
+
+        tvCountdown.visibility = View.VISIBLE
+
+        countdownTimer?.cancel()
+        countdownTimer = object : CountDownTimer(seconds * 1000L, 1000L) {
+            override fun onTick(ms: Long) {
+                // 10, 9, 8 ... 1 표시 (ceil 효과 위해 +999)
+                val remain = ((ms + 999) / 1000L).toInt()
+                tvCountdown.text = remain.toString()
+            }
+            override fun onFinish() {
+                tvCountdown.visibility = View.GONE
+                startPauseButton.isEnabled = true
+                isCountingDown = false
+                // 실제 훈련 시작
+                beginWorkout()
+            }
+        }.start()
+    }
+
+    /** 카운트다운 중에는 숫자만 보이게 하고 HUD/Overlay는 잠시 숨김 */
+    private fun updateTrainingUiStateForCountdown(show: Boolean) {
+        if (show) {
+            hudTopContainer.visibility = View.GONE
+            recordingIndicator.visibility = View.GONE
+            formScoreContainer.visibility = View.GONE
+            overlayView.visibility = View.GONE
+            feedbackText.text = "Get ready... ⏳"
+        } else {
+            updateTrainingUiState() // 원래 로직으로 복귀
+        }
+    }
+
+
+    private fun cancelCountdown() {
+        countdownTimer?.cancel()
+        countdownTimer = null
+        isCountingDown = false
+        tvCountdown.visibility = View.GONE
+        feedbackText.text = COACH_MSG_IDLE
+        applyTrainingButtonStyle()
+        updateTrainingUiState()
+    }
+
+    private fun applyCountdownButtonStyle() {
+        startPauseButton.text = "Cancel"
+        startPauseButton.icon = ContextCompat.getDrawable(
+            requireContext(), R.drawable.ic_pause_square
+        )
+        startPauseButton.backgroundTintList = ContextCompat.getColorStateList(
+            requireContext(), R.color.error_red
+        )
+        startPauseButton.setTextColor(Color.WHITE)
+        startPauseButton.iconTint = ContextCompat.getColorStateList(
+            requireContext(), android.R.color.white
+        )
+        startPauseButton.iconGravity = MaterialButton.ICON_GRAVITY_TEXT_START
+    }
+
+
+
+
     override fun onDestroy() {
         super.onDestroy()
+        countdownTimer?.cancel()
+        countdownTimer = null
         if (::poseLandmarkerHelper.isInitialized) {
             poseLandmarkerHelper.clearPoseLandmarker()
         }

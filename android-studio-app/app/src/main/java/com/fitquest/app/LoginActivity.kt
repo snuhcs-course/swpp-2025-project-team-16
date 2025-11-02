@@ -62,10 +62,8 @@ class LoginActivity : AppCompatActivity() {
     private fun navigateToFragment(fragment: Fragment) {
         supportFragmentManager.beginTransaction()
             .setCustomAnimations(
-                android.R.anim.slide_in_left,
-                android.R.anim.slide_out_right,
-                android.R.anim.slide_in_left,
-                android.R.anim.slide_out_right
+                android.R.anim.slide_in_left,   // 새 Fragment 왼쪽에서 등장
+                android.R.anim.slide_out_right  // 이전 Fragment 오른쪽으로 사라짐
             )
             .replace(R.id.loginFragmentContainer, fragment)
             .addToBackStack(null)

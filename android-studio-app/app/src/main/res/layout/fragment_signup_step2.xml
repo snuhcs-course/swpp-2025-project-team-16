@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    xmlns:tools="http://schemas.android.com/tools"
     android:background="@drawable/bg_gradient_dark"
     tools:context=".ui.fragments.login.SignupStep2Fragment">
 
@@ -35,7 +35,7 @@
             android:layout_marginTop="4dp" />
     </LinearLayout>
 
-    <!-- 카메라 뷰 -->
+    <!-- 카메라 카드 -->
     <androidx.cardview.widget.CardView
         android:id="@+id/cameraCard"
         android:layout_width="320dp"
@@ -47,17 +47,44 @@
         app:strokeColor="@color/cyan_20"
         app:strokeWidth="1dp">
 
-        <TextureView
-            android:id="@+id/textureView"
+        <!-- 미리보기/오버레이/카운트다운을 담는 컨테이너 -->
+        <FrameLayout
+            android:id="@+id/cameraContainer"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:scaleType="centerCrop" />
+            android:layout_height="match_parent">
 
-        <View
-            android:id="@+id/overlayView"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:background="@android:color/transparent" />
+            <!-- CameraX PreviewView -->
+            <androidx.camera.view.PreviewView
+                android:id="@+id/cameraPreview"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:keepScreenOn="true" />
+
+            <!-- 스켈레톤/각도 오버레이 -->
+            <com.fitquest.app.ui.coachutils.OverlayView
+                android:id="@+id/overlay"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:clickable="false"
+                android:importantForAccessibility="no"
+                android:visibility="gone" />
+
+            <!-- 10초 카운트다운 -->
+            <TextView
+                android:id="@+id/tvCountdown"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="10"
+                android:textColor="@android:color/white"
+                android:textStyle="bold"
+                android:textSize="48sp"
+                android:shadowColor="@android:color/black"
+                android:shadowDx="0"
+                android:shadowDy="0"
+                android:shadowRadius="8"
+                android:visibility="gone"
+                android:layout_gravity="center"/>
+        </FrameLayout>
     </androidx.cardview.widget.CardView>
 
     <!-- 하단 컨트롤 -->
@@ -79,7 +106,6 @@
             android:textSize="24sp"
             android:textStyle="bold" />
 
-        <!-- 횟수 표시 -->
         <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -95,10 +121,7 @@
                 android:textColor="@color/gold"
                 android:textSize="26sp"
                 android:textStyle="bold" />
-
         </LinearLayout>
-
-        <!-- Stop 버튼 -->
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btnStop"
@@ -112,6 +135,5 @@
             app:cornerRadius="12dp"
             app:strokeColor="@color/cyan_30"
             app:strokeWidth="1dp" />
-
     </LinearLayout>
 </FrameLayout>

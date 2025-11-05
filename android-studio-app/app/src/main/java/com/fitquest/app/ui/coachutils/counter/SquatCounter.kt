@@ -31,7 +31,7 @@ class SquatCounter : BaseCounter() {
     private var hipL  = 180.0; private var hipR  = 180.0
     private var pelvisY = 0.0
     private var emaInit = false
-    private val alpha = 0.2
+    private val alpha = 0.9
 
     // 기준(서있는 자세) 캘리브레이션
     private var baselinePelvisY = Double.NaN
@@ -42,12 +42,12 @@ class SquatCounter : BaseCounter() {
     private var bottomEnterMs = 0L
 
     // 임계치(필요시 조정)
-    private val KNEE_UP = 160.0
+    private val KNEE_UP = 150.0
     private val KNEE_DOWN_ENTER = 140.0
-    private val KNEE_BOTTOM = 100.0
+    private val KNEE_BOTTOM = 115.0
     private val KNEE_UP_GOING = 130.0
 
-    private val PELVIS_DROP = 0.12      // 정규화 y 기준 (~12% 이상 하강)
+    private val PELVIS_DROP = 0.07      // 정규화 y 기준 (~12% 이상 하강)
     private val MIN_REP_INTERVAL = 300  // ms
     private val MIN_BOTTOM_HOLD = 100   // ms
 

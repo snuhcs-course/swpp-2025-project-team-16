@@ -248,7 +248,7 @@ class PoseFragment : Fragment() {
         val base64 = bitmapToBase64(bitmap)
 
         // 3) 서버로 POST (코루틴 + Retrofit)
-        val fullUrl = "http://147.46.78.29:8004/evaluate_posture"
+        val fullUrl = "http://147.46.78.29:8004/pose/evaluate_posture/"
         tvCue.text = "업로드 중..."
 
         viewLifecycleOwner.lifecycleScope.launch {

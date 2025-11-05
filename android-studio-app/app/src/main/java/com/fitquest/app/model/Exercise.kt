@@ -5,6 +5,8 @@ data class Exercise(
     val name: String = "",
     val done: String = "",
     val xp: String = "",
+    val repDone:Int=0,
+    val repTarget:Int=0,
     val accuracy: String = "",
     val duration: String = "",
     val detail: String = "",

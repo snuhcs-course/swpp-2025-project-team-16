@@ -61,14 +61,21 @@ class ScheduleFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         calendarView = view.findViewById(R.id.calendar_view)
+
         exerciseRecyclerView = view.findViewById(R.id.exercise_recycler_view)
+
         autoGenerateButton = view.findViewById(R.id.auto_generate_button)
+
         customPlanButton = view.findViewById(R.id.custom_plan_button)
+
         exerciseRecyclerView.layoutManager = LinearLayoutManager(context)
+
         emptyState=view.findViewById(R.id.emptyState)
-        exerciseAdapter= ExerciseAdapter(
-            { showExerciseLibrary() })
+
+        exerciseAdapter= ExerciseAdapter { showExerciseLibrary(selectedDate) }
+
         exerciseRecyclerView.adapter=exerciseAdapter
+
         viewModel.exercises.observe(viewLifecycleOwner){list->
             if(list.isNullOrEmpty()){
                 exerciseRecyclerView.visibility=View.GONE
@@ -79,6 +86,9 @@ class ScheduleFragment : Fragment() {
                 exerciseAdapter.submitList(list)
             }
         }
+
+        setUp()
+
         val cal=Calendar.getInstance()
         val sdf = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
         selectedDate = sdf.format(cal.time)
@@ -91,20 +101,48 @@ class ScheduleFragment : Fragment() {
         }
 
         autoGenerateButton.setOnClickListener {
-            viewModel.generateSchedule()
-            viewModel.loadScheduleForDate(selectedDate)
-            Toast.makeText(requireContext(),"계획이 생성되었습니다!",Toast.LENGTH_SHORT).show()
+            generateSchedule()
         }
 
         customPlanButton.setOnClickListener {
-            showExerciseLibrary()
+            showExerciseLibrary(selectedDate)
         }
+
+
     }
 
 
 
-    private fun showExerciseLibrary() {
+    private fun showExerciseLibrary(selectedDate:String) {
         // TODO: Show dialog/bottom sheet with exercise library
         // User can select exercises to add to schedule
+        viewModel.loadScheduleForDate(selectedDate)
+        if((viewModel.exercises.value?.isEmpty()) ?: true){
+            Toast.makeText(requireContext(), "날짜를 다시 선택해 주세요", Toast.LENGTH_SHORT).show()
+            return
+        }
+        else{
+            //TODO
+        }
+    }
+    private fun setUp(){
+        val prefs = requireContext().getSharedPreferences("auth", 0)
+        val token = prefs.getString("token", null) ?: return
+        viewModel.loadAllSchedules(token)
+        if(viewModel.message.value!="SUCCESS"){
+            Toast.makeText(requireContext(), viewModel.message.value, Toast.LENGTH_SHORT).show()
+        }
+    }
+    private fun generateSchedule(){
+        val prefs = requireContext().getSharedPreferences("auth", 0)
+        val token = prefs.getString("token", null) ?: return
+        viewModel.generateSchedule(token)
+        viewModel.loadScheduleForDate(selectedDate)
+        if(viewModel.message.value=="SUCCESS"){
+            Toast.makeText(requireContext(),"계획이 생성되었습니다!",Toast.LENGTH_SHORT).show()
+        }else{
+            Toast.makeText(requireContext(),viewModel.message.value,Toast.LENGTH_SHORT).show()
+        }
+
     }
 }

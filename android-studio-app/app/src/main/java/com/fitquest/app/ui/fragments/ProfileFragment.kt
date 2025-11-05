@@ -65,7 +65,7 @@ class ProfileFragment : Fragment() {
                             percent = "100%",
                             time = "${item.start_time?.substring(0, 5)} - ${item.end_time?.substring(0, 5)}",
                             exercises = listOf(
-                                Exercise("🏋️", item.name, "done", "+100 XP", "100%", "30 min")
+                                Exercise("🏋️", item.name, "done", "+100 XP", accuracy = "100%", duration =  "30 min")
                             )
                         )
                     }

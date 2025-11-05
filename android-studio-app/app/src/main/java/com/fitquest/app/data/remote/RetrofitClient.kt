@@ -34,5 +34,8 @@ object RetrofitClient {
     val profileApiService: ProfileApiService by lazy {
         retrofit.create(ProfileApiService::class.java)
     }
+    val scheduleApiService: ScheduleApiService by lazy {
+        retrofit.create(ScheduleApiService::class.java)
+    }
 
 }

@@ -1,9 +1,11 @@
 package com.fitquest.app.ui.fragments
 
+import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import android.view.*
 import android.widget.*
+import androidx.annotation.RequiresApi
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import com.fitquest.app.R
@@ -34,6 +36,7 @@ class ProfileFragment : Fragment() {
         val exercises: List<Exercise>
     )
 
+    @RequiresApi(Build.VERSION_CODES.O)
     private fun fetchHistoryFromServer() {
         val prefs = requireContext().getSharedPreferences("auth", 0)
         val token = prefs.getString("token", null) ?: return
@@ -44,10 +47,8 @@ class ProfileFragment : Fragment() {
                 if (response.isSuccessful) {
                     val historyList = response.body() ?: emptyList()
 
-                    // ✅ 오늘 날짜
                     val today = java.time.LocalDate.now()
 
-                    // ✅ 오늘 포함 "이전" 데이터만 필터링
                     val filtered = historyList.filter { item ->
                         try {
                             val date = java.time.LocalDate.parse(item.date)
@@ -57,7 +58,6 @@ class ProfileFragment : Fragment() {
                         }
                     }
 
-                    // ✅ UI용 매핑
                     val mappedList = filtered.map { item ->
                         HistoryDay(
                             date = item.date,
@@ -117,6 +117,7 @@ class ProfileFragment : Fragment() {
         return inflater.inflate(R.layout.fragment_profile, container, false)
     }
 
+    @RequiresApi(Build.VERSION_CODES.O)
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 

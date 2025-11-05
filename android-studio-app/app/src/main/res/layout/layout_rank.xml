@@ -14,7 +14,7 @@
     <LinearLayout
         android:id="@+id/rankCardContainer"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="match_parent"
         android:layout_gravity="center"
         android:layout_marginHorizontal="16dp"
         android:background="@drawable/bg_card_translucent"
@@ -37,10 +37,11 @@
         <!-- 타이틀 -->
         <TextView
             android:id="@+id/tvTitle"
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_gravity="center_horizontal"
             android:text="🏆 TOP RANKINGS"
+            android:gravity="center"
             android:textColor="@color/gold"
             android:textSize="20sp"
             android:textStyle="bold"
@@ -54,6 +55,7 @@
             android:orientation="horizontal"
             android:gravity="center"
             android:layout_marginTop="10dp"
+            android:layout_marginBottom="12dp"
             android:paddingHorizontal="15dp">
 
             <!-- 🥈 2nd -->
@@ -158,8 +160,9 @@
 
         <!-- ===== Rank List ===== -->
         <ScrollView
+            android:layout_height="0dp"
+            android:layout_weight="1"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
             android:overScrollMode="never"
             android:layout_marginTop="10dp">
 

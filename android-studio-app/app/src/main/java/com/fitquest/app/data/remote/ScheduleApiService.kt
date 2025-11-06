@@ -27,10 +27,10 @@ interface ScheduleApiService {
         @Header("Authorization") token: String
     ): Response<List<ScheduleResponse>>
 
-    @POST("schedule/")
+    @POST("schedule/generate_schedule")
     suspend fun generateUserSchedules(
         @Header("Authorization") token: String,
-        scheduleResponse: ScheduleResponse
+        @Body schedule: ScheduleResponse
     ): Response<String>
 
     @PATCH("schedule/")

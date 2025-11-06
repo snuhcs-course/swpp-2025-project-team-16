@@ -111,8 +111,6 @@ class ScheduleFragment : Fragment() {
 
     }
 
-
-
     private fun showExerciseLibrary(selectedDate:String) {
         // TODO: Show dialog/bottom sheet with exercise library
         // User can select exercises to add to schedule

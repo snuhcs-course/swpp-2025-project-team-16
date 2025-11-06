@@ -22,6 +22,13 @@ data class HistoryResponse(
     val percent: String? = null // 임시 placeholder
 )
 
+data class UserStatsResponse(
+    val rank: Int,
+    val level: Int,
+    val total_time: String,
+    val xp: Int
+)
+
 interface ProfileApiService{
     @GET("accounts/rankings/")
     suspend fun getRankings(
@@ -32,5 +39,10 @@ interface ProfileApiService{
     suspend fun getUserHistory(
         @Header("Authorization") token: String
     ): Response<List<HistoryResponse>>
+
+    @GET("schedule/stats/")
+    suspend fun getUserStats(
+        @Header("Authorization") token: String
+    ): Response<UserStatsResponse>
 
 }

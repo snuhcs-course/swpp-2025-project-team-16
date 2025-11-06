@@ -56,7 +56,6 @@ class ScheduleViewModel : ViewModel() {
     }
 
     fun generateSchedule(token:String) {
-        // TODO: Backend - Generate AI-based workout schedule
         // _exercises.value = generatedExercises
         val currentDate= Calendar.getInstance()
         for(i in 0..30){
@@ -90,6 +89,8 @@ class ScheduleViewModel : ViewModel() {
             currentDate.add(Calendar.DAY_OF_MONTH,1)
         }
     }
+
+
 
     fun addExercise(exercise: Exercise) {
         val currentList = _exercises.value.orEmpty().toMutableList()

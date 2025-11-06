@@ -22,131 +22,55 @@ import java.util.Locale
  */
 class ScheduleViewModel : ViewModel() {
 
-    private val _selectedDate = MutableLiveData<String>("")
-    val selectedDate: LiveData<String> = _selectedDate
+    // 🔹 전체 스케줄 (모든 날짜의 WorkoutPlan)
+    private val _workoutPlans = MutableLiveData<List<WorkoutPlan>>(emptyList())
+    val workoutPlans: LiveData<List<WorkoutPlan>> get() = _workoutPlans
 
+    // 🔹 현재 선택된 날짜
+    private val _selectedDate = MutableLiveData<String>()
+    val selectedDate: LiveData<String> get() = _selectedDate
+
+    // 🔹 선택된 날짜의 운동 리스트
     private val _exercises = MutableLiveData<List<Exercise>>(emptyList())
-    val exercises: LiveData<List<Exercise>> = _exercises
+    val exercises: LiveData<List<Exercise>> get() = _exercises
 
-    private val _isEditing = MutableLiveData<Boolean>(false)
-    val isEditing: LiveData<Boolean> = _isEditing
+    // 🔹 메시지 (성공/오류/상태 표시)
+    private val _message = MutableLiveData<String>()
+    val message: LiveData<String> get() = _message
 
-    private val _scheduledDate= MutableLiveData<List<String>>(emptyList())
-    val scheduledDate: LiveData<List<String>> =_scheduledDate
 
-    val workoutPlans:MutableList<WorkoutPlan> =mutableListOf()
-    fun setSelectedDate(date: String) {
-        _selectedDate.value = date
-        loadScheduleForDate(date)
+    /** 전체 WorkoutPlan 리스트 업데이트 */
+    fun updateWorkoutPlans(plans: List<WorkoutPlan>) {
+        _workoutPlans.value = plans
     }
-    private val _message= MutableLiveData<String>("")
-    val message: LiveData<String> = _message
+
+    /** 특정 날짜의 운동 리스트 필터링 */
     fun loadScheduleForDate(date: String) {
-        // TODO: Backend - Load existing schedule for date
-        var tempPlans=emptyList<Exercise>()
-        for(workoutPlan in workoutPlans){
-            if(workoutPlan.date==date){
-                tempPlans=workoutPlan.exercises
-                break
-            }
-        }
-        _exercises.value=tempPlans
+        _selectedDate.value = date
+        val allPlans = _workoutPlans.value ?: return
 
-        // _exercises.value = fetchedExercises
-    }
+        val todayPlans = allPlans.filter { it.date == date }
 
-    fun generateSchedule(token:String) {
-        // TODO: Backend - Generate AI-based workout schedule
-        // _exercises.value = generatedExercises
-        val currentDate= Calendar.getInstance()
-        for(i in 0..30){
-            val sdf = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
-            val selectedDate = sdf.format(currentDate.time)
-            val tempPlans: MutableList<Exercise> =mutableListOf()
-            tempPlans.add(Exercise(id="${3*i}",name="스쿼트", repTarget=5+i))
-            tempPlans.add(Exercise(id="${3*i+1}",name="팔굽혀펴기", repTarget = 5+i))
-            tempPlans.add(Exercise(id="${3*i+2}",name="플랭크", duration = "${5*i+30}초"))
-            val workoutPlan=WorkoutPlan("$i",selectedDate,tempPlans,false,30,"", startTime = "08:30:00", finishTime = "09:30:00")
-            workoutPlans.add(workoutPlan)
-            viewModelScope.launch {
-                try {
-                    val response = RetrofitClient.scheduleApiService.generateUserSchedules(
-                        token = "Bearer $token",
-                        ScheduleResponse(workoutPlan.id,workoutPlan.date,workoutPlan.exercises,workoutPlan.startTime,workoutPlan.finishTime,workoutPlan.points,workoutPlan.isCompleted,workoutPlan.feedback)
-                    )
-                    if (response.isSuccessful) {
-                        _message.value="SUCCESS"
-                    } else {
-                        _message.value="Failed: ${response.code()}"
-                    }
-                } catch (e: Exception) {
-                    e.printStackTrace()
-                    _message.value="Network error: ${e.localizedMessage}"
-                }
-            }
-            if(i==0){
-                _exercises.value=tempPlans
-            }
-            currentDate.add(Calendar.DAY_OF_MONTH,1)
+        if (todayPlans.isNotEmpty()) {
+            // 여러 계획이 있어도 첫 번째 걸 표시한다고 가정
+//            _exercises.value = todayPlans.first().exercises
+            val allExercises = todayPlans.flatMap { it.exercises }
+            _exercises.value = allExercises
+        } else {
+            _exercises.value = emptyList()
         }
     }
 
-    fun addExercise(exercise: Exercise) {
-        val currentList = _exercises.value.orEmpty().toMutableList()
-        currentList.add(exercise)
-        _exercises.value = currentList
+    /** 메시지 업데이트 (UI 토스트용 등) */
+    fun setMessage(msg: String) {
+        _message.value = msg
     }
 
-    fun removeExercise(exerciseId: String) {
-        val currentList = _exercises.value.orEmpty().toMutableList()
-        currentList.removeAll { it.id == exerciseId }
-        _exercises.value = currentList
-    }
-
-    fun saveSchedule() {
-        val date = _selectedDate.value ?: return
-        val exerciseList = _exercises.value ?: return
-        
-        // TODO: Backend - Save schedule to database
-        _isEditing.value = false
-    }
-
-    fun startEditing() {
-        _isEditing.value = true
-    }
-
-    fun cancelEditing() {
-        _isEditing.value = false
-        // Reload original schedule
-        _selectedDate.value?.let { loadScheduleForDate(it) }
-    }
-    fun loadAllSchedules(token:String){
-        viewModelScope.launch {
-            try {
-                val response = RetrofitClient.scheduleApiService.getUserSchedules(
-                    token = "Bearer $token",
-                )
-                if (response.isSuccessful) {
-                    val result = response.body()
-                    if (result != null) {
-                        for (work in result){
-                            val listExercise: MutableList<Exercise> =mutableListOf()
-                            for(exercise in work.exercises){
-                                listExercise.add(Exercise(name=exercise.name, detail = exercise.detail, status = exercise.status))
-                            }
-                            val plan= WorkoutPlan(work.id,work.date,listExercise,work.isCompleted,work.point,work.feedback,work.startTime,work.finishTime)
-                            workoutPlans.add(plan)
-                        }
-                    }
-                    _message.value="SUCCESS"
-                } else {
-                    _message.value="Failed: ${response.code()}"
-                }
-            } catch (e: Exception) {
-                e.printStackTrace()
-                _message.value="Network error: ${e.localizedMessage}"
-            }
-        }
-
+    /** 모든 LiveData 초기화 (로그아웃 시 등) */
+    fun clearAll() {
+        _workoutPlans.value = emptyList()
+        _exercises.value = emptyList()
+        _selectedDate.value = ""
+        _message.value = ""
     }
 }

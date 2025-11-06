@@ -110,7 +110,6 @@ class ScheduleFragment : Fragment(R.layout.fragment_schedule) {
             try {
                 val response = RetrofitClient.scheduleApiService.generateUserSchedules("Bearer $token")
                 if (response.isSuccessful) {
-                    // 생성 성공 시 현재 날짜 데이터 다시 로드
                     val today = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Date())
                     viewModel.loadScheduleForDate(today)
                     Toast.makeText(requireContext(), "계획이 생성되었습니다!", Toast.LENGTH_SHORT).show()
@@ -139,14 +138,6 @@ class ScheduleFragment : Fragment(R.layout.fragment_schedule) {
                             val exercises = work.exercises.map {
                                 Exercise(it.name, it.detail, it.status)
                             }
-                            Log.e("ScheduleFragment", "work.id=${work.id}")
-                            Log.e("ScheduleFragment", "work.date=${work.date}")
-                            Log.e("ScheduleFragment", "exercises=${exercises}")
-                            Log.e("ScheduleFragment", "work.isCompleted=${work.isCompleted}")
-                            Log.e("ScheduleFragment", "work.point=${work.point}")
-                            Log.e("ScheduleFragment", "work.feedback=${work.feedback}")
-                            Log.e("ScheduleFragment", "work.startTime=${work.startTime}")
-                            Log.e("ScheduleFragment", "work.finishTime=${work.finishTime}")
                             WorkoutPlan(
                                 work.id, work.date, exercises,
                                 work.isCompleted, work.point, work.feedback,

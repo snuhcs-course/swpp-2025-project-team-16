@@ -119,3 +119,4 @@ def user_rankings(request):
         prev_xp = u.xp
 
     return Response(data, status=status.HTTP_200_OK)
+

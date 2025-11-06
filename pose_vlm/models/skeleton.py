@@ -1,8 +1,11 @@
-from models.utils import compute_joint_angles, draw_keypoints
 
 import cv2
 import matplotlib.pyplot as plt
+# from pose_vlm.rtmpose3d import RTMPose3D
 from rtmpose3d import RTMPose3D
+
+from pose_vlm.models.utils import compute_joint_angles, draw_keypoints
+
 
 skeleton = [
     [5, 7], [7, 9],         # Left arm

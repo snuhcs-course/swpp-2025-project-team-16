@@ -26,7 +26,6 @@ async def evaluate_posture(req: ImageRequest):
     try:
         # VLM 모델 실행
         result = pose_evaluation_pipeline(vlm, req.image_base64, req.category)
-        print(result)
         # 문자열 형태 JSON으로 반환
         return {
             "status": "success",

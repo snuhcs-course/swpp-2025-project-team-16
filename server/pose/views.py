@@ -6,8 +6,6 @@ from django.views.decorators.http import require_POST
 from django.views.decorators.csrf import csrf_exempt
 from django.conf import settings
 
-from .models import PoseAnalysis 
-
 @csrf_exempt
 @require_POST
 def evaluate_posture(request):
@@ -85,16 +83,6 @@ def evaluate_posture(request):
             try:
                 data = json.loads(out_path.read_text(encoding="utf-8"))
 
-                try:
-                    PoseAnalysis.objects.create(
-                        user_id=request.user.id if request.user.is_authenticated else None,
-                        image_url=data.get("image_url"),
-                        pose_data=data,
-                        ai_comment=data.get("ai_comment") or "",
-                    )
-                except Exception as db_err:
-                    print(f"[DB WARN] PoseAnalysis save failed: {db_err}")
-
                 return JsonResponse(data, status=200)
             except Exception:
                 raw = out_path.read_text(encoding="utf-8", errors="replace")
@@ -103,15 +91,6 @@ def evaluate_posture(request):
         raw_out = proc.stdout
         try:
             data = _extract_last_json(raw_out)
-            try:
-                PoseAnalysis.objects.create(
-                    user_id=request.user.id if request.user.is_authenticated else None,
-                    pose_data=data,
-                    ai_comment=data.get("ai_comment") or "",
-                )
-            except Exception as db_err:
-                print(f"[DB WARN] PoseAnalysis save failed (stdout mode): {db_err}")
-
             return JsonResponse(data, status=200)
         except Exception:
             return JsonResponse({

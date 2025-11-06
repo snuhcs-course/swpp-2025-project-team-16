@@ -1,12 +1,11 @@
 from openai import OpenAI
 from models.utils import image_to_base64
+import os
 
 from langchain_community.callbacks import get_openai_callback
 
-import os
-OPENAI_API_KEY = os.getenv("./models/.env")
-
-client = OpenAI(OPENAI_API_KEY)# 또는 환경 변수 자동 인식
+api_key = os.getenv("OPENAI_API_KEY")
+client = OpenAI(api_key)  # 또는 환경 변수 자동 인식
 image_base64 = image_to_base64("sample_data/squat_correct_1_skeleton.png")
 
 

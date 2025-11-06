@@ -32,8 +32,11 @@ pose_vlm/models/.env
 
 __pycache__/
 *.pyc
+
 *.pyo
 *.pyd
 *.pkl
 *.env
 .env
+pose_vlm/models/.env
+

@@ -151,4 +151,5 @@ CONDA_EXE = "/home/team16/anaconda3/bin/conda"  # 예시
 POSE_PYTHON_PATH = "/home/team16/swpp-2025-project-team-16"
 POSE_ENV = "vlm"                             # 실행할 conda env 이름
 POSE_ENTRY = "pose_vlm.inference"  # env 내에서 실행할 엔트리 스크립트
+
 POSE_TIMEOUT = 180                                # 초 (작업 길면 늘리세요)

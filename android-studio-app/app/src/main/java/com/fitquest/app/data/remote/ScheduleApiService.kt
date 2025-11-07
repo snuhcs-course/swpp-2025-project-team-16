@@ -6,7 +6,7 @@ import retrofit2.http.*
 import retrofit2.http.Header
 
 data class ScheduleResponse(
-    val id:String,
+    val id:Int?,
     val date:String,
     val exercises:List<Exercise>,
     val startTime:String,
@@ -15,23 +15,26 @@ data class ScheduleResponse(
     val isCompleted: Boolean,
     val feedback:String
 )
+data class MessageResponse(
+    val message: String
+)
+
 data class PatchResponse(
-    val id:String,
+    val id:Int?,
     val startTime:String,
     val finishTime: String,
     val repTarget:Int
 )
 interface ScheduleApiService {
-    @GET("schedule/schedules")
+    @GET("schedule/schedules/")
     suspend fun getUserSchedules(
         @Header("Authorization") token: String
     ): Response<List<ScheduleResponse>>
 
-    @POST("schedule/")
+    @POST("schedule/generate_schedule/")
     suspend fun generateUserSchedules(
         @Header("Authorization") token: String,
-        scheduleResponse: ScheduleResponse
-    ): Response<String>
+    ): Response<MessageResponse>
 
     @PATCH("schedule/")
     suspend fun modifySchedules(

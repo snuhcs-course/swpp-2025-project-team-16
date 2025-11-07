@@ -1,9 +1,11 @@
 package com.fitquest.app.ui.fragments
 
+import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import android.view.*
 import android.widget.*
+import androidx.annotation.RequiresApi
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import com.fitquest.app.R
@@ -34,6 +36,7 @@ class ProfileFragment : Fragment() {
         val exercises: List<Exercise>
     )
 
+    @RequiresApi(Build.VERSION_CODES.O)
     private fun fetchHistoryFromServer() {
         val prefs = requireContext().getSharedPreferences("auth", 0)
         val token = prefs.getString("token", null) ?: return

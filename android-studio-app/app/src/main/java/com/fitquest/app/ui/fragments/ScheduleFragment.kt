@@ -1,24 +1,27 @@
 package com.fitquest.app.ui.fragments
 
 import android.icu.text.SimpleDateFormat
-import android.icu.util.Calendar
 import android.os.Bundle
-import android.util.Log
-import android.view.LayoutInflater
 import android.view.View
-import android.view.ViewGroup
-import android.widget.Button
-import android.widget.CalendarView
+import android.widget.LinearLayout
 import android.widget.Toast
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.viewModels
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.fitquest.app.R
+import com.fitquest.app.data.remote.RetrofitClient
+import com.fitquest.app.model.Exercise
+import com.fitquest.app.model.WorkoutPlan
 import com.fitquest.app.ui.adapters.ExerciseAdapter
 import com.fitquest.app.ui.viewmodels.ScheduleViewModel
+import com.google.android.material.button.MaterialButton
 import com.prolificinteractive.materialcalendarview.MaterialCalendarView
+import kotlinx.coroutines.launch
+import java.util.Date
 import java.util.Locale
+import android.util.Log
 
 /**
  * ScheduleFragment - Screen 2 (TRAINING PLANNER)
@@ -37,112 +40,128 @@ import java.util.Locale
  * - Exercise cards with emoji icons
  * - Clean, organized layout
  */
-class ScheduleFragment : Fragment() {
+class ScheduleFragment : Fragment(R.layout.fragment_schedule) {
 
+    private lateinit var viewModel: ScheduleViewModel
+    private lateinit var recyclerView: RecyclerView
+    private lateinit var emptyState: LinearLayout
+    private lateinit var adapter: ExerciseAdapter
     private lateinit var calendarView: MaterialCalendarView
-    private lateinit var exerciseRecyclerView: RecyclerView
-    private lateinit var exerciseAdapter: ExerciseAdapter
-    private lateinit var emptyState:View
-    private lateinit var autoGenerateButton: Button
-    private lateinit var customPlanButton: Button
-    private val viewModel: ScheduleViewModel by viewModels()
-    
-    private var selectedDate: String = ""
-
-    override fun onCreateView(
-        inflater: LayoutInflater,
-        container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ): View? {
-        return inflater.inflate(R.layout.fragment_schedule, container, false)
-    }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        // === ViewModel, View 초기화 ===
+        viewModel = ViewModelProvider(requireActivity())[ScheduleViewModel::class.java]
+        recyclerView = view.findViewById(R.id.exercise_recycler_view)
+        emptyState = view.findViewById(R.id.emptyState)
         calendarView = view.findViewById(R.id.calendar_view)
 
-        exerciseRecyclerView = view.findViewById(R.id.exercise_recycler_view)
+        val autoGenerateButton = view.findViewById<MaterialButton>(R.id.auto_generate_button)
+        val customPlanButton = view.findViewById<MaterialButton>(R.id.custom_plan_button)
 
-        autoGenerateButton = view.findViewById(R.id.auto_generate_button)
 
-        customPlanButton = view.findViewById(R.id.custom_plan_button)
+        // ✅ 1️⃣ 화면 진입 시 전체 스케줄 자동 로드
+        loadAllSchedules()
 
-        exerciseRecyclerView.layoutManager = LinearLayoutManager(context)
-
-        emptyState=view.findViewById(R.id.emptyState)
-
-        exerciseAdapter= ExerciseAdapter { showExerciseLibrary(selectedDate) }
-
-        exerciseRecyclerView.adapter=exerciseAdapter
-
-        viewModel.exercises.observe(viewLifecycleOwner){list->
-            if(list.isNullOrEmpty()){
-                exerciseRecyclerView.visibility=View.GONE
-                emptyState.visibility=View.VISIBLE
-            }else{
-                emptyState.visibility=View.GONE
-                exerciseRecyclerView.visibility=View.VISIBLE
-                exerciseAdapter.submitList(list)
-            }
-        }
-
-        setUp()
-
-        val cal=Calendar.getInstance()
-        val sdf = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
-        selectedDate = sdf.format(cal.time)
-        viewModel.loadScheduleForDate(selectedDate)
-        calendarView.setOnDateChangedListener { _, date,_ ->
+        // ✅ 2️⃣ 캘린더 날짜 클릭 시 해당 날짜 스케줄 로드
+        calendarView.setOnDateChangedListener { _, date, _ ->
             val sdf = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
-            cal.set(date.year,date.month,date.day)
-            selectedDate = sdf.format(cal.time)
-            viewModel.loadScheduleForDate(selectedDate)
+            val selected = sdf.format(date.date)
+            viewModel.loadScheduleForDate(selected)
         }
 
+        // ✅ 3️⃣ “AI Generate” 버튼 클릭 시 서버에 생성 요청
         autoGenerateButton.setOnClickListener {
             generateSchedule()
         }
 
-        customPlanButton.setOnClickListener {
-            showExerciseLibrary(selectedDate)
+        customPlanButton?.setOnClickListener {
+            // TODO: 커스텀 플랜 열기
         }
 
+        // === RecyclerView 세팅 ===
+        adapter = ExerciseAdapter { exercise ->
+            Toast.makeText(requireContext(), "${exercise.name} 클릭됨", Toast.LENGTH_SHORT).show()
+        }
+        recyclerView.adapter = adapter
+        recyclerView.layoutManager = LinearLayoutManager(requireContext())
 
+
+        // ✅ 4️⃣ ViewModel의 exercises 변화 observe → RecyclerView 업데이트
+        viewModel.exercises.observe(viewLifecycleOwner) { exercises ->
+            if (exercises.isNullOrEmpty()) {
+                recyclerView.visibility = View.GONE
+                emptyState.visibility = View.VISIBLE
+            } else {
+                recyclerView.visibility = View.VISIBLE
+                emptyState.visibility = View.GONE
+                adapter.submitList(exercises)
+            }
+        }
     }
 
-
-
-    private fun showExerciseLibrary(selectedDate:String) {
-        // TODO: Show dialog/bottom sheet with exercise library
-        // User can select exercises to add to schedule
-        viewModel.loadScheduleForDate(selectedDate)
-        if((viewModel.exercises.value?.isEmpty()) ?: true){
-            Toast.makeText(requireContext(), "날짜를 다시 선택해 주세요", Toast.LENGTH_SHORT).show()
-            return
-        }
-        else{
-            //TODO
-        }
-    }
-    private fun setUp(){
+    // === 스케줄 자동 생성 (POST) ===
+    private fun generateSchedule() {
         val prefs = requireContext().getSharedPreferences("auth", 0)
         val token = prefs.getString("token", null) ?: return
-        viewModel.loadAllSchedules(token)
-        if(viewModel.message.value!="SUCCESS"){
-            Toast.makeText(requireContext(), viewModel.message.value, Toast.LENGTH_SHORT).show()
+
+        lifecycleScope.launch {
+            try {
+                val response = RetrofitClient.scheduleApiService.generateUserSchedules("Bearer $token")
+                if (response.isSuccessful) {
+                    val today = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Date())
+                    viewModel.loadScheduleForDate(today)
+                    Toast.makeText(requireContext(), "계획이 생성되었습니다!", Toast.LENGTH_SHORT).show()
+                } else {
+                    Toast.makeText(requireContext(), "생성 실패: ${response.code()}", Toast.LENGTH_SHORT).show()
+                }
+            } catch (e: Exception) {
+                e.printStackTrace()
+                Toast.makeText(requireContext(), "네트워크 오류: ${e.localizedMessage}", Toast.LENGTH_SHORT).show()
+            }
         }
     }
-    private fun generateSchedule(){
+
+    // === 전체 스케줄 불러오기 (GET) ===
+    private fun loadAllSchedules() {
         val prefs = requireContext().getSharedPreferences("auth", 0)
         val token = prefs.getString("token", null) ?: return
-        viewModel.generateSchedule(token)
-        viewModel.loadScheduleForDate(selectedDate)
-        if(viewModel.message.value=="SUCCESS"){
-            Toast.makeText(requireContext(),"계획이 생성되었습니다!",Toast.LENGTH_SHORT).show()
-        }else{
-            Toast.makeText(requireContext(),viewModel.message.value,Toast.LENGTH_SHORT).show()
-        }
 
+        lifecycleScope.launch {
+            try {
+                val response = RetrofitClient.scheduleApiService.getUserSchedules("Bearer $token")
+                if (response.isSuccessful) {
+                    val result = response.body()
+                    if (!result.isNullOrEmpty()) {
+                        val workoutPlans = result.map { work ->
+                            val exercises = work.exercises.map {
+                                Exercise(it.name, it.detail, it.status)
+                            }
+                            WorkoutPlan(
+                                work.id, work.date, exercises,
+                                work.isCompleted, work.point, work.feedback,
+                                work.startTime, work.finishTime
+                            )
+                        }
+
+                        viewModel.updateWorkoutPlans(workoutPlans)
+
+                        // 현재 날짜 스케줄 표시
+                        val today = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Date())
+                        viewModel.loadScheduleForDate(today)
+
+                        Toast.makeText(requireContext(), "스케줄을 불러왔습니다!", Toast.LENGTH_SHORT).show()
+                    } else {
+                        Toast.makeText(requireContext(), "스케줄이 없습니다.", Toast.LENGTH_SHORT).show()
+                    }
+                } else {
+                    Toast.makeText(requireContext(), "불러오기 실패: ${response.code()}", Toast.LENGTH_SHORT).show()
+                }
+            } catch (e: Exception) {
+                e.printStackTrace()
+                Toast.makeText(requireContext(), "네트워크 오류: ${e.localizedMessage}", Toast.LENGTH_SHORT).show()
+            }
+        }
     }
 }

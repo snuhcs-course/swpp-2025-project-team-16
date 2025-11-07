@@ -4,11 +4,14 @@ from rest_framework.response import Response
 from rest_framework import status
 from django.shortcuts import get_object_or_404
 from django.utils.dateparse import parse_date, parse_time
-from .models import Schedule, Session
+from .models import Schedule, Session, WorkoutPlan, Exercise, Sport
 from accounts.models import Account
 from .serializers import ScheduleSerializer
 import jwt
 from django.db.models import Sum
+
+from datetime import date, timedelta, time
+from .serializers import WorkoutPlanSerializer
 
 SECRET_KEY = "django-insecure-($$s2w-4hgos)68o7$h$6twbwamtm56)%24e4ggj4=*rvrfv#1"
 
@@ -114,60 +117,77 @@ def user_history(request):
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def generate_schedule(request):
-    """
-    POST /schedule/generate_schedule
-    Body (ScheduleResponse):
-    {
-        "id": "1",
-        "date": "2025-11-06",
-        "exercises": [
-            {"name": "스쿼트", "repTarget": 10, "duration": "30초"}
-        ],
-        "startTime": "08:30:00",
-        "finishTime": "09:30:00",
-        "point": 30,
-        "isCompleted": false,
-        "feedback": ""
-    }
-    """
-    # user = get_user_from_token(request)
-    # if not user:
-    #     return Response({'error': 'Unauthorized'}, status=status.HTTP_401_UNAUTHORIZED)
-
     user = request.user
 
-    try:
-        # ✅ 1️⃣ 요청 파싱
-        date_str = request.data.get('date')
-        start_time_str = request.data.get('startTime')
-        finish_time_str = request.data.get('finishTime')
-
-        existing = Schedule.objects.filter(user=user, date=parsed_date).first()
-        if existing:
-            return Response({'message': f'Schedule for {date_str} already exists'}, status=status.HTTP_200_OK)
-
-        # ✅ 2️⃣ 날짜·시간 파싱
-        parsed_date = parse_date(date_str)
-        start_time = parse_time(start_time_str)
-        finish_time = parse_time(finish_time_str)
-
-        # ✅ 3️⃣ Schedule 생성
-        schedule = Schedule.objects.create(
-            user=user,
-            date=parsed_date,
-            start_time=start_time,
-            end_time=finish_time,
-            name=f"Workout Plan {date_str}",
-            is_finished=False,
+    # 1️⃣ 유저 세션 확인
+    session = Session.objects.filter(user=user).first()
+    if not session:
+        sport, _ = Sport.objects.get_or_create(
+            name="피트니스",
+            defaults={"description": "기본 운동 세트", "total_sessions": 10}
         )
-
-        return Response(
-            {"message": "Schedule created successfully", "schedule_id": schedule.id},
-            status=status.HTTP_201_CREATED
+        session = Session.objects.create(
+            title="기본 세션",
+            description="자동 생성된 세션입니다.",
+            sport=sport,
+            difficulty_level="Easy",
+            length=30,
         )
+        session.user.add(user)
 
-    except Exception as e:
-        return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+    # 2️⃣ 운동 rule-based 생성 (emoji 포함)
+    exercise_templates = [
+        {"name": "스쿼트",  "rep_target": 10},
+        {"name": "푸쉬업",  "rep_target": 8},
+        {"name": "플랭크",  "rep_target": 1},
+    ]
+
+    created_exercises = []
+    for idx, tmpl in enumerate(exercise_templates, start=1):
+        ex = Exercise.objects.create(
+            session=session,
+            name=f"{tmpl['name']} {idx}",
+            description=f"자동 생성된 {tmpl['name']}입니다.",
+            rep_target=tmpl["rep_target"],
+            order=idx,
+            xp=tmpl["rep_target"] * 10,   # 예시: 목표 reps × 10
+            status="Ready",
+            rep_done=0
+        )
+        created_exercises.append(ex)
+
+    # 3️⃣ Schedule 생성
+    schedule = Schedule.objects.create(
+        user=user,
+        session=session,
+        date=date.today(),
+        startTime=time(9, 0),
+        finishTime=time(10, 0),
+        name="오늘의 운동",
+        isCompleted=False,
+        point=sum(ex.xp for ex in created_exercises),
+        feedback=""
+    )
+
+    # 4️⃣ 응답 (간단 메시지 + 스케줄 ID)
+    return Response(
+        {
+            "message": "Schedules generated successfully.",
+            "scheduleId": schedule.id,
+            "exerciseCount": len(created_exercises)
+        },
+        status=status.HTTP_201_CREATED
+    )
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_user_schedules(request):
+    user = request.user
+    plans = WorkoutPlan.objects.filter(user=user).order_by('date')
+    serializer = WorkoutPlanSerializer(plans, many=True)
+    return Response(serializer.data, status=status.HTTP_200_OK)
+
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
@@ -225,4 +245,4 @@ def user_stats(request):
         return Response(data, status=status.HTTP_200_OK)
 
     except Exception as e:
-        return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+        return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)(base)

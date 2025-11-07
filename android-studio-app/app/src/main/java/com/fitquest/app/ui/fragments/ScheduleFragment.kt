@@ -25,14 +25,14 @@ import android.util.Log
 
 /**
  * ScheduleFragment - Screen 2 (TRAINING PLANNER)
- * 
+ *
  * Quest planning and customization
  * - Calendar with cyan-themed date selector
  * - Quick actions: AI Generate (sparkles icon) / Custom Plan (edit icon)
  * - Exercise arsenal library (grid of exercises with emojis)
  * - Scheduled exercises shown as cards
  * - Save button (green gradient)
- * 
+ *
  * Design: Strategic planning interface
  * - Deep blue/slate cards
  * - Cyan borders and accents

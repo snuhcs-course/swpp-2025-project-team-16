@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.google.android.material.card.MaterialCardView
+    android:id="@+id/cardViewRoot"  xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginVertical="8dp"
+    android:layout_marginHorizontal="16dp"
+    app:cardCornerRadius="16dp"
+    app:cardElevation="10dp"
+    android:backgroundTint="@color/surface_dark_translucent"
+
+    app:strokeColor="@color/cyan_20"  app:strokeWidth="1dp">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingTop="12dp"
+        android:paddingBottom="12dp"
+        android:paddingStart="16dp"
+        android:paddingEnd="16dp">
+
+        <TextView
+            android:id="@+id/tvActivityEmoji"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:gravity="center"
+            android:text="🏋️"
+            android:textSize="28sp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintVertical_bias="0.5"/>
+
+        <LinearLayout
+            android:id="@+id/btnStartSession"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@drawable/bg_chip_cyan"
+            android:orientation="horizontal"
+            android:paddingHorizontal="20dp"
+            android:paddingVertical="10dp"
+            android:gravity="center"
+            android:clickable="true"
+            android:focusable="true"
+            android:layout_marginEnd="8dp" app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintVertical_bias="0.5"> <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Start"
+            android:textColor="@android:color/white"
+            android:textStyle="bold"
+            android:textSize="14sp" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/llInfo"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:layout_marginStart="16dp"
+            android:layout_marginEnd="12dp"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toEndOf="@id/tvActivityEmoji"
+            app:layout_constraintEnd_toStartOf="@id/btnStartSession"> <TextView
+            android:id="@+id/tvActivityLabel"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Push-up"
+            android:textColor="@android:color/white"
+            android:textStyle="bold"
+            android:textSize="18sp" />
+
+            <TextView
+                android:id="@+id/tvStartEnd"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="11/9  8:00 - 9:00 (60 min)"
+                android:textColor="@color/text_secondary"
+                android:textSize="13sp"
+                android:layout_marginTop="2dp" />
+
+            <TextView
+                android:id="@+id/tvTarget"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Target: 20 Reps"
+                android:textColor="@color/text_secondary"
+                android:textSize="13sp"
+                android:layout_marginTop="2dp" />
+        </LinearLayout>
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</com.google.android.material.card.MaterialCardView>

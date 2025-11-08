@@ -12,13 +12,12 @@ import com.fitquest.app.R
 import com.fitquest.app.data.remote.RetrofitClient
 import com.fitquest.app.data.remote.SignupRequest
 import com.fitquest.app.data.remote.SignupResponse
+import com.fitquest.app.data.remote.TokenManager
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.textfield.TextInputEditText
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import androidx.core.content.edit
-
 
 /**
  * SignupStep1Fragment - Step 3-1 of signup flow
@@ -38,7 +37,6 @@ class SignupStep1Fragment : Fragment() {
 
     companion object {
         private const val ARG_EMAIL = "email"
-
         fun newInstance(email: String): SignupStep1Fragment {
             val fragment = SignupStep1Fragment()
             val args = Bundle()
@@ -57,9 +55,7 @@ class SignupStep1Fragment : Fragment() {
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
-        return inflater.inflate(R.layout.fragment_signup_step1, container, false)
-    }
+    ): View? = inflater.inflate(R.layout.fragment_signup_step1, container, false)
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -74,9 +70,7 @@ class SignupStep1Fragment : Fragment() {
         emailInput.setText(email)
 
         nextButton.setOnClickListener {
-            if (validateInputs()) {
-                signupUser()
-            }
+            if (validateInputs()) signupUser()
         }
 
         backButton.setOnClickListener {
@@ -90,29 +84,14 @@ class SignupStep1Fragment : Fragment() {
         val password = passwordInput.text.toString()
         val confirmPassword = confirmPasswordInput.text.toString()
 
-        when {
-            email.isEmpty() -> {
-                emailInput.error = "Email is required"
-                return false
-            }
-            username.isEmpty() -> {
-                usernameInput.error = "Username is required"
-                return false
-            }
-            password.isEmpty() -> {
-                passwordInput.error = "Password is required"
-                return false
-            }
-            password != confirmPassword -> {
-                confirmPasswordInput.error = "Passwords do not match"
-                return false
-            }
-            password.length < 6 -> {
-                passwordInput.error = "Password must be at least 6 characters"
-                return false
-            }
+        return when {
+            email.isEmpty() -> { emailInput.error = "Email is required"; false }
+            username.isEmpty() -> { usernameInput.error = "Username is required"; false }
+            password.isEmpty() -> { passwordInput.error = "Password is required"; false }
+            password != confirmPassword -> { confirmPasswordInput.error = "Passwords do not match"; false }
+            password.length < 6 -> { passwordInput.error = "Password must be at least 6 characters"; false }
+            else -> true
         }
-        return true
     }
 
     private fun signupUser() {
@@ -123,34 +102,19 @@ class SignupStep1Fragment : Fragment() {
         lifecycleScope.launch {
             try {
                 val response = withContext(Dispatchers.IO) {
-                    RetrofitClient.apiService.signup(
-                        SignupRequest(
-                            name = username,
-                            email = email,
-                            password = password
-                        )
-                    )
+                    RetrofitClient.apiService.signup(SignupRequest(name = username, email = email, password = password))
                 }
 
                 if (response.isSuccessful) {
                     val body: SignupResponse? = response.body()
-                    if (body?.token != null) {
-                        val prefs = requireContext().getSharedPreferences("auth", 0)
-                        prefs.edit {
-                            putString("token", body.token)
-                            putString("email", email)
-                            putString("name", username)
-                        }
+                    if (!body?.token.isNullOrEmpty()) {
+                        TokenManager.saveToken(requireContext(), body!!.token, email, username)
                     }
                     Toast.makeText(requireContext(), body?.message ?: "Signup success!", Toast.LENGTH_SHORT).show()
-
-                    // 회원가입 성공 시 → 다음 단계로 이동
-                    val activity = activity as? LoginActivity
-                    activity?.navigateToSignupStep2(email, password, username)
+                    (activity as? LoginActivity)?.navigateToSignupStep2(email, password, username)
                 } else {
                     Toast.makeText(requireContext(), "Signup failed: ${response.code()}", Toast.LENGTH_SHORT).show()
                 }
-
             } catch (e: Exception) {
                 e.printStackTrace()
                 Toast.makeText(requireContext(), "Network error: ${e.localizedMessage}", Toast.LENGTH_SHORT).show()
@@ -174,5 +138,4 @@ class SignupStep1Fragment : Fragment() {
             else -> true
         }
     }
-
 }

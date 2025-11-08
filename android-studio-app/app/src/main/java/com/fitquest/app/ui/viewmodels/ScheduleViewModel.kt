@@ -1,76 +1,66 @@
 package com.fitquest.app.ui.viewmodels
 
-import android.icu.text.SimpleDateFormat
-import android.icu.util.Calendar
-import android.util.Log
-import android.widget.Toast
-import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.fitquest.app.data.remote.InitialCountRequest
-import com.fitquest.app.data.remote.RetrofitClient
-import com.fitquest.app.data.remote.ScheduleResponse
-import com.fitquest.app.data.remote.WorkoutDayResponse
-import com.fitquest.app.model.Exercise
-import com.fitquest.app.model.WorkoutPlan
+import com.fitquest.app.model.Schedule
+import com.fitquest.app.repository.ScheduleRepository
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import java.util.Locale
 
-/**
- * ViewModel for ScheduleFragment
- */
-class ScheduleViewModel : ViewModel() {
+class ScheduleViewModel(private val repository: ScheduleRepository) : ViewModel() {
 
-    // 🔹 전체 스케줄 (모든 날짜의 WorkoutPlan)
-    private val _workoutPlans = MutableLiveData<List<WorkoutPlan>>(emptyList())
-    val workoutPlans: LiveData<List<WorkoutPlan>> get() = _workoutPlans
+    val schedules = MutableLiveData<List<Schedule>>()
+    val loading = MutableLiveData<Boolean>()
+    val error = MutableLiveData<String>()
 
-    // 🔹 현재 선택된 날짜
-    private val _selectedDate = MutableLiveData<String>()
-    val selectedDate: LiveData<String> get() = _selectedDate
+    val newlyGeneratedIds = MutableLiveData<Set<Int>>(emptySet())
 
-    // 🔹 선택된 날짜의 운동 리스트
-    private val _exercises = MutableLiveData<List<Exercise>>(emptyList())
-    val exercises: LiveData<List<Exercise>> get() = _exercises
-
-    // 🔹 메시지 (성공/오류/상태 표시)
-    private val _message = MutableLiveData<String>()
-    val message: LiveData<String> get() = _message
-
-
-    /** 전체 WorkoutPlan 리스트 업데이트 */
-    fun updateWorkoutPlans(plans: List<WorkoutPlan>) {
-        _workoutPlans.value = plans
+    private fun sortSchedules(list: List<Schedule>): List<Schedule> {
+        return list.sortedWith(
+            compareBy(
+                { it.scheduledDate },
+                { it.startTime }
+            )
+        )
     }
 
-    /** 특정 날짜의 운동 리스트 필터링 */
-    fun loadScheduleForDate(date: String) {
-        _selectedDate.value = date
-        val allPlans = _workoutPlans.value ?: return
-
-        val todayPlans = allPlans.filter { it.date == date }
-
-        if (todayPlans.isNotEmpty()) {
-            // 여러 계획이 있어도 첫 번째 걸 표시한다고 가정
-//            _exercises.value = todayPlans.first().exercises
-            val allExercises = todayPlans.flatMap { it.exercises }
-            _exercises.value = allExercises
-        } else {
-            _exercises.value = emptyList()
+    fun getSchedules(status: String = "planned") {
+        loading.value = true
+        viewModelScope.launch {
+            try {
+                val result = repository.getSchedules(status.lowercase())
+                schedules.postValue(sortSchedules(result))
+            } catch (e: Exception) {
+                error.postValue(e.message)
+            } finally {
+                loading.postValue(false)
+            }
         }
     }
 
-    /** 메시지 업데이트 (UI 토스트용 등) */
-    fun setMessage(msg: String) {
-        _message.value = msg
-    }
+    fun autoGenerateSchedules(onComplete: (() -> Unit)? = null) {
+        viewModelScope.launch {
+            try {
+                val generated = repository.autoGenerateSchedules()
 
-    /** 모든 LiveData 초기화 (로그아웃 시 등) */
-    fun clearAll() {
-        _workoutPlans.value = emptyList()
-        _exercises.value = emptyList()
-        _selectedDate.value = ""
-        _message.value = ""
+                val newIds = generated.mapNotNull { it.id }.toSet()
+                newlyGeneratedIds.postValue(newIds) // 어댑터에 하이라이트 요청
+
+                val currentList = schedules.value.orEmpty()
+                val updatedList = sortSchedules(currentList + generated)
+                schedules.postValue(updatedList)
+
+                onComplete?.invoke()
+
+                delay(5000)
+                if (newlyGeneratedIds.value == newIds) {
+                    newlyGeneratedIds.postValue(emptySet())
+                }
+
+            } catch (e: Exception) {
+                error.postValue(e.message)
+            }
+        }
     }
 }

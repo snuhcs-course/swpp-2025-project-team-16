@@ -37,6 +37,13 @@ class AiCoachViewModel : ViewModel() {
     private val _formScore = MutableLiveData<Int>(0)
     val formScore: LiveData<Int> = _formScore
 
+    private val _sessionActive = MutableLiveData(false)
+    val sessionActive: LiveData<Boolean> = _sessionActive
+
+    fun setSessionActive(active: Boolean) {
+        _sessionActive.value = active
+    }
+
     fun selectExercise(exercise: String) {
         _selectedExercise.value = exercise
     }

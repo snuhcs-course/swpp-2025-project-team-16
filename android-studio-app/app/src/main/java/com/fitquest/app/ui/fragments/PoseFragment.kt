@@ -1,10 +1,13 @@
 package com.fitquest.app.ui.fragments
 
 import android.Manifest
+import android.app.Activity
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.Matrix
+import android.net.Uri
 import android.os.Bundle
 import android.os.CountDownTimer
 import android.util.Base64
@@ -17,7 +20,12 @@ import android.view.ViewGroup
 import android.widget.ImageButton
 import android.widget.ImageView
 import android.widget.TextView
-import androidx.camera.core.*
+import androidx.activity.result.ActivityResultLauncher
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.camera.core.CameraSelector
+import androidx.camera.core.ImageCapture
+import androidx.camera.core.ImageCaptureException
+import androidx.camera.core.Preview
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.view.PreviewView
 import androidx.core.app.ActivityCompat
@@ -60,6 +68,9 @@ class PoseFragment : Fragment() {
     private var lastPhotoFile: File? = null
     private var orientationListener: OrientationEventListener? = null
 
+    // 갤러리에서 이미지 선택용 런처
+    private lateinit var pickImageLauncher: ActivityResultLauncher<Intent>
+
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -85,6 +96,26 @@ class PoseFragment : Fragment() {
 
         cameraExecutor = Executors.newSingleThreadExecutor()
 
+        // 갤러리 선택 런처 등록
+        pickImageLauncher = registerForActivityResult(
+            ActivityResultContracts.StartActivityForResult()
+        ) { result ->
+            if (result.resultCode == Activity.RESULT_OK) {
+                val uri = result.data?.data
+                if (uri != null) {
+                    val file = createFileFromUri(uri)
+                    if (file != null) {
+                        lastPhotoFile = file
+                        processAndUpload(file)
+                    } else {
+                        tvCue.text = "이미지를 불러오지 못했습니다."
+                    }
+                } else {
+                    tvCue.text = "이미지가 선택되지 않았습니다."
+                }
+            }
+        }
+
         if (allPermissionsGranted()) {
             startCamera()
         } else {
@@ -102,7 +133,7 @@ class PoseFragment : Fragment() {
                     orientation in 45..134  -> Surface.ROTATION_270
                     orientation in 135..224 -> Surface.ROTATION_180
                     orientation in 225..314 -> Surface.ROTATION_90
-                    else -> Surface.ROTATION_0
+                    else                    -> Surface.ROTATION_0
                 }
                 imageCapture?.targetRotation = rotation
             }
@@ -112,13 +143,9 @@ class PoseFragment : Fragment() {
         // 촬영 버튼: 10초 카운트다운 후 촬영
         btnCapture.setOnClickListener { startCountdownAndCapture() }
 
-        // 마지막 촬영본 재전송
+        // 업로드 버튼: 갤러리에서 사진 선택 후 서버 업로드
         btnUpload.setOnClickListener {
-            lastPhotoFile?.let { file ->
-                processAndUpload(file)
-            } ?: run {
-                tvCue.text = "먼저 사진을 촬영해 주세요."
-            }
+            openGalleryForImage()
         }
 
         // 카메라 전환 버튼
@@ -231,18 +258,56 @@ class PoseFragment : Fragment() {
         )
     }
 
+    // =============== GALLERY PICK ==================
+    private fun openGalleryForImage() {
+        val intent = Intent(Intent.ACTION_PICK).apply {
+            type = "image/*"
+        }
+        pickImageLauncher.launch(intent)
+    }
+
+    private fun createFileFromUri(uri: Uri): File? {
+        return try {
+            val inputStream = requireContext().contentResolver.openInputStream(uri) ?: return null
+            val tempFile = File(
+                requireContext().cacheDir,
+                "gallery_${System.currentTimeMillis()}.jpg"
+            )
+            tempFile.outputStream().use { out ->
+                inputStream.use { it.copyTo(out) }
+            }
+            tempFile
+        } catch (e: Exception) {
+            Log.e("PoseFragment", "Failed to create file from uri", e)
+            null
+        }
+    }
+
+    // =============== PROCESS + UPLOAD ==================
     private fun processAndUpload(photoFile: File) {
+        // 업로드 중엔 업로드 버튼 비활성화
+        btnUpload.isEnabled = false
+
         // 1) 파일 → Bitmap (EXIF 보정 포함)
         val bitmap = decodeBitmapWithExifCorrected(photoFile)
         if (bitmap == null) {
             tvCue.text = "이미지 로드 실패"
+            // 실패했으니 다시 업로드 가능하도록 되돌리기
+            btnUpload.isEnabled = true
             return
         }
 
-        // 우측 패널에 촬영 이미지 표시
+        // 카메라 영역에 정지 이미지 표시 & 카메라 비활성화
         tvGuideText.visibility = View.GONE
         imgAnalysisResult.visibility = View.VISIBLE
+        previewView.visibility = View.GONE
         imgAnalysisResult.setImageBitmap(bitmap)
+
+        // 카메라 사용 중지
+        cameraProvider?.unbindAll()
+        imageCapture = null
+        btnCapture.isEnabled = false
+        btnSwitchCamera.isEnabled = false
 
         // 2) Bitmap → Base64 (다운스케일+압축으로 전송량 절감)
         val base64 = bitmapToBase64(bitmap)
@@ -265,12 +330,10 @@ class PoseFragment : Fragment() {
                         if (data == null) {
                             "빈 응답입니다."
                         } else if (data.status == "success") {
-                            // ✅ 서버 응답 필드 맞춰서 표시
                             val good = data.good_points.ifBlank { "없음" }
                             val improve = data.improvement_points.ifBlank { "없음" }
                             val methods = data.improvement_methods?.ifBlank { "없음" } ?: "없음"
 
-                            // UI 업데이트용 문자열 반환
                             "✅ Good Points:\n$good\n\n⚠️ Improvement Points:\n$improve\n\n💡 Methods:\n$methods"
                         } else {
                             "서버 반환 상태: ${data.status}"
@@ -289,8 +352,12 @@ class PoseFragment : Fragment() {
             tvGoodPoints.text = ""
             tvImprovePoints.text = ""
             tvCue.text = responseText
+
+            // ✅ 업로드 완료/실패 후 다시 업로드 가능
+            btnUpload.isEnabled = true
         }
     }
+
 
 
     // === Utils ===

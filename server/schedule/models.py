@@ -45,3 +45,31 @@ class SportStatus(models.Model):
 
     def __str__(self):
         return f"{self.user.email} - {self.sport.name}"
+
+class Exercise(models.Model):
+    session = models.ForeignKey('Session', on_delete=models.CASCADE, related_name='exercises')
+    name = models.CharField(max_length=100)
+    description = models.TextField(blank=True)
+    rep_target = models.IntegerField(null=True, blank=True)
+    duration = models.CharField(max_length=50, blank=True)
+    order = models.PositiveIntegerField(default=1)
+    xp = models.IntegerField(default=0)                         # 경험치
+    accuracy = models.FloatField(null=True, blank=True)         # 정확도 (AI 추적용)
+    status = models.CharField(max_length=30, default="Ready")   # Ready / Completed / Skipped
+    rep_done = models.IntegerField(default=0)                   # 완료된 횟수
+
+    def __str__(self):
+        return f"{self.session.title} - {self.name}"
+
+class WorkoutPlan(models.Model):
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="workout_plans")
+    date = models.DateField()
+    start_time = models.TimeField()
+    finish_time = models.TimeField()
+    exercises = models.ManyToManyField(Exercise, related_name="plans")
+    points = models.IntegerField(default=0)
+    is_completed = models.BooleanField(default=False)
+    feedback = models.TextField(blank=True)
+
+    def __str__(self):
+        return f"{self.user.username} - {self.date}"

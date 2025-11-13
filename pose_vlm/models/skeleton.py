@@ -28,20 +28,25 @@ def pose_model_inference(image, save_img = False):
     model = RTMPose3D.from_pretrained('rbarac/rtmpose3d', device='cuda:0')
     # Run inference
     results = model(image, return_tensors='np')
-    # Access results
-    keypoints_2d = results['keypoints_2d'].squeeze() # [N, 133, 2] - pixel coords
-    keypoints_3d = results['keypoints_3d'].squeeze() # [N, 133, 3] - 3D coords in meters
-    # scores = results['scores']          
 
-    # compute joint angles
-    angles = compute_joint_angles(keypoints_3d, keypoints_2d)
+    if len(results['keypoints_2d'] > 0):
+        # Access results
+        keypoints_2d = results['keypoints_2d'].squeeze() # [N, 133, 2] - pixel coords
+        keypoints_3d = results['keypoints_3d'].squeeze() # [N, 133, 3] - 3D coords in meters
+        # scores = results['scores']          
 
-    print(angles)
+        # compute joint angles
+        angles = compute_joint_angles(keypoints_3d, keypoints_2d)
 
-    img_skeleton = draw_keypoints(image, keypoints_2d, skeleton, save_img)
+        # print(angles)
+
+        img_skeleton = draw_keypoints(image, keypoints_2d, skeleton, save_img)
 
 
-    return img_skeleton, angles, keypoints_2d
+        return img_skeleton, angles, keypoints_2d
+    
+    else:
+        return image, None, None
 
 
 

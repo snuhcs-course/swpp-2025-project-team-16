@@ -70,6 +70,7 @@ class AiCoachFragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener {
     private var repCount = 0
     private var points = 0
     private var selectedExercise: Exercise = Exercise.SQUAT
+
     private var counter: BaseCounter? = null
 
     // Tracking lock FSM
@@ -299,7 +300,7 @@ class AiCoachFragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener {
 
     // ---------------- Training control ----------------
 
-    private fun beginWorkout() {
+    fun beginWorkout() {
         isTraining = true
         repCount = 0
         points = 0

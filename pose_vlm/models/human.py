@@ -15,7 +15,7 @@ def rule_based_pose_evaluation(joint_angles, keypoints_2d, category = "squat"):
         elif 60 <= waist_angle < 90:
             human_opinion.append("The torso seems too upright, with a risk of overextension.")
         else:
-            a = a + 1
+            a = 1
         # ---- Ankle angle evaluation ----
         if -5 <= ankle_angle < 5:
             human_opinion.append("The feet look fully grounded with even pressure distribution.")

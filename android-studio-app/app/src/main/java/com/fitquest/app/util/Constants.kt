@@ -2,14 +2,14 @@ package com.fitquest.app.util
 object ActivityUtils {
     val labelMap = mapOf(
         "squat" to "Squat",
-        "pushup" to "Push-Up",
-        "plank" to "Plank"
+        "plank" to "Plank",
+        "lunge" to "Lunge"
     )
 
     val emojiMap = mapOf(
         "squat" to "\uD83C\uDFCB\u200D\u2642\uFE0F",  // 🏋️‍♂️
-        "pushup" to "\uD83D\uDCAA",                  // 💪
-        "plank" to "\uD83E\uDDD8\u200D\u2642\uFE0F" // 🧘‍♂️
+        "plank" to "\uD83E\uDDD8\u200D\u2642\uFE0F", // 🧘‍♂️
+        "lunge" to "\uD83E\uDDB5" // 🦵
     )
 
     fun getLabel(activity: String) = labelMap[activity.lowercase()] ?: activity

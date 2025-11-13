@@ -5,13 +5,13 @@ from django.core.exceptions import ValidationError
 
 class ActivityType(models.TextChoices):
     SQUAT = 'squat', 'Squat'
-    PUSHUP = 'pushup', 'Push-up'
     PLANK = 'plank', 'Plank'
+    LUNGE = 'lunge', 'Lunge'
 
 ACTIVITY_TYPE_MAP = {
     ActivityType.SQUAT: 'reps',
-    ActivityType.PUSHUP: 'reps',
-    ActivityType.PLANK: 'duration'
+    ActivityType.PLANK: 'duration',
+    ActivityType.LUNGE: 'reps'
 }
 
 def validate_activity_fields(activity, reps=None, duration=None):

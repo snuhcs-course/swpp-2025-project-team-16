@@ -10,6 +10,7 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import com.fitquest.app.R
 import com.fitquest.app.data.remote.RetrofitClient
+import com.fitquest.app.data.remote.UserStatsResponse
 import com.fitquest.app.model.Exercise
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.bottomsheet.BottomSheetDialog
@@ -135,6 +136,7 @@ class ProfileFragment : Fragment() {
 
         fetchHistoryFromServer()
         setupRankButton()
+        fetchUserStats()
     }
 
     private fun setupRankButton() {

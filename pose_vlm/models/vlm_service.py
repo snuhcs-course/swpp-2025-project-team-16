@@ -116,7 +116,7 @@ class VLMService:
                                     Evaluation Criteria:
                                     {description_text}
 
-                                    Huam Opinoon:
+                                    Human Opinion:
                                     {human_opinion_text}
                                     
                                     """

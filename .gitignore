@@ -30,6 +30,8 @@ server/.env
 server/sportify/__pycache__
 pose_vlm/models/.env
 
+
+
 __pycache__/
 *.pyc
 

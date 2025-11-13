@@ -23,7 +23,10 @@ def pose_evaluation_pipeline(vlm: VLMService, image_base64: str, category: str) 
     img_skeleton, joint_angles, keypoints_2d = pose_model_inference(img_cv2, save_img=True)
     img_skeleton_base64 = imagecv2_to_base64(img_skeleton, ext='.jpg')
 
-    human_opinion = rule_based_pose_evaluation(joint_angles, keypoints_2d, category=category)
+    if joint_angles is None or keypoints_2d is None:
+        human_opinion = ""
+    else:
+        human_opinion = rule_based_pose_evaluation(joint_angles, keypoints_2d, category=category)
     instruction = squat_instruction if category == "squat" else ""
 
     result = vlm.evaluate_posture(img_skeleton_base64, instruction, human_opinion)

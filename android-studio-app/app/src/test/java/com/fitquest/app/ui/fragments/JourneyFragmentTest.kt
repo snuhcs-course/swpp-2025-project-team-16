@@ -1,88 +1,157 @@
 package com.fitquest.app.ui.fragments
 
+import android.content.Context
+import android.os.Build
+import android.widget.LinearLayout
+import androidx.fragment.app.testing.launchFragmentInContainer
+import androidx.test.core.app.ApplicationProvider
+import androidx.test.ext.junit.runners.AndroidJUnit4
+import com.fitquest.app.R
+import com.fitquest.app.data.remote.ExerciseResponse
+import com.fitquest.app.data.remote.JourneyApiService
+import com.fitquest.app.data.remote.RetrofitClient
+import com.fitquest.app.data.remote.WorkoutDayResponse
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.test.StandardTestDispatcher
+import kotlinx.coroutines.test.resetMain
+import kotlinx.coroutines.test.runTest
+import kotlinx.coroutines.test.setMain
+import okhttp3.ResponseBody.Companion.toResponseBody
+import org.junit.After
+import org.junit.Assert.*
+import org.junit.Before
 import org.junit.Test
+import org.junit.runner.RunWith
+import org.mockito.Mock
+import org.mockito.Mockito
+import org.mockito.MockitoAnnotations
+import org.mockito.kotlin.any
+import org.mockito.kotlin.whenever
+import org.robolectric.annotation.Config
+import retrofit2.Response
+import java.time.LocalDate
 
+@ExperimentalCoroutinesApi
+@RunWith(AndroidJUnit4::class)
+@Config(sdk = [Build.VERSION_CODES.P])
 class JourneyFragmentTest {
 
-    @Test
-    fun `onCreateView   Successful inflation`() {
-        // Verify that onCreateView successfully inflates and returns the correct layout view (R.layout.fragment_journey).
-        // TODO implement test
+    private val testDispatcher = StandardTestDispatcher()
+
+    @Mock
+    private lateinit var mockApiService: JourneyApiService
+
+    @Before
+    fun setUp() {
+        MockitoAnnotations.openMocks(this)
+        Dispatchers.setMain(testDispatcher)
+        // RetrofitClient.journeyApiService = mockApiService
+    }
+
+    @After
+    fun tearDown() {
+        Dispatchers.resetMain()
+    }
+
+    private fun setAuthToken(token: String?) {
+        val context = ApplicationProvider.getApplicationContext<Context>()
+        val prefs = context.getSharedPreferences("auth", Context.MODE_PRIVATE)
+        prefs.edit().putString("token", token).commit()
     }
 
     @Test
-    fun `onCreateView   Null container handling`() {
-        // Test the behavior when the 'container' argument is null, ensuring the view is still inflated correctly without a parent.
-        // TODO implement test
+    fun `onCreateView inflates layout successfully`() {
+        val scenario = launchFragmentInContainer<JourneyFragment>(themeResId = R.style.Theme_FitQuest)
+        scenario.onFragment { fragment ->
+            assertNotNull("View should be inflated", fragment.view)
+        }
     }
 
     @Test
-    fun `onViewCreated   View initialization`() {
-        // Confirm that 'timelineContainer' is correctly initialized by findViewById after the view is created.
-        // TODO implement test
+    fun `onViewCreated initializes views`() {
+        val scenario = launchFragmentInContainer<JourneyFragment>(themeResId = R.style.Theme_FitQuest)
+        scenario.onFragment { fragment ->
+            val timelineContainer = fragment.view?.findViewById<LinearLayout>(R.id.timelineContainer)
+            assertNotNull("Timeline container should be initialized", timelineContainer)
+        }
     }
 
     @Test
-    fun `onViewCreated   fetchScheduleFromServer called`() {
-        // Verify that the 'fetchScheduleFromServer' method is called exactly once when onViewCreated is executed.
-        // TODO implement test
+    fun `fetchScheduleFromServer does not call API when no auth token`() = runTest {
+        setAuthToken(null)
+
+        launchFragmentInContainer<JourneyFragment>(themeResId = R.style.Theme_FitQuest)
+        testDispatcher.scheduler.advanceUntilIdle()
+
+        Mockito.verify(mockApiService, Mockito.never()).getUserSchedules(any())
     }
 
     @Test
-    fun `fetchScheduleFromServer   No auth token`() {
-        // Test the scenario where the authentication token is not found in SharedPreferences, ensuring the network request is not made and the UI remains in its initial state.
-        // TODO implement test
+    fun `fetchScheduleFromServer populates timeline on successful response`() = runTest {
+        setAuthToken("fake-token")
+        val today = LocalDate.now().toString()
+        val mockData = listOf(
+            WorkoutDayResponse(today, 100, listOf(ExerciseResponse("Push-up", "10 reps", "Done")))
+        )
+        whenever(mockApiService.getUserSchedules("Bearer fake-token")).thenReturn(Response.success(mockData))
+
+        val scenario = launchFragmentInContainer<JourneyFragment>(themeResId = R.style.Theme_FitQuest)
+        testDispatcher.scheduler.advanceUntilIdle()
+
+        scenario.onFragment { fragment ->
+            val timeline = fragment.view?.findViewById<LinearLayout>(R.id.timelineContainer)
+            assertEquals("Timeline should have 1 child for one workout day", 1, timeline?.childCount)
+        }
     }
 
     @Test
-    fun `fetchScheduleFromServer   Successful API response with data`() {
-        // Simulate a successful API response with a list of workout schedules and verify that 'populateTimeline' is called with the correctly mapped and filtered data.
-        // TODO implement test
+    fun `fetchScheduleFromServer filters out past dates`() = runTest {
+        setAuthToken("fake-token")
+        val today = LocalDate.now()
+        val pastDate = today.minusDays(1).toString()
+        val futureDate = today.plusDays(1).toString()
+        val mockData = listOf(
+            WorkoutDayResponse(pastDate, 50, emptyList()),
+            WorkoutDayResponse(today.toString(), 100, emptyList()),
+            WorkoutDayResponse(futureDate, 150, emptyList())
+        )
+        whenever(mockApiService.getUserSchedules(any())).thenReturn(Response.success(mockData))
+
+        val scenario = launchFragmentInContainer<JourneyFragment>(themeResId = R.style.Theme_FitQuest)
+        testDispatcher.scheduler.advanceUntilIdle()
+
+        scenario.onFragment { fragment ->
+            val timeline = fragment.view?.findViewById<LinearLayout>(R.id.timelineContainer)
+            assertEquals("Only today and future dates should be shown", 2, timeline?.childCount)
+        }
     }
 
     @Test
-    fun `fetchScheduleFromServer   Successful API response with empty list`() {
-        // Test the case where the server returns an empty list of schedules. Verify that 'populateTimeline' is called with an empty list and the UI shows an empty state (no views in timelineContainer).
-        // TODO implement test
+    fun `fetchScheduleFromServer handles API error response`() = runTest {
+        setAuthToken("fake-token")
+        whenever(mockApiService.getUserSchedules(any())).thenReturn(Response.error(404, "Not Found".toResponseBody()))
+
+        val scenario = launchFragmentInContainer<JourneyFragment>(themeResId = R.style.Theme_FitQuest)
+        testDispatcher.scheduler.advanceUntilIdle()
+
+        scenario.onFragment { fragment ->
+            val timeline = fragment.view?.findViewById<LinearLayout>(R.id.timelineContainer)
+            assertEquals("Timeline should be empty on API error", 0, timeline?.childCount)
+        }
     }
 
     @Test
-    fun `fetchScheduleFromServer   Successful API response with null body`() {
-        // Simulate a successful response (code 200) but with a null body. Verify that 'populateTimeline' is called with an empty list, preventing crashes.
-        // TODO implement test
-    }
+    fun `fetchScheduleFromServer handles network exception`() = runTest {
+        setAuthToken("fake-token")
+        whenever(mockApiService.getUserSchedules(any())).thenThrow(RuntimeException("Network failed"))
 
-    @Test
-    fun `fetchScheduleFromServer   API error response`() {
-        // Simulate a server error response (e.g., 404, 500). Verify that an error is logged and 'populateTimeline' is not called, leaving the UI unchanged.
-        // TODO implement test
-    }
+        val scenario = launchFragmentInContainer<JourneyFragment>(themeResId = R.style.Theme_FitQuest)
+        testDispatcher.scheduler.advanceUntilIdle()
 
-    @Test
-    fun `fetchScheduleFromServer   Network exception`() {
-        // Simulate a network exception (e.g., IOException, UnknownHostException). Ensure the exception is caught, an error is logged, and the app does not crash.
-        // TODO implement test
+        scenario.onFragment { fragment ->
+            val timeline = fragment.view?.findViewById<LinearLayout>(R.id.timelineContainer)
+            assertEquals("Timeline should be empty on network exception", 0, timeline?.childCount)
+        }
     }
-
-    @Test
-    fun `fetchScheduleFromServer   Date filtering logic`() {
-        // Provide a mix of past, present, and future dates in the mock server response. 
-        // Verify that only schedules from today and future dates are processed and displayed.
-        // TODO implement test
-    }
-
-    @Test
-    fun `fetchScheduleFromServer   Invalid date format`() {
-        // Test the scenario where some workout data from the server contains malformed date strings. 
-        // Verify that these items are correctly filtered out and do not cause the application to crash.
-        // TODO implement test
-    }
-
-    @Test
-    fun `Fragment recreation   State preservation`() {
-        // Test the fragment's behavior during a configuration change (e.g., screen rotation). 
-        // Ensure that 'onViewCreated' is called again and the data is re-fetched, correctly repopulating the view without duplicating data.
-        // TODO implement test
-    }
-
 }

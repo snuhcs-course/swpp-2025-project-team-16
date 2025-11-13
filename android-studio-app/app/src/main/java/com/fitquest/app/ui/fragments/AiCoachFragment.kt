@@ -25,6 +25,7 @@ import com.fitquest.app.ui.coachutils.counter.PlankTimer
 import com.fitquest.app.ui.coachutils.counter.SquatCounter
 import com.fitquest.app.ui.coachutils.counter.LungeCounter
 import com.fitquest.app.ui.viewmodels.AiCoachViewModel
+import com.fitquest.app.util.ActivityUtils
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.progressindicator.LinearProgressIndicator
 import com.google.mediapipe.tasks.vision.core.RunningMode
@@ -35,7 +36,7 @@ import kotlin.math.exp
 
 class AiCoachFragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener {
 
-    private enum class Exercise { SQUAT, PLANK, LUNGE }
+    // private enum class Exercise { SQUAT, PLANK, LUNGE } // 제거
 
     // UI
     private lateinit var previewView: PreviewView
@@ -70,7 +71,7 @@ class AiCoachFragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener {
     private var countdownTimer: CountDownTimer? = null
     private var repCount = 0
     private var points = 0
-    private var selectedExercise: Exercise = Exercise.SQUAT
+    private var selectedExercise: String = "squat" // String으로 변경, 기본값은 "squat"
 
     private var counter: BaseCounter? = null
 
@@ -135,16 +136,43 @@ class AiCoachFragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener {
             requireActivity(), REQUIRED_PERMISSIONS, REQUEST_CODE_PERMISSIONS
         )
 
-        // Spinner (entries는 XML에 정의되어 있음)
+        // --- Spinner 초기화 및 바인딩 ---
+        val exerciseLabels = ActivityUtils.labelMap.values.toTypedArray()
+
+        // 1. 이모지와 레이블을 결합한 목록 생성: "💪 Squat"
+        val exerciseListWithEmoji = ActivityUtils.labelMap.map { (key, label) ->
+            val emoji = ActivityUtils.getEmoji(key)
+            "$emoji $label" // 예: "💪 Squat"
+        }.toTypedArray()
+
+        // 2. ArrayAdapter 생성 (이모지 포함 목록 사용)
+        val adapter = ArrayAdapter(
+            requireContext(),
+            android.R.layout.simple_spinner_dropdown_item,
+            exerciseListWithEmoji
+        )
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+        spinnerExercise.adapter = adapter
+
+        // 3. 리스너 설정
         spinnerExercise.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
             override fun onItemSelected(parent: AdapterView<*>?, v: View?, pos: Int, id: Long) {
-                val sel = parent?.getItemAtPosition(pos)?.toString() ?: ""
-                selectedExercise = mapSelectionToExercise(sel)
+                // 선택된 아이템은 "💪 Squat" 형태의 전체 문자열입니다.
+                val selectedItemWithEmoji = parent?.getItemAtPosition(pos)?.toString() ?: ""
+
+                // 이모지와 공백을 제거하고 순수한 운동 레이블(예: "Squat")만 추출합니다.
+                // 문자열에서 첫 번째 공백 이후의 텍스트를 가져와서 레이블을 추출합니다.
+                val selectedLabel = selectedItemWithEmoji.substringAfter(" ").trim()
+
+                // 추출된 레이블을 다시 ActivityUtils의 키(소문자)로 변환하여 selectedExercise에 저장합니다.
+                selectedExercise = ActivityUtils.labelMap.entries
+                    .find { it.value == selectedLabel }?.key ?: "squat"
+
                 applyExerciseUi(selectedExercise)
                 if (isTraining) feedbackText.text = "Exercise changed. Applies on next start."
             }
             override fun onNothingSelected(parent: AdapterView<*>?) {
-                selectedExercise = Exercise.SQUAT
+                selectedExercise = "squat" // 기본값 설정
                 applyExerciseUi(selectedExercise)
             }
         }
@@ -280,7 +308,7 @@ class AiCoachFragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener {
             counter?.update(pts, now)
 
             // ---- UI 반영 ----
-            if (selectedExercise == Exercise.PLANK && counter is PlankTimer) {
+            if (selectedExercise.lowercase(Locale.getDefault()) == "plank" && counter is PlankTimer) { // String 비교로 변경
                 val pt = counter as PlankTimer
                 // 0.1초 단위 표시
                 val seconds = pt.holdSeconds()
@@ -307,11 +335,12 @@ class AiCoachFragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener {
         points = 0
 
         val now = System.currentTimeMillis()
-        counter = when (selectedExercise) {
-            Exercise.SQUAT -> SquatCounter().also { it.reset(now) }
-            Exercise.PLANK -> PlankTimer().also { it.reset(now) }
-            Exercise.LUNGE -> LungeCounter().also { it.reset(now) }
-
+        // Exercise enum 대신 String을 사용하여 카운터 초기화
+        counter = when (selectedExercise.lowercase(Locale.getDefault())) {
+            "squat" -> SquatCounter().also { it.reset(now) }
+            "plank" -> PlankTimer().also { it.reset(now) }
+            "lunge" -> LungeCounter().also { it.reset(now) }
+            else -> SquatCounter().also { it.reset(now) } // 기본값: Squat
         }
 
         trackingLocked = false
@@ -373,26 +402,32 @@ class AiCoachFragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener {
         }
     }
 
-    private fun applyExerciseUi(ex: Exercise) {
-        when (ex) {
-            Exercise.SQUAT -> {
-                tvCurrentExerciseEmoji.text = "🦵"
-                labelReps.text = "REPS"
-            }
-            Exercise.PLANK -> {
-                tvCurrentExerciseEmoji.text = "⚡"
+    private fun applyExerciseUi(exerciseName: String) { // String 인자를 받도록 변경
+        val lowerCaseName = exerciseName.lowercase(Locale.getDefault())
+
+        // 1. ActivityUtils에서 이모지 가져오기
+        tvCurrentExerciseEmoji.text = ActivityUtils.getEmoji(lowerCaseName)
+
+        // 2. 운동 종류에 따라 라벨 변경
+        when (lowerCaseName) {
+            "plank" -> {
                 labelReps.text = "SECONDS"
             }
-            Exercise.LUNGE -> {
-                tvCurrentExerciseEmoji.text = "🦵"
+            "squat", "lunge" -> {
                 labelReps.text = "REPS"
             }
+            else -> {
+                labelReps.text = "REPS" // 기본값
+            }
         }
+
         // 디스플레이 초기화
-        repCountText.text = if (ex == Exercise.PLANK) "0.0" else "0"
+        repCountText.text = if (lowerCaseName == "plank") "0.0" else "0"
         pointsText.text = "+0"
     }
 
+    // mapSelectionToExercise 함수 제거 (Spinner에서 이미 소문자 String으로 처리)
+    /*
     private fun mapSelectionToExercise(s: String): Exercise {
         val t = s.lowercase()
         return when {
@@ -402,12 +437,13 @@ class AiCoachFragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener {
             else -> Exercise.SQUAT
         }
     }
+    */
 
     private fun updateRepCount(count: Int) {
         repCount = count
         points = count * 10
         coachViewModel.updateRepCount(count)
-        if (selectedExercise == Exercise.PLANK) {
+        if (selectedExercise.lowercase(Locale.getDefault()) == "plank") { // String 비교로 변경
             // 플랭크는 repCountText를 위의 onResults에서 소수 1자리로 따로 세팅하므로 여기선 포인트만
             pointsText.text = "+$points"
         } else {

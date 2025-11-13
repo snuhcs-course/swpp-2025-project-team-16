@@ -92,27 +92,31 @@ def update_initial_reps(request):
     }, status=status.HTTP_200_OK)
 
 
-# ✅ 사용자 랭킹 (JWT 인증 필요)
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def user_rankings(request):
     """
     GET /accounts/rankings/
-    Response:
-    [
-      {"rank": 1, "name": "재희", "xp": 2100, "level": 5},
-      {"rank": 2, "name": "단야", "xp": 1800, "level": 4},
-      ...
-    ]
+    공동 순위 반영 버전
     """
-    users = Account.objects.filter(is_active=True).order_by('-xp')[:50]
-    data = [
-        {
-            "rank": i + 1,
+    users = Account.objects.filter(is_active=True).order_by('-xp', '-level')[:50]
+
+    data = []
+    prev_xp = None
+    rank = 0
+    display_rank = 0
+
+    for u in users:
+        display_rank += 1
+        if u.xp != prev_xp:
+            rank = display_rank 
+        data.append({
+            "rank": rank,
             "name": u.name,
             "xp": u.xp,
             "level": u.level,
-        }
-        for i, u in enumerate(users)
-    ]
+        })
+        prev_xp = u.xp
+
     return Response(data, status=status.HTTP_200_OK)
+

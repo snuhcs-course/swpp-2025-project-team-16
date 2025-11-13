@@ -46,22 +46,6 @@
                 android:textStyle="bold"
                 android:layout_marginTop="4dp" />
         </LinearLayout>
-
-        <FrameLayout
-            android:layout_width="48dp"
-            android:layout_height="48dp"
-            android:clipToOutline="true"
-            android:background="@drawable/rounded_rect_shape"
-            android:backgroundTint="@color/cyan_30"
-            android:layout_gravity="center">
-
-            <ImageView
-                android:layout_width="24dp"
-                android:layout_height="24dp"
-                android:layout_gravity="center"
-                android:src="@drawable/ic_user"
-                app:tint="@android:color/white" />
-        </FrameLayout>
     </LinearLayout>
 
     <!-- ===== Profile Stats ===== -->

@@ -46,27 +46,6 @@
                 android:textStyle="bold"
                 android:layout_marginTop="4dp" />
         </LinearLayout>
-
-        <!-- Activity icon block -->
-        <FrameLayout
-            android:id="@+id/activityIconBox"
-            android:layout_width="48dp"
-            android:layout_height="48dp"
-            android:background="@color/cyan_30"
-            android:foreground="?attr/selectableItemBackgroundBorderless"
-            android:padding="8dp"
-            android:layout_marginStart="12dp"
-            android:layout_gravity="center_vertical"
-            android:clipToPadding="false">
-
-            <ImageView
-                android:id="@+id/icActivity"
-                android:layout_width="24dp"
-                android:layout_height="24dp"
-                android:src="@drawable/ic_activity"
-                android:contentDescription="Activity indicator"
-                app:tint="@android:color/white" />
-        </FrameLayout>
     </LinearLayout>
 
     <!-- ===== Scrollable content below header ===== -->

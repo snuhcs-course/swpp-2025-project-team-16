@@ -1,75 +1,140 @@
 package com.fitquest.app.ui.fragments
 
+import android.content.Context
+import android.os.Build
+import android.widget.LinearLayout
+import android.widget.TextView
+import androidx.fragment.app.testing.launchFragmentInContainer
+import androidx.test.core.app.ApplicationProvider
+import androidx.test.ext.junit.runners.AndroidJUnit4
+import com.fitquest.app.R
+import com.fitquest.app.data.remote.HistoryResponse
+import com.fitquest.app.data.remote.ProfileApiService
+import com.fitquest.app.data.remote.RankResponse
+import com.fitquest.app.data.remote.RetrofitClient
+import com.fitquest.app.data.remote.UserStatsResponse
+import com.google.android.material.button.MaterialButton
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.test.StandardTestDispatcher
+import kotlinx.coroutines.test.resetMain
+import kotlinx.coroutines.test.runTest
+import kotlinx.coroutines.test.setMain
+import org.junit.After
+import org.junit.Assert.*
+import org.junit.Before
 import org.junit.Test
+import org.junit.runner.RunWith
+import org.mockito.Mock
+import org.mockito.MockitoAnnotations
+import org.mockito.kotlin.any
+import org.mockito.kotlin.verifyBlocking
+import org.mockito.kotlin.whenever
+import org.robolectric.annotation.Config
+import retrofit2.Response
+import java.time.LocalDate
 
+@ExperimentalCoroutinesApi
+@RunWith(AndroidJUnit4::class)
+@Config(sdk = [Build.VERSION_CODES.P])
 class ProfileFragmentTest {
 
-    @Test
-    fun `onCreateView inflates correct layout`() {
-        // Verify that onCreateView inflates R.layout.fragment_profile and returns the correct non-null View.
-        // TODO implement test
+    private val testDispatcher = StandardTestDispatcher()
+
+    @Mock
+    private lateinit var mockApiService: ProfileApiService
+
+    @Before
+    fun setUp() {
+        MockitoAnnotations.openMocks(this)
+        Dispatchers.setMain(testDispatcher)
+        // RetrofitClient.profileApiService = mockApiService
+
+        // Mock a successful response for getUserStats, as it's called in onViewCreated.
+        runTest {
+            val mockStats = UserStatsResponse(rank = 1, level = 5, total_time = "10h 30m", xp = 1500)
+            whenever(mockApiService.getUserStats(any())).thenReturn(Response.success(mockStats))
+        }
+    }
+
+    @After
+    fun tearDown() {
+        Dispatchers.resetMain()
+    }
+
+    private fun setAuthToken(token: String?) {
+        val context = ApplicationProvider.getApplicationContext<Context>()
+        val prefs = context.getSharedPreferences("auth", Context.MODE_PRIVATE)
+        prefs.edit().putString("token", token).commit()
     }
 
     @Test
-    fun `onViewCreated view initialization`() {
-        // Check if all required views (historyContainer, rankOverlay, btnViewRankings, etc.) are correctly found and initialized from the provided view.
-        // TODO implement test
+    fun `onViewCreated initializes views and triggers fetches`() = runTest {
+        setAuthToken("fake-token")
+        whenever(mockApiService.getUserHistory(any())).thenReturn(Response.success(emptyList()))
+
+        val scenario = launchFragmentInContainer<ProfileFragment>(themeResId = R.style.Theme_FitQuest)
+        testDispatcher.scheduler.advanceUntilIdle()
+
+        scenario.onFragment {
+            assertNotNull(it.view?.findViewById<LinearLayout>(R.id.historyContainer))
+            verifyBlocking(mockApiService) { getUserHistory("Bearer fake-token") }
+            verifyBlocking(mockApiService) { getUserStats("Bearer fake-token") }
+        }
     }
 
     @Test
-    fun `onViewCreated with null Bundle`() {
-        // Ensure no NullPointerException or other crashes occur when onViewCreated is called with a null savedInstanceState.
-        // TODO implement test
+    fun `btnViewRankings click shows overlay and fetches rank data`() = runTest {
+        setAuthToken("fake-token")
+        whenever(mockApiService.getRankings(any())).thenReturn(Response.success(emptyList()))
+
+        val scenario = launchFragmentInContainer<ProfileFragment>(themeResId = R.style.Theme_FitQuest)
+        testDispatcher.scheduler.advanceUntilIdle()
+
+        scenario.onFragment {
+            val rankButton = it.view?.findViewById<MaterialButton>(R.id.btnViewRankings)
+            rankButton?.performClick()
+            testDispatcher.scheduler.advanceUntilIdle()
+            verifyBlocking(mockApiService) { getRankings("Bearer fake-token") }
+        }
     }
 
     @Test
-    fun `onViewCreated triggers data fetches`() {
-        // Verify that both fetchHistoryFromServer() and setupRankButton() are called exactly once when onViewCreated is executed.
-        // TODO implement test
+    fun `history data is fetched and displayed correctly`() = runTest {
+        setAuthToken("fake-token")
+        val pastDate = LocalDate.now().minusDays(5).toString()
+        val historyData = listOf(
+            HistoryResponse(id = 1, date = pastDate, name = "Push-up", is_finished = true, start_time = "10:00", end_time = "10:30")
+        )
+        whenever(mockApiService.getUserHistory(any())).thenReturn(Response.success(historyData))
+
+        val scenario = launchFragmentInContainer<ProfileFragment>(themeResId = R.style.Theme_FitQuest)
+        testDispatcher.scheduler.advanceUntilIdle()
+
+        scenario.onFragment {
+            val historyContainer = it.view?.findViewById<LinearLayout>(R.id.historyContainer)
+            assertEquals("History item from the past should be displayed", 1, historyContainer?.childCount)
+        }
     }
 
     @Test
-    fun `btnViewRankings click listener setup`() {
-        // Confirm that a click listener is set on btnViewRankings after onViewCreated is called.
-        // TODO implement test
-    }
+    fun `rank data is fetched and displayed correctly`() = runTest {
+        setAuthToken("fake-token")
+        val rankData = listOf(
+            RankResponse(rank = 1, name = "Alice", xp = 1000, level = 5),
+            RankResponse(rank = 2, name = "Bob", xp = 900, level = 4)
+        )
+        whenever(mockApiService.getRankings(any())).thenReturn(Response.success(rankData))
 
-    @Test
-    fun `btnViewRankings click visibility change and animation`() {
-        // When btnViewRankings is clicked, verify that rankOverlay becomes VISIBLE and its alpha animation is triggered.
-        // TODO implement test
-    }
+        val scenario = launchFragmentInContainer<ProfileFragment>(themeResId = R.style.Theme_FitQuest)
+        testDispatcher.scheduler.advanceUntilIdle()
 
-    @Test
-    fun `btnViewRankings click triggers rank data fetch`() {
-        // Ensure that clicking btnViewRankings triggers a call to fetchRankData().
-        // TODO implement test
-    }
+        scenario.onFragment {
+            it.view?.findViewById<MaterialButton>(R.id.btnViewRankings)?.performClick()
+            testDispatcher.scheduler.advanceUntilIdle()
 
-    @Test
-    fun `Rank overlay close button functionality`() {
-        // Test that clicking the close button inside the rank overlay triggers the fade-out animation and sets the overlay's visibility to GONE upon completion.
-        // TODO implement test
+            val firstName = it.view?.findViewById<TextView>(R.id.tvFirstName)
+            assertEquals("1st • Alice", firstName?.text)
+        }
     }
-
-    @Test
-    fun `Fragment recreation state restoration`() {
-        // Test the fragment's behavior when it's recreated (e.g., due to configuration change).
-        // Ensure that onViewCreated correctly re-initializes views and fetches data, and that there are no state-related crashes.
-        // TODO implement test
-    }
-
-    @Test
-    fun `Missing views in layout`() {
-        // Test the behavior when the layout file (R.layout.fragment_profile) is missing one of the required view IDs.
-        // The app should handle this gracefully, likely by crashing with a clear error message, which should be caught in a test environment.
-        // TODO implement test
-    }
-
-    @Test
-    fun `onViewCreated execution on different threads`() {
-        // Although unlikely in a standard setup, ensure that calling onViewCreated from a background thread (in a test environment) does not lead to unexpected crashes, even though UI operations should be on the main thread.
-        // TODO implement test
-    }
-
 }

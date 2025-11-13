@@ -75,9 +75,9 @@ class AiCoachFragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener {
     private val coachViewModel: AiCoachViewModel by activityViewModels()
 
     // --- Local state ---
-    private var isTraining = false
-    private var repCount = 0
-    private var points = 0
+    var isTraining = false
+    var repCount = 0
+    var points = 0
 
     // --- Counter (추가) ---
     private var counter: BaseCounter? = null
@@ -294,7 +294,7 @@ class AiCoachFragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener {
         if (isTraining) pauseWorkout() else beginWorkout()
     }
 
-    private fun beginWorkout() {
+    fun beginWorkout() {
         isTraining = true
         repCount = 0
         points = 0

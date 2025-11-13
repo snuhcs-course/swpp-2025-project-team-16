@@ -44,7 +44,7 @@ class SquatCounter : BaseCounter() {
     // 임계치(필요시 조정)
     private val KNEE_UP = 150.0
     private val KNEE_DOWN_ENTER = 140.0
-    private val KNEE_BOTTOM = 115.0
+    private val KNEE_BOTTOM = 95.0
     private val KNEE_UP_GOING = 130.0
 
     private val PELVIS_DROP = 0.07      // 정규화 y 기준 (~12% 이상 하강)
@@ -115,7 +115,7 @@ class SquatCounter : BaseCounter() {
         }
         if (baselinePelvisY.isNaN()) baselinePelvisY = pelvisY
 
-        val kneeMin = min(kneeL, kneeR)
+        val kneeMax = max(kneeL, kneeR)
         val hipMin  = min(hipL, hipR)
 
         // ↓ drop 부호가 환경과 맞지 않으면 (pelvisY - baselinePelvisY)로 바꾸세요.
@@ -123,15 +123,15 @@ class SquatCounter : BaseCounter() {
 
         when (phaseState) {
             Phase.UP -> {
-                if (kneeMin < KNEE_DOWN_ENTER) {
+                if (kneeMax < KNEE_DOWN_ENTER) {
                     phaseState = Phase.DOWN
                 }
             }
             Phase.DOWN -> {
-                if (kneeMin < KNEE_BOTTOM /* && drop > PELVIS_DROP && hipMin < 110.0 */) {
+                if (kneeMax < KNEE_BOTTOM /* && drop > PELVIS_DROP && hipMin < 110.0 */) {
                     phaseState = Phase.BOTTOM
                     bottomEnterMs = nowMs
-                } else if (kneeMin > KNEE_UP) {
+                } else if (kneeMax > KNEE_UP) {
                     // 되돌림
                     phaseState = Phase.UP
                 }
@@ -142,14 +142,14 @@ class SquatCounter : BaseCounter() {
                 }
             }
             Phase.UP_GOING -> {
-                val canCount = (kneeMin > KNEE_UP) && (drop < PELVIS_DROP * 0.5)
+                val canCount = (kneeMax > KNEE_UP) // && (drop < PELVIS_DROP * 0.5)
                 if (canCount) {
                     if (nowMs - lastRepMs >= MIN_REP_INTERVAL) {
                         count += 1
                         lastRepMs = nowMs
                     }
                     phaseState = Phase.UP
-                } else if (kneeMin < KNEE_BOTTOM && drop > PELVIS_DROP) {
+                } else if (kneeMax < KNEE_BOTTOM) {// && drop > PELVIS_DROP) {
                     // 다시 너무 내려가면 BOTTOM으로 복귀
                     phaseState = Phase.BOTTOM
                     bottomEnterMs = nowMs

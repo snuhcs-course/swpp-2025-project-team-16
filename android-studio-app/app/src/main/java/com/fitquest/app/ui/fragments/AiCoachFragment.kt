@@ -23,6 +23,7 @@ import com.fitquest.app.ui.coachutils.PoseLandmarkerHelper
 import com.fitquest.app.ui.coachutils.counter.BaseCounter
 import com.fitquest.app.ui.coachutils.counter.PlankTimer
 import com.fitquest.app.ui.coachutils.counter.SquatCounter
+import com.fitquest.app.ui.coachutils.counter.LungeCounter
 import com.fitquest.app.ui.viewmodels.AiCoachViewModel
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.progressindicator.LinearProgressIndicator
@@ -34,7 +35,7 @@ import kotlin.math.exp
 
 class AiCoachFragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener {
 
-    private enum class Exercise { SQUAT, PLANK }
+    private enum class Exercise { SQUAT, PLANK, LUNGE }
 
     // UI
     private lateinit var previewView: PreviewView
@@ -309,6 +310,8 @@ class AiCoachFragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener {
         counter = when (selectedExercise) {
             Exercise.SQUAT -> SquatCounter().also { it.reset(now) }
             Exercise.PLANK -> PlankTimer().also { it.reset(now) }
+            Exercise.LUNGE -> LungeCounter().also { it.reset(now) }
+
         }
 
         trackingLocked = false
@@ -380,6 +383,10 @@ class AiCoachFragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener {
                 tvCurrentExerciseEmoji.text = "⚡"
                 labelReps.text = "SECONDS"
             }
+            Exercise.LUNGE -> {
+                tvCurrentExerciseEmoji.text = "🦵"
+                labelReps.text = "REPS"
+            }
         }
         // 디스플레이 초기화
         repCountText.text = if (ex == Exercise.PLANK) "0.0" else "0"
@@ -391,6 +398,7 @@ class AiCoachFragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener {
         return when {
             "plank" in t -> Exercise.PLANK
             "squat" in t -> Exercise.SQUAT
+            "lunge" in t -> Exercise.LUNGE
             else -> Exercise.SQUAT
         }
     }

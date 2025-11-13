@@ -5,6 +5,17 @@ plugins {
     id("org.jetbrains.kotlin.android") version "2.2.0" apply false
 }
 
+
+buildscript {
+    repositories {
+        google()
+        mavenCentral()
+    }
+    dependencies {
+        classpath("androidx.navigation:navigation-safe-args-gradle-plugin:2.7.3")
+    }
+}
+
 tasks.register<Delete>("clean") {
     delete(rootProject.buildDir)
 }

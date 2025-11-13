@@ -48,7 +48,8 @@
     <string name="no_workouts_title">No Workouts Scheduled</string>
     <string name="no_workouts_message">Tap + to create your first workout</string>
     <string name="start_workout">Start Quest</string>
-    
+    <string name="schedule_time">%1$s %2$s~%3$s</string>
+
     <!-- AI Coach Screen -->
     <string name="pause_button">Pause</string>
     <string name="complete_button">Complete</string>

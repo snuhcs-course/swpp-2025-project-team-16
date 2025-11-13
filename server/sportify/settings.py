@@ -20,7 +20,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 load_dotenv(os.path.join(BASE_DIR, '.env'))
 
 # OpenAI 키
-OPENAI_API_KEY = os.getenv("OPENAI_API_KEY", "sk-TEST_KEY_DO_NOT_USE")
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 
 AUTH_USER_MODEL = 'accounts.Account'
 
@@ -87,7 +87,7 @@ WSGI_APPLICATION = 'sportify.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'swpp',
+        'NAME': 'swpp_test',
         'USER': 'user',
         'PASSWORD': '1234',
         'HOST': 'localhost',

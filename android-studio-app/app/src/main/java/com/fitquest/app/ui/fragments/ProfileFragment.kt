@@ -1,9 +1,11 @@
 package com.fitquest.app.ui.fragments
 
+import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import android.view.*
 import android.widget.*
+import androidx.annotation.RequiresApi
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import com.fitquest.app.R
@@ -35,6 +37,7 @@ class ProfileFragment : Fragment() {
         val exercises: List<Exercise>
     )
 
+    @RequiresApi(Build.VERSION_CODES.O)
     private fun fetchHistoryFromServer() {
         val prefs = requireContext().getSharedPreferences("auth", 0)
         val token = prefs.getString("token", null) ?: return
@@ -224,39 +227,5 @@ class ProfileFragment : Fragment() {
 
         dialog.show()
     }
-
-    private fun fetchUserStats() {
-        val prefs = requireContext().getSharedPreferences("auth", 0)
-        val token = prefs.getString("token", null) ?: return
-
-        lifecycleScope.launch {
-            try {
-                val response = RetrofitClient.profileApiService.getUserStats("Bearer $token")
-                if (response.isSuccessful) {
-                    val stats = response.body() ?: return@launch
-                    updateStatsUI(stats)
-                } else {
-                    Log.e("ProfileStats", "Error: ${response.code()}")
-                }
-            } catch (e: Exception) {
-                Log.e("ProfileStats", "Network error: ${e.localizedMessage}")
-            }
-        }
-    }
-    private fun updateStatsUI(stats: UserStatsResponse) {
-        val root = requireView()
-
-        // Rank
-        val tvStatRank = root.findViewById<TextView>(R.id.tvStatRank)
-        tvStatRank.text = stats.rank.toString()
-
-        // XP
-        val tvStatXp = root.findViewById<TextView>(R.id.tvStatXP)
-        tvStatXp.text = stats.xp.toString()
-
-
-    }
-
-
 
 }

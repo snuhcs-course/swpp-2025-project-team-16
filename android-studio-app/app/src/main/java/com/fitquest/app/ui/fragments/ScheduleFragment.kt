@@ -1,146 +1,74 @@
 package com.fitquest.app.ui.fragments
 
-import android.icu.text.SimpleDateFormat
-import android.icu.util.Calendar
 import android.os.Bundle
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Button
-import android.widget.CalendarView
-import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
+import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
-import com.fitquest.app.R
-import com.fitquest.app.ui.adapters.ExerciseAdapter
+import com.fitquest.app.databinding.FragmentScheduleBinding
+import com.fitquest.app.repository.ScheduleRepository
+import com.fitquest.app.ui.adapters.ScheduleAdapter
 import com.fitquest.app.ui.viewmodels.ScheduleViewModel
-import com.prolificinteractive.materialcalendarview.MaterialCalendarView
-import java.util.Locale
+import com.fitquest.app.ui.viewmodels.ScheduleViewModelFactory
 
-/**
- * ScheduleFragment - Screen 2 (TRAINING PLANNER)
- * 
- * Quest planning and customization
- * - Calendar with cyan-themed date selector
- * - Quick actions: AI Generate (sparkles icon) / Custom Plan (edit icon)
- * - Exercise arsenal library (grid of exercises with emojis)
- * - Scheduled exercises shown as cards
- * - Save button (green gradient)
- * 
- * Design: Strategic planning interface
- * - Deep blue/slate cards
- * - Cyan borders and accents
- * - Green for generation/save actions
- * - Exercise cards with emoji icons
- * - Clean, organized layout
- */
 class ScheduleFragment : Fragment() {
 
-    private lateinit var calendarView: MaterialCalendarView
-    private lateinit var exerciseRecyclerView: RecyclerView
-    private lateinit var exerciseAdapter: ExerciseAdapter
-    private lateinit var emptyState:View
-    private lateinit var autoGenerateButton: Button
-    private lateinit var customPlanButton: Button
-    private val viewModel: ScheduleViewModel by viewModels()
-    
-    private var selectedDate: String = ""
+    private var _binding: FragmentScheduleBinding? = null
+    private val binding get() = _binding!!
+    private val viewModel: ScheduleViewModel by viewModels { ScheduleViewModelFactory(ScheduleRepository()) }
+    private lateinit var adapter: ScheduleAdapter
 
-    override fun onCreateView(
-        inflater: LayoutInflater,
-        container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ): View? {
-        return inflater.inflate(R.layout.fragment_schedule, container, false)
-    }
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?) =
+        FragmentScheduleBinding.inflate(inflater, container, false).also { _binding = it }.root
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        calendarView = view.findViewById(R.id.calendar_view)
+        adapter = ScheduleAdapter(listOf()) { schedule ->
+            val action = ScheduleFragmentDirections.actionScheduleFragmentToSessionFragment(schedule.id!!)
+            findNavController().navigate(action)
+        }
 
-        exerciseRecyclerView = view.findViewById(R.id.exercise_recycler_view)
+        binding.recyclerViewSchedules.layoutManager = LinearLayoutManager(requireContext())
+        binding.recyclerViewSchedules.adapter = adapter
 
-        autoGenerateButton = view.findViewById(R.id.auto_generate_button)
+        binding.btnAutoGenerate.setOnClickListener { viewModel.autoGenerateSchedules() }
 
-        customPlanButton = view.findViewById(R.id.custom_plan_button)
+        viewModel.schedules.observe(viewLifecycleOwner) { list ->
+            val oldListSize = adapter.itemCount // 이전 목록 크기
+            adapter.updateList(list)
 
-        exerciseRecyclerView.layoutManager = LinearLayoutManager(context)
+            // ✅ 스크롤 위치 조정 로직
+            if (list.size > oldListSize && list.isNotEmpty()) {
+                // 새로 추가된 항목이 있다면 (AI 생성 직후)
 
-        emptyState=view.findViewById(R.id.emptyState)
+                // 새로 생성된 ID 중 가장 먼저 등장하는 ID의 인덱스를 찾음
+                val newIds = viewModel.newlyGeneratedIds.value.orEmpty()
+                val firstNewIndex = list.indexOfFirst { it.id in newIds }
 
-        exerciseAdapter= ExerciseAdapter { showExerciseLibrary(selectedDate) }
-
-        exerciseRecyclerView.adapter=exerciseAdapter
-
-        viewModel.exercises.observe(viewLifecycleOwner){list->
-            if(list.isNullOrEmpty()){
-                exerciseRecyclerView.visibility=View.GONE
-                emptyState.visibility=View.VISIBLE
-            }else{
-                emptyState.visibility=View.GONE
-                exerciseRecyclerView.visibility=View.VISIBLE
-                exerciseAdapter.submitList(list)
+                if (firstNewIndex != -1) {
+                    // 해당 인덱스로 부드럽게 스크롤
+                    binding.recyclerViewSchedules.scrollToPosition(firstNewIndex)
+                    // 또는 부드러운 스크롤: binding.recyclerViewSchedules.smoothScrollToPosition(firstNewIndex)
+                }
             }
+            // ✅ ViewModel에서 이미 시간/날짜 순으로 정렬되어 왔다고 가정하고 목록 업데이트
+            adapter.updateList(list)
         }
 
-        setUp()
-
-        val cal=Calendar.getInstance()
-        val sdf = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
-        selectedDate = sdf.format(cal.time)
-        viewModel.loadScheduleForDate(selectedDate)
-        calendarView.setOnDateChangedListener { _, date,_ ->
-            val sdf = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
-            cal.set(date.year,date.month,date.day)
-            selectedDate = sdf.format(cal.time)
-            viewModel.loadScheduleForDate(selectedDate)
+        // ✅ 새로 생성된 ID 목록 관찰 및 어댑터에 전달
+        viewModel.newlyGeneratedIds.observe(viewLifecycleOwner) { newIds ->
+            adapter.setNewlyGeneratedIds(newIds)
         }
 
-        autoGenerateButton.setOnClickListener {
-            generateSchedule()
-        }
-
-        customPlanButton.setOnClickListener {
-            showExerciseLibrary(selectedDate)
-        }
-
-
+        viewModel.getSchedules()
     }
 
-    private fun showExerciseLibrary(selectedDate:String) {
-        // TODO: Show dialog/bottom sheet with exercise library
-        // User can select exercises to add to schedule
-        viewModel.loadScheduleForDate(selectedDate)
-        if((viewModel.exercises.value?.isEmpty()) ?: true){
-            Toast.makeText(requireContext(), "날짜를 다시 선택해 주세요", Toast.LENGTH_SHORT).show()
-            return
-        }
-        else{
-            //TODO
-        }
-    }
-    private fun setUp(){
-        val prefs = requireContext().getSharedPreferences("auth", 0)
-        val token = prefs.getString("token", null) ?: return
-        viewModel.loadAllSchedules(token)
-        if(viewModel.message.value!="SUCCESS"){
-            Toast.makeText(requireContext(), viewModel.message.value, Toast.LENGTH_SHORT).show()
-        }
-    }
-    private fun generateSchedule(){
-        val prefs = requireContext().getSharedPreferences("auth", 0)
-        val token = prefs.getString("token", null) ?: return
-        viewModel.generateSchedule(token)
-        viewModel.loadScheduleForDate(selectedDate)
-        if(viewModel.message.value=="SUCCESS"){
-            Toast.makeText(requireContext(),"계획이 생성되었습니다!",Toast.LENGTH_SHORT).show()
-        }else{
-            Toast.makeText(requireContext(),viewModel.message.value,Toast.LENGTH_SHORT).show()
-        }
-
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
     }
 }

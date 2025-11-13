@@ -1,4 +1,4 @@
-from rest_framework.decorators import api_view, permission_classes
+from rest_framework.decorators import api_view, authentication_classes, permission_classes
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
@@ -9,11 +9,14 @@ from django.conf import settings
 
 from .models import Account
 from .serializers import AccountSerializer
+from rest_framework.permissions import AllowAny
 
 SECRET_KEY = settings.SECRET_KEY
 
 # ✅ 이메일 존재 여부 확인
 @api_view(['POST'])
+@permission_classes([AllowAny])
+@authentication_classes([])
 def check_email(request):
     """
     Body: { "email": "user@example.com" }
@@ -26,6 +29,8 @@ def check_email(request):
 
 # ✅ 회원가입 (회원 생성 + AccessToken 즉시 발급)
 @api_view(['POST'])
+@permission_classes([AllowAny])
+@authentication_classes([])
 def signup(request):
     """
     Body: { "name": "...", "email": "...", "password": "..." }
@@ -49,6 +54,8 @@ def signup(request):
 
 # ✅ 로그인 (Django 인증 + SimpleJWT 토큰 발급)
 @api_view(['POST'])
+@permission_classes([AllowAny])
+@authentication_classes([])
 def login(request):
     """
     Body: { "email": "...", "password": "..." }

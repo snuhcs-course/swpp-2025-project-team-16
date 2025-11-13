@@ -14,12 +14,12 @@ import com.fitquest.app.R
 import com.fitquest.app.data.remote.LoginRequest
 import com.fitquest.app.data.remote.LoginResponse
 import com.fitquest.app.data.remote.RetrofitClient
+import com.fitquest.app.data.remote.TokenManager
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.textfield.TextInputEditText
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import androidx.core.content.edit
 
 /**
  * LoginPasswordFragment - Step 2 of login flow (for existing users)
@@ -37,7 +37,6 @@ class LoginPasswordFragment : Fragment() {
 
     companion object {
         private const val ARG_EMAIL = "email"
-
         fun newInstance(email: String): LoginPasswordFragment {
             val fragment = LoginPasswordFragment()
             val args = Bundle()
@@ -56,13 +55,10 @@ class LoginPasswordFragment : Fragment() {
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
-        return inflater.inflate(R.layout.fragment_login_password, container, false)
-    }
+    ): View? = inflater.inflate(R.layout.fragment_login_password, container, false)
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-
         emailText = view.findViewById(R.id.tvEmail)
         passwordInput = view.findViewById(R.id.etPassword)
         loginButton = view.findViewById(R.id.btnPasswordLogin)
@@ -72,7 +68,6 @@ class LoginPasswordFragment : Fragment() {
 
         loginButton.setOnClickListener {
             val password = passwordInput.text.toString().trim()
-
             if (password.isNotEmpty()) {
                 verifyPassword(email, password)
             } else {
@@ -94,19 +89,9 @@ class LoginPasswordFragment : Fragment() {
 
                 if (response.isSuccessful) {
                     val body: LoginResponse? = response.body()
-                    if (body?.token != null) {
-                        val token = body.token
-                        val name = body.name ?: ""
-
-                        // SharedPreferences 예시 (나중에 DataStore로 바꿔도 됨)
-                        val prefs = requireContext().getSharedPreferences("auth", 0)
-                        prefs.edit {
-                            putString("token", token)
-                                .putString("email", email)
-                                .putString("name", name)
-                        }
-
-                        Toast.makeText(requireContext(), "Welcome back, $name!", Toast.LENGTH_SHORT).show()
+                    if (!body?.token.isNullOrEmpty()) {
+                        TokenManager.saveToken(requireContext(), body!!.token, email, body.name ?: "")
+                        Toast.makeText(requireContext(), "Welcome back, ${body.name}", Toast.LENGTH_SHORT).show()
                         (activity as? LoginActivity)?.completeLogin()
                     } else {
                         passwordInput.error = body?.error ?: "Invalid credentials"

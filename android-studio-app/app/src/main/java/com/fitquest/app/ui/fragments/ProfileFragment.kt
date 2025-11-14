@@ -15,6 +15,7 @@ import com.fitquest.app.model.Exercise
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import kotlinx.coroutines.launch
+import org.threeten.bp.LocalDate
 
 class ProfileFragment : Fragment() {
 
@@ -37,7 +38,6 @@ class ProfileFragment : Fragment() {
         val exercises: List<Exercise>
     )
 
-    @RequiresApi(Build.VERSION_CODES.O)
     private fun fetchHistoryFromServer() {
         val prefs = requireContext().getSharedPreferences("auth", 0)
         val token = prefs.getString("token", null) ?: return
@@ -49,12 +49,12 @@ class ProfileFragment : Fragment() {
                     val historyList = response.body() ?: emptyList()
 
                     // ✅ 오늘 날짜
-                    val today = java.time.LocalDate.now()
+                    val today = LocalDate.now()
 
                     // ✅ 오늘 포함 "이전" 데이터만 필터링
                     val filtered = historyList.filter { item ->
                         try {
-                            val date = java.time.LocalDate.parse(item.date)
+                            val date = LocalDate.parse(item.date)
                             !date.isAfter(today)   // 오늘 이후면 제외
                         } catch (e: Exception) {
                             false // 날짜 파싱 실패 시 제외
@@ -137,6 +137,10 @@ class ProfileFragment : Fragment() {
         fetchHistoryFromServer()
         setupRankButton()
         fetchUserStats()
+    }
+
+    private fun fetchUserStats() {
+        // TODO: 나중에 구현
     }
 
     private fun setupRankButton() {

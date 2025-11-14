@@ -107,7 +107,6 @@
                 android:paddingStart="8dp"
                 android:paddingEnd="8dp"
                 android:background="@color/background_dark"
-                android:entries="@array/exercise_options"
                 android:theme="@style/ThemeOverlay.MaterialComponents.Dark"
                 tools:text="Push-ups" />
         </LinearLayout>

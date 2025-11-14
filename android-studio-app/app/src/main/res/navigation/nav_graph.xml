@@ -3,27 +3,50 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/nav_graph"
     app:startDestination="@id/scheduleFragment">
-
     <fragment
         android:id="@+id/scheduleFragment"
         android:name="com.fitquest.app.ui.fragments.ScheduleFragment"
         android:label="Schedule">
         <action
-            android:id="@+id/action_scheduleFragment_to_sessionFragment"
-            app:destination="@id/sessionFragment">
+            android:id="@+id/action_scheduleFragment_to_aiCoachFragment"
+            app:destination="@id/aiCoachFragment">
             <argument
                 android:name="scheduleId"
+                app:argType="integer"
+                android:defaultValue="-1"/>
+            <argument
+                android:name="activityKey"
+                app:argType="string"
+                android:defaultValue="squat"/>
+            <argument
+                android:name="repsTarget"
+                app:argType="integer"
+                android:defaultValue="-1"/>
+            <argument
+                android:name="durationTarget"
                 app:argType="integer"
                 android:defaultValue="-1"/>
         </action>
     </fragment>
 
     <fragment
-        android:id="@+id/sessionFragment"
-        android:name="com.fitquest.app.ui.fragments.SessionFragment"
+        android:id="@+id/aiCoachFragment"
+        android:name="com.fitquest.app.ui.fragments.AiCoachFragment"
         android:label="Session">
         <argument
             android:name="scheduleId"
+            app:argType="integer"
+            android:defaultValue="-1"/>
+        <argument
+            android:name="activityKey"
+            app:argType="string"
+            android:defaultValue="squat"/>
+        <argument
+            android:name="repsTarget"
+            app:argType="integer"
+            android:defaultValue="-1"/>
+        <argument
+            android:name="durationTarget"
             app:argType="integer"
             android:defaultValue="-1"/>
     </fragment>

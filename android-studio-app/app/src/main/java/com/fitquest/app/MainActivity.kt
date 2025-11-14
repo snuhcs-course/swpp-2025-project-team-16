@@ -7,8 +7,10 @@ import androidx.activity.addCallback
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
+import com.fitquest.app.repository.SessionRepository
 import com.fitquest.app.ui.fragments.*
 import com.fitquest.app.ui.viewmodels.AiCoachViewModel
+import com.fitquest.app.ui.viewmodels.AiCoachViewModelFactory
 import com.google.android.material.bottomnavigation.BottomNavigationView
 
 /**
@@ -24,7 +26,9 @@ import com.google.android.material.bottomnavigation.BottomNavigationView
 class MainActivity : AppCompatActivity() {
 
     private lateinit var bottomNav: BottomNavigationView
-    private val coachVm: AiCoachViewModel by viewModels()
+    private val coachVm: AiCoachViewModel by viewModels {
+        AiCoachViewModelFactory(SessionRepository())
+    }
 
     @SuppressLint("MissingInflatedId")
     override fun onCreate(savedInstanceState: Bundle?) {

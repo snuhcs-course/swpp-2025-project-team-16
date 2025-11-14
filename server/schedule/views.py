@@ -105,7 +105,6 @@ def end_session(request, session_id):
             schedule=schedule,
             defaults={"summary_text": feedback_text}
         )
-        session.user.add(user)
 
     serializer = SessionSerializer(session)
     return Response(serializer.data, status=status.HTTP_200_OK)

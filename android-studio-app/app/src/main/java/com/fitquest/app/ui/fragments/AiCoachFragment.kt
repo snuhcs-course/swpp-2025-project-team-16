@@ -197,7 +197,13 @@ class AiCoachFragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener {
 
         // Buttons
         startPauseButton.setOnClickListener {
-            if (isTraining) pauseWorkout() else startCountdownThenBegin(10)
+            if (isCountingDown) {
+                cancelCountdown()
+            } else if (isTraining) {
+                pauseWorkout()
+            } else {
+                startCountdownThenBegin(10)
+            }
         }
         switchCameraButton.setOnClickListener { toggleCameraLens() }
         switchCameraButton.setImageResource(R.drawable.ic_switch_camera)
@@ -556,8 +562,12 @@ class AiCoachFragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener {
     private fun startCountdownThenBegin(seconds: Int = 10) {
         if (isCountingDown) return
         isCountingDown = true
+
+        // ✅ (추가) ViewModel에 '세션 준비 중' 상태를 알립니다. (Bottom Nav Lock 시작)
+        coachViewModel.setSessionPreparing(true)
+
         updateTrainingUiStateForCountdown(true)
-        startPauseButton.isEnabled = false
+        // startPauseButton.isEnabled = false
         tvCountdown.visibility = View.VISIBLE
 
         countdownTimer?.cancel()
@@ -567,12 +577,17 @@ class AiCoachFragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener {
                 tvCountdown.text = remain.toString()
             }
             override fun onFinish() {
+                // ✅ 로컬 카운트다운이 끝났으니 ViewModel의 '준비 중' 상태를 해제
+                // 이제 VM의 beginTraining()이 호출될 준비가 되었다.
+                coachViewModel.setSessionPreparing(false)
+
                 tvCountdown.visibility = View.GONE
-                startPauseButton.isEnabled = true
+                // startPauseButton.isEnabled = true
                 isCountingDown = false
                 beginWorkout()
             }
         }.start()
+        // UI 업데이트 (버튼 텍스트를 "Cancel" 등으로 변경하는 로직을 추가할 수도 있다.)
     }
 
     private fun updateTrainingUiStateForCountdown(show: Boolean) {
@@ -595,6 +610,9 @@ class AiCoachFragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener {
         feedbackText.text = COACH_MSG_IDLE
         applyTrainingButtonStyle()
         updateTrainingUiState()
+
+        // ✅ (추가) ViewModel의 상태를 해제 (Bottom Nav Lock 해제)
+        coachViewModel.cancelCountdown()
     }
 
     // ---------------- Utils ----------------

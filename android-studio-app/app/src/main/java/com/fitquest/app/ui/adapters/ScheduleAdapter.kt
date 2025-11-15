@@ -81,13 +81,6 @@ class ScheduleAdapter(
                 binding.cardViewRoot.setStrokeColor(normalStroke) // ✅ setStrokeColor() 사용
                 binding.cardViewRoot.setStrokeWidth(1)           // ✅ setStrokeWidth() 사용
             }
-
-            // 배경색 설정 (isNew에 따라 색상 변경)
-            val backgroundColor = ContextCompat.getColor(
-                context,
-                if (isNew) R.color.highlight_new_schedule else R.color.surface_dark_translucent
-            )
-            binding.root.setCardBackgroundColor(backgroundColor)
         }
     }
 

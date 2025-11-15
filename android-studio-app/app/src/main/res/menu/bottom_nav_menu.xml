@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/journeyFragment"
+        android:icon="@drawable/ic_journey"
+        android:title="Journey" />
+
+    <item
+        android:id="@+id/scheduleFragment"
+        android:icon="@drawable/ic_schedule"
+        android:title="Schedule" />
+
+    <item
+        android:id="@+id/aiCoachFragment"
+        android:icon="@drawable/ic_ai_coach"
+        android:title="AI Coach" />
+
+    <item
+        android:id="@+id/poseFragment"
+        android:icon="@drawable/ic_pose"
+        android:title="Pose" />
+
+    <item
+        android:id="@+id/profileFragment"
+        android:icon="@drawable/ic_profile"
+        android:title="Profile" />
+</menu>

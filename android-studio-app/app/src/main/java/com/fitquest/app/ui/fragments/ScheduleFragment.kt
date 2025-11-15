@@ -28,7 +28,15 @@ class ScheduleFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         adapter = ScheduleAdapter(listOf()) { schedule ->
-            val action = ScheduleFragmentDirections.actionScheduleFragmentToSessionFragment(schedule.id!!)
+            val repsTarget = schedule.repsTarget ?: -1
+            val durationTarget = schedule.durationTarget ?: -1
+
+            val action = ScheduleFragmentDirections.actionScheduleFragmentToAiCoachFragment(
+                scheduleId = schedule.id!!,
+                activityKey = schedule.activity.lowercase(),
+                repsTarget = repsTarget,
+                durationTarget = durationTarget
+            )
             findNavController().navigate(action)
         }
 
@@ -41,25 +49,19 @@ class ScheduleFragment : Fragment() {
             val oldListSize = adapter.itemCount // 이전 목록 크기
             adapter.updateList(list)
 
-            // ✅ 스크롤 위치 조정 로직
+            // 스크롤 위치 조정 로직
             if (list.size > oldListSize && list.isNotEmpty()) {
-                // 새로 추가된 항목이 있다면 (AI 생성 직후)
-
-                // 새로 생성된 ID 중 가장 먼저 등장하는 ID의 인덱스를 찾음
                 val newIds = viewModel.newlyGeneratedIds.value.orEmpty()
                 val firstNewIndex = list.indexOfFirst { it.id in newIds }
 
                 if (firstNewIndex != -1) {
-                    // 해당 인덱스로 부드럽게 스크롤
                     binding.recyclerViewSchedules.scrollToPosition(firstNewIndex)
-                    // 또는 부드러운 스크롤: binding.recyclerViewSchedules.smoothScrollToPosition(firstNewIndex)
                 }
             }
-            // ✅ ViewModel에서 이미 시간/날짜 순으로 정렬되어 왔다고 가정하고 목록 업데이트
             adapter.updateList(list)
         }
 
-        // ✅ 새로 생성된 ID 목록 관찰 및 어댑터에 전달
+        // 새로 생성된 ID 목록 관찰 및 어댑터에 전달
         viewModel.newlyGeneratedIds.observe(viewLifecycleOwner) { newIds ->
             adapter.setNewlyGeneratedIds(newIds)
         }

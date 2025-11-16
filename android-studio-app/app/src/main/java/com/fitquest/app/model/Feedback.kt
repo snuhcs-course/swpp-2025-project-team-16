@@ -1,5 +1,5 @@
 package com.fitquest.app.model
-
+/*
 import com.google.gson.annotations.SerializedName
 
 data class Feedback(
@@ -13,3 +13,4 @@ data class Feedback(
     @SerializedName("created_at")
     val createdAt: String? = null
 )
+*/

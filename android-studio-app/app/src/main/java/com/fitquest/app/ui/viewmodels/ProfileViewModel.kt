@@ -8,7 +8,7 @@ import com.fitquest.app.model.WorkoutHistory
 
 /**
  * ViewModel for ProfileFragment
- */
+
 class ProfileViewModel : ViewModel() {
 
     private val _user = MutableLiveData<User>()
@@ -63,3 +63,4 @@ class ProfileViewModel : ViewModel() {
         return 500 - (currentPoints % 500)
     }
 }
+*/

@@ -54,11 +54,14 @@ class AiCoachFragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener {
     private lateinit var formScoreContainer: View
     private lateinit var tvCountdown: TextView
 
+    // ✅ 중앙 REP 팝업용 TextView
+    private lateinit var repPopupText: TextView
+
     // Camera/Pose
     private lateinit var cameraExecutor: ExecutorService
     private var cameraProvider: ProcessCameraProvider? = null
     private var imageAnalyzer: ImageAnalysis? = null
-    private var lensFacing: Int = CameraSelector.LENS_FACING_FRONT
+    private var lensFacing: Int = CameraSelector.LENS_FACING_BACK
     private lateinit var poseLandmarkerHelper: PoseLandmarkerHelper
 
     // VM
@@ -113,6 +116,9 @@ class AiCoachFragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener {
         recordingIndicator = view.findViewById(R.id.recordingIndicator)
         formScoreContainer = view.findViewById(R.id.formScoreContainer)
         tvCountdown = view.findViewById(R.id.tvCountdown)
+
+        // ✅ 중앙 REP 팝업 바인딩
+        repPopupText = view.findViewById(R.id.tvRepPopup)
 
         // Pose helper
         cameraExecutor = Executors.newSingleThreadExecutor()
@@ -288,7 +294,7 @@ class AiCoachFragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener {
                 // 내부 count(Int)는 floor(seconds)이므로 기존 VM 업데이트는 그대로 유지
                 updateRepCount(counter?.count ?: 0)
             } else {
-                // 스쿼트는 정수 reps
+                // 스쿼트/런지는 정수 reps
                 updateRepCount(counter?.count ?: 0)
             }
             feedbackText.text = "Phase: ${counter?.phase ?: "-"}"
@@ -311,7 +317,6 @@ class AiCoachFragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener {
             Exercise.SQUAT -> SquatCounter().also { it.reset(now) }
             Exercise.PLANK -> PlankTimer().also { it.reset(now) }
             Exercise.LUNGE -> LungeCounter().also { it.reset(now) }
-
         }
 
         trackingLocked = false
@@ -403,17 +408,48 @@ class AiCoachFragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener {
         }
     }
 
+    // ✅ rep 증가 시 중앙 팝업
     private fun updateRepCount(count: Int) {
+        val prev = repCount
         repCount = count
         points = count * 10
         coachViewModel.updateRepCount(count)
+
         if (selectedExercise == Exercise.PLANK) {
-            // 플랭크는 repCountText를 위의 onResults에서 소수 1자리로 따로 세팅하므로 여기선 포인트만
+            // 플랭크는 중앙 팝업 없이 시간만 표시
             pointsText.text = "+$points"
         } else {
             repCountText.text = count.toString()
             pointsText.text = "+$points"
+
+            // 스쿼트/런지에서 rep가 증가한 순간에만 팝업
+            if (isTraining && count > prev) {
+                showRepPopup(count)
+            }
         }
+    }
+
+    // ✅ 중앙 REP 팝업 애니메이션
+    private fun showRepPopup(count: Int) {
+        repPopupText.text = count.toString()
+        repPopupText.visibility = View.VISIBLE
+        repPopupText.alpha = 1f
+        repPopupText.scaleX = 1f
+        repPopupText.scaleY = 1f
+
+        repPopupText.animate().cancel()
+        repPopupText.animate()
+            .scaleX(1.4f)
+            .scaleY(1.4f)
+            .alpha(0f)
+            .setDuration(600L)
+            .withEndAction {
+                repPopupText.visibility = View.GONE
+                repPopupText.alpha = 1f
+                repPopupText.scaleX = 1f
+                repPopupText.scaleY = 1f
+            }
+            .start()
     }
 
     // ---------------- Countdown ----------------

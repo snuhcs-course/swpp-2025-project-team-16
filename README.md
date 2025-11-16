@@ -3,18 +3,15 @@
 An AI-powered virtual sports personal trainer (PT) application.  
 Sportify leverages smartphone cameras and AI models to provide real-time posture correction, personalized training plans, smart equipment recommendations, and a social sports-mate matching feature.  
 
-![Application Screenshot](./docs/images/workflow3-aipose.png)
+![Application Screenshot](./docs/images/Screenshot_20251101_195125.png)
 
-### Screen video for iteration is provided in this link [video](./docs/video/Screen_Recording_20251005_185549_Sportify.mp4)
+### Screen video for iteration is provided in this link [video](./docs/video/Screen_Recording_20251115_162304_FitQuest.mp4)
 
 ## Features
 
 - **AI Posture Correction**  
   Real-time feedback using camera input and pose-estimation models.  
-  (Starting with sports where posture guidance is easier, such as golf and bowling, then expanding to more sports.)
-
-- **Sports Equipment Recommendation**  
-  Personalized product suggestions powered by LLM-based customer review analysis.
+  (Starting with Squat, and more exercises will be supported later.)
 
 - **Training Plan & Scheduling**  
   AI generates structured lesson plans and syncs them with the user’s calendar.
@@ -46,8 +43,7 @@ Sportify leverages smartphone cameras and AI models to provide real-time posture
 
 - Create a new user account and set up a personal sports profile.  
 - Demonstrate real-time AI posture correction feedback using the smartphone camera.  
-- Show how the system generates a personalized training plan and syncs with the calendar.  
-- Highlight the AI-based recommendation system suggesting beginner-friendly sports equipment.  
+- Show how the system generates a personalized training plan
 - Showcase the Sports Mate feature by matching the user with another account of similar skill level.  
 
 ## Getting Started

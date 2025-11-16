@@ -78,8 +78,9 @@ class AiCoachFragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener {
     private var isTraining = false
     private var isCountingDown = false
     private var countdownTimer: CountDownTimer? = null
-
-    private var selectedExercise: String = "squat" // String으로 변경, 기본값은 "squat"
+    private var repCount = 0
+    private var points = 0
+    private var selectedExercise: String = "squat" // 기본값
 
     private var counter: BaseCounter? = null
 
@@ -129,24 +130,6 @@ class AiCoachFragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener {
 
         // ✅ 중앙 REP 팝업 바인딩
         repPopupText = view.findViewById(R.id.tvRepPopup)
-        // ✅ 수정: Bundle에서 스케줄 정보 (ID, 목표, 운동 키)를 가져와 초기화합니다.
-        arguments?.let {
-            val id = it.getInt(ARG_SCHEDULE_ID, -1).takeIf { i -> i != -1 }
-            scheduleId = id
-
-            // 전달된 타겟 값이 -1이 아닐 경우에만 저장
-            val repsTarget = it.getInt(ARG_REPS_TARGET, -1).takeIf { t -> t != -1 }
-            scheduleRepsTarget = repsTarget
-
-            val durationTarget = it.getInt(ARG_DURATION_TARGET, -1).takeIf { t -> t != -1 }
-            scheduleDurationTarget = durationTarget
-
-            // 운동 키를 받아 현재 운동으로 설정합니다.
-            val scheduledActivity = it.getString(ARG_ACTIVITY_KEY)?.lowercase()
-            if (scheduledActivity != null) {
-                selectedExercise = scheduledActivity
-            }
-        }
 
         // Pose helper
         cameraExecutor = Executors.newSingleThreadExecutor()
@@ -170,8 +153,12 @@ class AiCoachFragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener {
         )
 
         // --- Spinner 초기화 및 바인딩 ---
-        val exerciseListWithEmoji = ActivityUtils.activityMetadataMap.values.map { metadata ->
-            "${metadata.emoji} ${metadata.label}"
+        val exerciseLabels = ActivityUtils.labelMap.values.toTypedArray()
+
+        // "💪 Squat" 형태로 표시
+        val exerciseListWithEmoji = ActivityUtils.labelMap.map { (key, label) ->
+            val emoji = ActivityUtils.getEmoji(key)
+            "$emoji $label"
         }.toTypedArray()
 
         val adapter = ArrayAdapter(
@@ -184,18 +171,17 @@ class AiCoachFragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener {
 
         spinnerExercise.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
             override fun onItemSelected(parent: AdapterView<*>?, v: View?, pos: Int, id: Long) {
-                if (!spinnerExercise.isEnabled) {
-                    // 잠금 상태일 때 선택이 바뀌어도 selectedExercise를 변경하지 않고 리턴
-                    return
-                }
-                // 선택된 아이템의 순서(pos)를 사용하여 원래의 운동 키(소문자)를 찾습니다.
-                val selectedKey = ActivityUtils.activityMetadataMap.keys.toList().getOrNull(pos) ?: "squat"
-                selectedExercise = selectedKey
+                val selectedItemWithEmoji = parent?.getItemAtPosition(pos)?.toString() ?: ""
+                val selectedLabel = selectedItemWithEmoji.substringAfter(" ").trim()
+
+                selectedExercise = ActivityUtils.labelMap.entries
+                    .find { it.value == selectedLabel }?.key ?: "squat"
+
                 applyExerciseUi(selectedExercise)
             }
 
             override fun onNothingSelected(parent: AdapterView<*>?) {
-                selectedExercise = "squat" // 기본값 설정
+                selectedExercise = "squat"
                 applyExerciseUi(selectedExercise)
             }
         }
@@ -328,7 +314,6 @@ class AiCoachFragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener {
 
             val now = System.currentTimeMillis()
 
-            // 가시성 기반 트래킹 락
             val lowerCnt = lowerBodyVisibleCount(lm, VIS_THRESH)
             val visGood = (lowerCnt >= LOWER_REQUIRED)
             if (trackingLocked) {
@@ -358,7 +343,6 @@ class AiCoachFragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener {
             }
             if (now < disarmUntilMs) return@runOnUiThread
 
-            // float[33*3]
             val pts = FloatArray(lm.size * 3)
             for (i in lm.indices) {
                 pts[3 * i] = lm[i].x()
@@ -368,25 +352,21 @@ class AiCoachFragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener {
             counter?.update(pts, now)
 
             // ---- UI 반영 ----
-            val targetType = ActivityUtils.getTargetType(selectedExercise)
-
-            if (targetType == TargetType.DURATION && counter is PlankTimer) {
+            val lowerName = selectedExercise.lowercase(Locale.getDefault())
+            if (lowerName == "plank" && counter is PlankTimer) {
                 val pt = counter as PlankTimer
-                // 0.1초 단위 표시
                 val seconds = pt.holdSeconds()
                 repCountText.text = String.format(Locale.getDefault(), "%.1f", seconds)
-                // 내부 count(Int)는 floor(seconds)이므로 기존 VM 업데이트는 그대로 유지
-                coachViewModel.updateRepCount(counter?.count ?: 0) // VM 호출로 변경
+                updateRepCount(counter?.count ?: 0)
             } else {
-                // 스쿼트, 런지 등 횟수 기반
-                coachViewModel.updateRepCount(counter?.count ?: 0) // VM 호출로 변경
+                updateRepCount(counter?.count ?: 0)
             }
             feedbackText.text = "Phase: ${counter?.phase ?: "-"}"
         }
     }
 
     override fun onError(error: String, errorCode: Int) {
-        // 필요시 로그/토스트
+        // 필요시 처리
     }
 
     // ---------------- Training control ----------------
@@ -451,13 +431,10 @@ class AiCoachFragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener {
         isTraining = true
 
         val now = System.currentTimeMillis()
-        val activity = selectedExercise.lowercase(Locale.getDefault())
-
-        counter = when (activity) {
+        counter = when (selectedExercise.lowercase(Locale.getDefault())) {
             "squat" -> SquatCounter().also { it.reset(now) }
             "plank" -> PlankTimer().also { it.reset(now) }
             "lunge" -> LungeCounter().also { it.reset(now) }
-            // TODO: 리팩토링 시 BaseCounter를 상속받는 클래스 맵을 만들 수 있으나, 현재는 이렇게 유지
             else -> SquatCounter().also { it.reset(now) }
         }
 
@@ -548,18 +525,40 @@ class AiCoachFragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener {
         val lowerCaseName = exerciseName.lowercase(Locale.getDefault())
         val targetType = ActivityUtils.getTargetType(lowerCaseName)
 
-        // 1. ActivityUtils에서 이모지 가져오기
         tvCurrentExerciseEmoji.text = ActivityUtils.getEmoji(lowerCaseName)
 
-        // 2. 운동 종류에 따라 라벨 변경
-        labelReps.text = when (targetType) {
-            TargetType.DURATION -> "SECONDS"
-            TargetType.REPS, null -> "REPS"
+        when (lowerCaseName) {
+            "plank" -> labelReps.text = "SECONDS"
+            "squat", "lunge" -> labelReps.text = "REPS"
+            else -> labelReps.text = "REPS"
         }
 
-        // 디스플레이 초기화
-        repCountText.text = if (targetType == TargetType.DURATION) "0.0" else "0"
+        repCountText.text = if (lowerCaseName == "plank") "0.0" else "0"
         pointsText.text = "+0"
+    }
+
+    // ✅ rep 증가 시 중앙 팝업까지 처리
+    private fun updateRepCount(count: Int) {
+        val prev = repCount
+        repCount = count
+        points = count * 10
+        coachViewModel.updateRepCount(count)
+
+        val lowerName = selectedExercise.lowercase(Locale.getDefault())
+
+        if (lowerName == "plank") {
+            // 플랭크: 시간은 onResults에서 세팅, 여기서는 포인트만
+            pointsText.text = "+$points"
+        } else {
+            // squat / lunge
+            repCountText.text = count.toString()
+            pointsText.text = "+$points"
+
+            // 이전 값보다 커졌을 때만 팝업 (rep 올라간 순간)
+            if (isTraining && count > prev) {
+                showRepPopup(count)
+            }
+        }
     }
 
     // ✅ 중앙 REP 팝업 애니메이션

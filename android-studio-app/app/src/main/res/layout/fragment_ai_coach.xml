@@ -417,7 +417,7 @@
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintEnd_toEndOf="parent"/>
 
-                <!-- ✅ 새로 추가: REP 팝업용 중앙 텍스트 -->
+                <!-- ✅ 추가: REP 팝업용 중앙 텍스트 -->
                 <TextView
                     android:id="@+id/tvRepPopup"
                     android:layout_width="wrap_content"

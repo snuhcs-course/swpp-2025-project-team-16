@@ -1,7 +1,7 @@
 package com.fitquest.app.model
 
 import java.util.Date
-
+/*
 data class User(
     val id: String,
     val email: String,
@@ -13,3 +13,4 @@ data class User(
     val missedDays: Int = 0,
     val totalPoints: Int = 0
 )
+*/

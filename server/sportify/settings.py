@@ -153,3 +153,7 @@ POSE_ENV = "vlm"                             # 실행할 conda env 이름
 POSE_ENTRY = "pose_vlm.inference"  # env 내에서 실행할 엔트리 스크립트
 
 POSE_TIMEOUT = 180                                # 초 (작업 길면 늘리세요)
+
+CELERY_BROKER_URL = "redis://localhost:6379/0"
+CELERY_RESULT_BACKEND = "redis://localhost:6379/0"
+CELERY_TIMEZONE = "Asia/Seoul"

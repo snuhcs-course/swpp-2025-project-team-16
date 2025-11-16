@@ -398,6 +398,7 @@
                     android:clickable="true"
                     android:focusable="true" />
 
+                <!-- 카운트다운 / STEP BACK 중앙 텍스트 -->
                 <TextView
                     android:id="@+id/tvCountdown"
                     android:layout_width="wrap_content"

@@ -56,7 +56,7 @@ class Session(models.Model):
     activity = models.CharField(max_length=20, choices=ActivityType.choices)
     reps_count = models.IntegerField(null=True, blank=True)
     duration = models.DurationField(null=True, blank=True)
-    schedule = models.OneToOneField(Schedule, on_delete=models.CASCADE, related_name='session', null=True, blank=True)
+    schedule = models.ForeignKey(Schedule, on_delete=models.CASCADE, related_name='sessions', null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:

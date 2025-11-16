@@ -1,6 +1,7 @@
 package com.fitquest.app.ui.viewmodels
 
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
+import com.fitquest.app.MainDispatcherRule
 import com.fitquest.app.model.Exercise
 import com.fitquest.app.model.WorkoutPlan
 import org.junit.Assert.*
@@ -12,6 +13,8 @@ class JourneyViewModelTest {
 
     @get:Rule
     val instantExecutorRule = InstantTaskExecutorRule()
+    @get:Rule
+    val main = MainDispatcherRule()
 
     private lateinit var viewModel: JourneyViewModel
 
@@ -29,11 +32,11 @@ class JourneyViewModelTest {
     fun `selectWorkout updates selectedWorkout LiveData`() {
         val exercise = Exercise("e1", "Push-up", "10 reps", "todo")
         val workoutPlan = WorkoutPlan(
-            id = "plan1",
+            id = 1,
             date = "2024-05-21",
             exercises = listOf(exercise),
             isCompleted = false,
-            points = 100,
+            point = 100,
             feedback = "Good job",
             startTime = "10:00",
             finishTime = "11:00"
@@ -49,11 +52,11 @@ class JourneyViewModelTest {
         // First, select a workout
         val exercise = Exercise("e1", "Push-up", "10 reps", "todo")
         val workoutPlan = WorkoutPlan(
-            id = "plan1",
+            id = 1,
             date = "2024-05-21",
             exercises = listOf(exercise),
             isCompleted = false,
-            points = 100,
+            point = 100,
             feedback = "Good job",
             startTime = "10:00",
             finishTime = "11:00"

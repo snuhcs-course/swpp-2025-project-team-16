@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+
+    <!-- 외곽 Glow -->
+    <path
+        android:pathData="M12,2L14.8,8.5L22,9.3L16.8,14L18.2,21L12,17.5L5.8,21L7.2,14L2,9.3L9.2,8.5Z"
+        android:fillColor="@color/cyan_30"/>
+
+    <!-- 내부 별 -->
+    <path
+        android:pathData="M12,3.5L14.5,8.8L20.3,9.5L15.8,13.4L16.9,19.0L12,16.1L7.1,19.0L8.2,13.4L3.7,9.5L9.5,8.8Z"
+        android:fillColor="@color/cyan_bright"/>
+</vector>

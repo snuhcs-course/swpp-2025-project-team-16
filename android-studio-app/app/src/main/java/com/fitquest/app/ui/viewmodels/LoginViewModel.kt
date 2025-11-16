@@ -1,0 +1,65 @@
+package com.fitquest.app.ui.viewmodels
+
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.ViewModel
+
+/**
+ * ViewModel for managing login/signup flow state
+
+class LoginViewModel : ViewModel() {
+
+    private val _loginState = MutableLiveData<LoginState>()
+    val loginState: LiveData<LoginState> = _loginState
+
+    private val _user = MutableLiveData<User?>()
+    val user: LiveData<User?> = _user
+
+    /**
+     * Check if email exists in database
+     */
+    fun checkEmail(email: String) {
+        // TODO: Backend - Check if email exists
+        // If exists: _loginState.value = LoginState.ExistingUser(email)
+        // If new: _loginState.value = LoginState.NewUser(email)
+    }
+
+    /**
+     * Verify user password
+     */
+    fun verifyPassword(email: String, password: String) {
+        // TODO: Backend - Verify password
+        // If valid: 
+        //   _user.value = fetchedUser
+        //   _loginState.value = LoginState.Success
+        // If invalid:
+        //   _loginState.value = LoginState.Error("Invalid password")
+    }
+
+    /**
+     * Create new user account
+     */
+    fun createUser(
+        email: String,
+        password: String,
+        username: String,
+        fitnessLevel: FitnessLevel
+    ) {
+        // TODO: Backend - Create user account
+        // On success:
+        //   _user.value = newUser
+        //   _loginState.value = LoginState.Success
+        // On error:
+        //   _loginState.value = LoginState.Error("Failed to create account")
+    }
+
+    sealed class LoginState {
+        object Initial : LoginState()
+        data class ExistingUser(val email: String) : LoginState()
+        data class NewUser(val email: String) : LoginState()
+        object Success : LoginState()
+        data class Error(val message: String) : LoginState()
+        object Loading : LoginState()
+    }
+}
+*/

@@ -1,137 +1,90 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">Sportify</string>
-    <!-- 공통 -->
-    <string name="app_logo">logo</string>
-    <string name="add_sport">스포츠 추가</string>
-    <string name="cancel">취소</string>
-    <string name="save">저장</string>
-    <string name="ok">확인</string>
-    <string name="yes">예</string>
-    <string name="no">아니오</string>
-    <string name="notification">알림</string>
+    <!-- App Name -->
+    <string name="app_name">FitQuest</string>
     
-    <!-- 네비게이션 -->
-    <string name="nav_shopping">쇼핑</string>
-    <string name="nav_ai_coach">AI 코치</string>
-    <string name="nav_training">훈련</string>
-    <string name="nav_user">My page</string>
+    <!-- Bottom Navigation -->
+    <string name="nav_journey">Journey</string>
+    <string name="nav_schedule">Schedule</string>
+    <string name="nav_ai_coach">AI Coach</string>
+    <string name="nav_profile">Profile</string>
     
-    <!-- 스포츠 화면 -->
-    <string name="no_sports_title">스포츠가 없습니다</string>
-    <string name="no_sports_description">첫 번째 스포츠를 추가하여 연습을 추적해보세요</string>
-    <string name="no_sports_icon">스포츠 없음 아이콘</string>
-    <string name="sport_image">스포츠 이미지</string>
-    <string name="total_sessions">총 세션</string>
-    <string name="this_week">이번 주</string>
-    <string name="last_session">마지막 연습</string>
-    <string name="weekly_goal_progress">주간 목표 진행도</string>
-    <string name="goal_icon">목표 아이콘</string>
-    <string name="view_stats">통계</string>
-    <string name="add_session">세션 추가</string>
+    <!-- Login Flow -->
+    <string name="login_title">FitQuest</string>
+    <string name="login_subtitle">Begin Your Journey</string>
+    <string name="email_hint">Email Address</string>
+    <string name="password_hint">Password</string>
+    <string name="confirm_password_hint">Confirm Password</string>
+    <string name="continue_button">Continue</string>
+    <string name="login_button">Enter the Quest</string>
+    <string name="signup_prompt">New adventurer?</string>
+    <string name="signup_link">Create Account</string>
+    <string name="forgot_password">Forgot Password?</string>
+    <string name="welcome_back">Welcome Back</string>
     
-    <!-- AI 코치 화면 -->
-    <string name="search_exercise">운동 선택...</string>
-    <string name="user_icon">사용자 아이콘</string>
-    <string name="my_motion">내 동작</string>
-    <string name="ai_guide_icon">AI 가이드 아이콘</string>
-    <string name="ai_guide">AI 가이드</string>
-    <string name="accuracy">정확도:</string>
-    <string name="start_analysis">분석 시작</string>
-    <string name="stop_analysis">정지</string>
-    <string name="reset">리셋</string>
-    <string name="text_feedback">Text Feedback</string>
-    <string name="camera_icon">카메라 아이콘</string>
-    <string name="empty_feedback_message">분석을 시작하면 실시간 피드백이 표시됩니다</string>
+    <!-- Signup -->
+    <string name="create_hero_title">Create Your Hero</string>
+    <string name="choose_path_title">Choose Your Path</string>
+    <string name="choose_path_subtitle">Select your starting fitness level</string>
+    <string name="start_quest_button">Start Quest</string>
+    <string name="step_1_of_2">Step 1 of 2</string>
+    <string name="step_2_of_2">Step 2 of 2</string>
     
-    <!-- 훈련 화면 -->
-    <string name="training_plans">훈련 계획</string>
-    <string name="ai_generate">AI 생성</string>
-    <string name="no_training_plans">훈련 계획이 없습니다</string>
-    <string name="no_training_description">AI를 사용하여 맞춤형 훈련 계획을 생성해보세요</string>
-    <string name="generate_ai_plan">AI 계획 생성</string>
-    <string name="training_icon">훈련 아이콘</string>
-    <string name="start_training">훈련 시작</string>
-    <string name="training_duration">소요시간</string>
-    <string name="difficulty">난이도</string>
-    <string name="focus_area">집중 영역</string>
-    <string name="total_exercises">총 %d개 운동</string>
+    <!-- Fitness Levels -->
+    <string name="fitness_novice">🌱 Novice</string>
+    <string name="fitness_novice_desc">Just starting your fitness journey</string>
+    <string name="fitness_warrior">⚔️ Warrior</string>
+    <string name="fitness_warrior_desc">Regular exercise experience</string>
+    <string name="fitness_champion">🏆 Champion</string>
+    <string name="fitness_champion_desc">Advanced fitness enthusiast</string>
     
-    <!-- 난이도 -->
-    <string name="difficulty_beginner">초급</string>
-    <string name="difficulty_intermediate">중급</string>
-    <string name="difficulty_advanced">고급</string>
+    <!-- Journey Screen -->
+    <string name="quest_path_title">Quest Path</string>
+    <string name="no_quests_title">No Quests Planned</string>
+    <string name="no_quests_message">Create a workout schedule to begin</string>
     
-    <!-- 성취 화면 -->
-    <string name="achievements_count">업적</string>
-    <string name="total_hours">총 시간</string>
-    <string name="streak_days">연속일</string>
-    <string name="filter_all">전체</string>
-    <string name="filter_unlocked">달성</string>
-    <string name="filter_locked">미달성</string>
-    <string name="no_achievements">업적이 없습니다</string>
-    <string name="no_achievements_description">선택한 필터에 해당하는 업적이 없습니다</string>
-    <string name="achievement_icon">업적 아이콘</string>
-    <string name="progress_format">진행도: %d / %d</string>
-    <string name="unlocked_date">%s에 달성</string>
-    <string name="reward_points">+%d XP</string>
-    
-    <!-- 피드백 -->
-    <string name="feedback_good">좋음</string>
-    <string name="feedback_warning">개선 필요</string>
-    <string name="feedback_error">교정 필요</string>
-    <string name="ai_confidence">AI 신뢰도: %d%%</string>
-    
-    <!-- 업적 타입 -->
-    <string name="achievement_bronze">브론즈</string>
-    <string name="achievement_silver">실버</string>
-    <string name="achievement_gold">골드</string>
-    <string name="achievement_platinum">플래티넘</string>
-    
-    <!-- 강도 -->
-    <string name="intensity_light">가벼움</string>
-    <string name="intensity_moderate">보통</string>
-    <string name="intensity_high">높음</string>
-    
-    <!-- 권한 -->
-    <string name="camera_permission_required">카메라 권한이 필요합니다</string>
-    <string name="permission_camera_rationale">AI 자세 교정을 위해 카메라 권한이 필요합니다.</string>
-    
-    <!-- 스포츠 배열 -->
-    <string-array name="sports_array">
-        <item>골프</item>
-        <item>볼링</item>
-        <item>테니스</item>
-        <item>배드민턴</item>
-        <item>탁구</item>
-        <item>야구</item>
-        <item>농구</item>
-    </string-array>
-    
-    <!-- 일반 -->
-    <string name="hours_format">%dh</string>
-    <string name="sessions_format">%d회</string>
-    <string name="percent_format">%d%%</string>
-    <string name="days_ago_format">%d일 전</string>
-    <string name="just_now">방금 전</string>
-    <string name="nav_exercise_add">운동 추가</string>
-    <string name="_2025_10">2025년 10월</string>
-    <string name="plan_make">계획 생성</string>
-    <string name="plan_edit">계획 수정</string>
-    <string name="plan_percent">계획 성취율</string>
-    <string name="_68">68%</string>
-    <string name="training_header">운동 계획</string>
-    <string name="training_month">2025년 9월</string>
-    <string name="button_back">뒤로가기</string>
-    <string name="modify_plan">계획 수정</string>
-    <string name="current_plan">현재 계획</string>
-    <string name="Date">10월 5일 토요일</string>
-    <string name="newDate">새로운 날짜를 선택하세요</string>
+    <!-- Schedule Screen -->
+    <string name="training_schedule_title">Training Schedule</string>
+    <string name="no_workouts_title">No Workouts Scheduled</string>
+    <string name="no_workouts_message">Tap + to create your first workout</string>
+    <string name="start_workout">Start Quest</string>
+    <string name="schedule_time">%1$s %2$s~%3$s</string>
 
-    <string name="next">다음</string>
-    <string name="shopping">쇼핑</string>
-    <string name="ex1">덤벨</string>
-    <string name="search">검색</string>
-    <string name="searching">제품 검색</string>
-
+    <!-- AI Coach Screen -->
+    <string name="pause_button">Pause</string>
+    <string name="complete_button">Complete</string>
+    <string name="camera_permission_title">Camera Access Required</string>
+    <string name="camera_permission_message">Enable camera to use AI Coach</string>
+    <string name="grant_permission_button">Grant Permission</string>
+    <string name="position_feedback">Position yourself in frame</string>
+    <string name="reps_format">Reps: %1$d/%2$d</string>
+    
+    <!-- Profile Screen -->
+    <string name="level_label">Level</string>
+    <string name="total_xp_label">Total XP</string>
+    <string name="streak_label">Day Streak</string>
+    <string name="journey_begins_title">Your Journey Begins</string>
+    <string name="journey_begins_message">Complete workouts to build your path</string>
+    
+    <!-- Exercise Details -->
+    <string name="sets_reps_format">%1$d sets × %2$d reps</string>
+    <string name="xp_reward_format">+%1$d XP</string>
+    <string name="exercise_count_format">%1$d Exercises</string>
+    <string name="duration_format">%1$d min</string>
+    
+    <!-- Common -->
+    <string name="loading">Loading...</string>
+    <string name="error_generic">Something went wrong. Please try again.</string>
+    <string name="error_network">Network error. Check your connection.</string>
+    <string name="retry">Retry</string>
+    
+    <!-- Content Descriptions -->
+    <string name="cd_back_button">Back</string>
+    <string name="cd_settings_button">Settings</string>
+    <string name="cd_add_button">Add</string>
+    <string name="cd_menu_button">Menu</string>
+    <string name="cd_avatar">User avatar</string>
+    <string name="begin_quest">Begin Quest</string>
+    <string name="warrior_fitquest_com">warrior@fitquest.com</string>
+    <string name="pose" >Pose</string>
 </resources>

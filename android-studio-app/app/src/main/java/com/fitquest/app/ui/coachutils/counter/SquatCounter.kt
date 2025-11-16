@@ -31,7 +31,7 @@ class SquatCounter : BaseCounter() {
     private var hipL  = 180.0; private var hipR  = 180.0
     private var pelvisY = 0.0
     private var emaInit = false
-    private val alpha = 0.9
+    private val alpha = 0.98
 
     // 기준(서있는 자세) 캘리브레이션
     private var baselinePelvisY = Double.NaN

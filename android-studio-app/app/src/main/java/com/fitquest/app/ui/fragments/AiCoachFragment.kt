@@ -57,11 +57,14 @@ class AiCoachFragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener {
     private lateinit var formScoreContainer: View
     private lateinit var tvCountdown: TextView
 
+    // ✅ 중앙 REP 팝업용 TextView
+    private lateinit var repPopupText: TextView
+
     // Camera/Pose
     private lateinit var cameraExecutor: ExecutorService
     private var cameraProvider: ProcessCameraProvider? = null
     private var imageAnalyzer: ImageAnalysis? = null
-    private var lensFacing: Int = CameraSelector.LENS_FACING_FRONT
+    private var lensFacing: Int = CameraSelector.LENS_FACING_BACK
     private lateinit var poseLandmarkerHelper: PoseLandmarkerHelper
 
     // VM
@@ -124,6 +127,8 @@ class AiCoachFragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener {
         formScoreContainer = view.findViewById(R.id.formScoreContainer)
         tvCountdown = view.findViewById(R.id.tvCountdown)
 
+        // ✅ 중앙 REP 팝업 바인딩
+        repPopupText = view.findViewById(R.id.tvRepPopup)
         // ✅ 수정: Bundle에서 스케줄 정보 (ID, 목표, 운동 키)를 가져와 초기화합니다.
         arguments?.let {
             val id = it.getInt(ARG_SCHEDULE_ID, -1).takeIf { i -> i != -1 }
@@ -555,6 +560,29 @@ class AiCoachFragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener {
         // 디스플레이 초기화
         repCountText.text = if (targetType == TargetType.DURATION) "0.0" else "0"
         pointsText.text = "+0"
+    }
+
+    // ✅ 중앙 REP 팝업 애니메이션
+    private fun showRepPopup(count: Int) {
+        repPopupText.text = count.toString()
+        repPopupText.visibility = View.VISIBLE
+        repPopupText.alpha = 1f
+        repPopupText.scaleX = 1f
+        repPopupText.scaleY = 1f
+
+        repPopupText.animate().cancel()
+        repPopupText.animate()
+            .scaleX(1.4f)
+            .scaleY(1.4f)
+            .alpha(0f)
+            .setDuration(600L)
+            .withEndAction {
+                repPopupText.visibility = View.GONE
+                repPopupText.alpha = 1f
+                repPopupText.scaleX = 1f
+                repPopupText.scaleY = 1f
+            }
+            .start()
     }
 
     // ---------------- Countdown ----------------

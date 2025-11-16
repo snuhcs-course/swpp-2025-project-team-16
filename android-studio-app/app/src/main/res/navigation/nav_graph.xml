@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/nav_graph"
+    app:startDestination="@id/journeyFragment">
+
+    <!-- Journey Fragment -->
+    <fragment
+        android:id="@+id/journeyFragment"
+        android:name="com.fitquest.app.ui.fragments.JourneyFragment"
+        android:label="Journey" />
+
+    <!-- Schedule Fragment -->
+    <fragment
+        android:id="@+id/scheduleFragment"
+        android:name="com.fitquest.app.ui.fragments.ScheduleFragment"
+        android:label="Schedule">
+        <action
+            android:id="@+id/action_scheduleFragment_to_aiCoachFragment"
+            app:destination="@id/aiCoachFragment"
+            app:enterAnim="@android:anim/slide_in_left"
+            app:exitAnim="@android:anim/slide_out_right"
+            app:popEnterAnim="@android:anim/slide_in_left"
+            app:popExitAnim="@android:anim/slide_out_right" />
+    </fragment>
+
+    <!-- AI Coach Fragment -->
+    <fragment
+        android:id="@+id/aiCoachFragment"
+        android:name="com.fitquest.app.ui.fragments.AiCoachFragment"
+        android:label="AI Coach">
+        <argument
+            android:name="scheduleId"
+            app:argType="integer"
+            android:defaultValue="-1"/>
+        <argument
+            android:name="activityKey"
+            app:argType="string"
+            android:defaultValue="squat"/>
+        <argument
+            android:name="repsTarget"
+            app:argType="integer"
+            android:defaultValue="-1"/>
+        <argument
+            android:name="durationTarget"
+            app:argType="integer"
+            android:defaultValue="-1"/>
+    </fragment>
+
+    <!-- Pose Fragment -->
+    <fragment
+        android:id="@+id/poseFragment"
+        android:name="com.fitquest.app.ui.fragments.PoseFragment"
+        android:label="Pose" />
+
+    <!-- Profile Fragment -->
+    <fragment
+        android:id="@+id/profileFragment"
+        android:name="com.fitquest.app.ui.fragments.ProfileFragment"
+        android:label="Profile" />
+</navigation>

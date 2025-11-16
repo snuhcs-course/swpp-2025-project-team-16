@@ -18,6 +18,8 @@ import androidx.core.widget.ImageViewCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import com.fitquest.app.R
+import com.fitquest.app.model.WorkoutResult
+import com.fitquest.app.repository.SessionRepository
 import com.fitquest.app.ui.coachutils.OverlayView
 import com.fitquest.app.ui.coachutils.PoseLandmarkerHelper
 import com.fitquest.app.ui.coachutils.counter.BaseCounter
@@ -25,6 +27,9 @@ import com.fitquest.app.ui.coachutils.counter.PlankTimer
 import com.fitquest.app.ui.coachutils.counter.SquatCounter
 import com.fitquest.app.ui.coachutils.counter.LungeCounter
 import com.fitquest.app.ui.viewmodels.AiCoachViewModel
+import com.fitquest.app.ui.viewmodels.AiCoachViewModelFactory
+import com.fitquest.app.util.ActivityUtils
+import com.fitquest.app.util.TargetType
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.progressindicator.LinearProgressIndicator
 import com.google.mediapipe.tasks.vision.core.RunningMode
@@ -34,8 +39,6 @@ import java.util.Locale
 import kotlin.math.exp
 
 class AiCoachFragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener {
-
-    private enum class Exercise { SQUAT, PLANK, LUNGE }
 
     // UI
     private lateinit var previewView: PreviewView
@@ -65,17 +68,24 @@ class AiCoachFragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener {
     private lateinit var poseLandmarkerHelper: PoseLandmarkerHelper
 
     // VM
-    private val coachViewModel: AiCoachViewModel by activityViewModels()
+    private val coachViewModel: AiCoachViewModel by activityViewModels {
+        AiCoachViewModelFactory(
+            SessionRepository()
+        )
+    }
 
     // State
     private var isTraining = false
     private var isCountingDown = false
     private var countdownTimer: CountDownTimer? = null
-    private var repCount = 0
-    private var points = 0
-    private var selectedExercise: Exercise = Exercise.SQUAT
+
+    private var selectedExercise: String = "squat" // String으로 변경, 기본값은 "squat"
 
     private var counter: BaseCounter? = null
+
+    private var scheduleId: Int? = null
+    private var scheduleRepsTarget: Int? = null
+    private var scheduleDurationTarget: Int? = null
 
     // Tracking lock FSM
     private var trackingLocked = false
@@ -119,6 +129,24 @@ class AiCoachFragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener {
 
         // ✅ 중앙 REP 팝업 바인딩
         repPopupText = view.findViewById(R.id.tvRepPopup)
+        // ✅ 수정: Bundle에서 스케줄 정보 (ID, 목표, 운동 키)를 가져와 초기화합니다.
+        arguments?.let {
+            val id = it.getInt(ARG_SCHEDULE_ID, -1).takeIf { i -> i != -1 }
+            scheduleId = id
+
+            // 전달된 타겟 값이 -1이 아닐 경우에만 저장
+            val repsTarget = it.getInt(ARG_REPS_TARGET, -1).takeIf { t -> t != -1 }
+            scheduleRepsTarget = repsTarget
+
+            val durationTarget = it.getInt(ARG_DURATION_TARGET, -1).takeIf { t -> t != -1 }
+            scheduleDurationTarget = durationTarget
+
+            // 운동 키를 받아 현재 운동으로 설정합니다.
+            val scheduledActivity = it.getString(ARG_ACTIVITY_KEY)?.lowercase()
+            if (scheduledActivity != null) {
+                selectedExercise = scheduledActivity
+            }
+        }
 
         // Pose helper
         cameraExecutor = Executors.newSingleThreadExecutor()
@@ -141,23 +169,46 @@ class AiCoachFragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener {
             requireActivity(), REQUIRED_PERMISSIONS, REQUEST_CODE_PERMISSIONS
         )
 
-        // Spinner (entries는 XML에 정의되어 있음)
+        // --- Spinner 초기화 및 바인딩 ---
+        val exerciseListWithEmoji = ActivityUtils.activityMetadataMap.values.map { metadata ->
+            "${metadata.emoji} ${metadata.label}"
+        }.toTypedArray()
+
+        val adapter = ArrayAdapter(
+            requireContext(),
+            android.R.layout.simple_spinner_dropdown_item,
+            exerciseListWithEmoji
+        )
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+        spinnerExercise.adapter = adapter
+
         spinnerExercise.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
             override fun onItemSelected(parent: AdapterView<*>?, v: View?, pos: Int, id: Long) {
-                val sel = parent?.getItemAtPosition(pos)?.toString() ?: ""
-                selectedExercise = mapSelectionToExercise(sel)
+                if (!spinnerExercise.isEnabled) {
+                    // 잠금 상태일 때 선택이 바뀌어도 selectedExercise를 변경하지 않고 리턴
+                    return
+                }
+                // 선택된 아이템의 순서(pos)를 사용하여 원래의 운동 키(소문자)를 찾습니다.
+                val selectedKey = ActivityUtils.activityMetadataMap.keys.toList().getOrNull(pos) ?: "squat"
+                selectedExercise = selectedKey
                 applyExerciseUi(selectedExercise)
-                if (isTraining) feedbackText.text = "Exercise changed. Applies on next start."
             }
+
             override fun onNothingSelected(parent: AdapterView<*>?) {
-                selectedExercise = Exercise.SQUAT
+                selectedExercise = "squat" // 기본값 설정
                 applyExerciseUi(selectedExercise)
             }
         }
 
         // Buttons
         startPauseButton.setOnClickListener {
-            if (isTraining) pauseWorkout() else startCountdownThenBegin(10)
+            if (isCountingDown) {
+                cancelCountdown()
+            } else if (isTraining) {
+                pauseWorkout()
+            } else {
+                startCountdownThenBegin(10)
+            }
         }
         switchCameraButton.setOnClickListener { toggleCameraLens() }
         switchCameraButton.setImageResource(R.drawable.ic_switch_camera)
@@ -170,7 +221,38 @@ class AiCoachFragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener {
         feedbackText.text = COACH_MSG_IDLE
         applyTrainingButtonStyle()
         updateTrainingUiState()
-        applyExerciseUi(selectedExercise)
+
+        // ViewModel LiveData 관찰 로직
+        coachViewModel.repCount.observe(viewLifecycleOwner) { count ->
+            val targetType = ActivityUtils.getTargetType(selectedExercise)
+            if (targetType == TargetType.REPS) {
+                repCountText.text = count.toString()
+            }
+        }
+
+        coachViewModel.points.observe(viewLifecycleOwner) { points ->
+            pointsText.text = "+$points"
+        }
+
+        coachViewModel.errorMessage.observe(viewLifecycleOwner) { message ->
+            if (message.isNotEmpty()) {
+                Toast.makeText(requireContext(), message, Toast.LENGTH_LONG).show()
+                // (선택 사항) 토스트를 띄운 후 메시지를 초기화하는 추가적인 이벤트 처리가 필요할 수 있다.
+            }
+        }
+
+        // 1. 스케줄 연동 시 초기 운동 선택/UI 잠금 처리
+        handleScheduleLocking()
+        // 2. 목표 UI 업데이트 (tvSystemSubtitle 재활용)
+        updateTargetUi()
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        // ✅ 추가: Fragment의 뷰가 해제될 때 카메라 관련 스레드 풀을 종료하여 자원 누수를 방지합니다.
+        cameraExecutor.shutdown()
+        // _binding = null (이 Fragment는 바인딩을 사용하지 않으므로 제거)
+        // super.onDestroyView() 호출은 이미 되어있으므로, 여기에 정리 로직을 추가합니다.
     }
 
     // ---------------- CameraX ----------------
@@ -286,16 +368,18 @@ class AiCoachFragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener {
             counter?.update(pts, now)
 
             // ---- UI 반영 ----
-            if (selectedExercise == Exercise.PLANK && counter is PlankTimer) {
+            val targetType = ActivityUtils.getTargetType(selectedExercise)
+
+            if (targetType == TargetType.DURATION && counter is PlankTimer) {
                 val pt = counter as PlankTimer
                 // 0.1초 단위 표시
                 val seconds = pt.holdSeconds()
                 repCountText.text = String.format(Locale.getDefault(), "%.1f", seconds)
                 // 내부 count(Int)는 floor(seconds)이므로 기존 VM 업데이트는 그대로 유지
-                updateRepCount(counter?.count ?: 0)
+                coachViewModel.updateRepCount(counter?.count ?: 0) // VM 호출로 변경
             } else {
-                // 스쿼트/런지는 정수 reps
-                updateRepCount(counter?.count ?: 0)
+                // 스쿼트, 런지 등 횟수 기반
+                coachViewModel.updateRepCount(counter?.count ?: 0) // VM 호출로 변경
             }
             feedbackText.text = "Phase: ${counter?.phase ?: "-"}"
         }
@@ -307,16 +391,74 @@ class AiCoachFragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener {
 
     // ---------------- Training control ----------------
 
+    private fun lowerBodyVisibleCount(lm: List<com.google.mediapipe.tasks.components.containers.NormalizedLandmark>, thresh: Float): Int {
+        var count = 0
+        for (i in LOWER_NEEDED) {
+            val p = lm[i]
+            val visProb = toProbMaybeLogit((p.visibility() as? Number)?.toFloat()) ?: 0f
+            if (visProb >= thresh && inFrame(p)) {
+                count++
+            }
+        }
+        return count
+    }
+
+    private fun handleScheduleLocking() {
+        val isScheduled = scheduleId != null
+
+        if (isScheduled) {
+            // 스피너 비활성화 (운동 변경 불가)
+            spinnerExercise.isEnabled = false
+            spinnerExercise.alpha = 0.5f
+
+            // 스피너의 현재 선택된 아이템을 스케줄 운동으로 설정 (UI에 표시)
+            val activityKey = selectedExercise // 이미 selectedExercise는 Bundle에서 받은 값으로 초기화됨
+            val keys = ActivityUtils.activityMetadataMap.keys.toList()
+            val pos = keys.indexOf(activityKey)
+            if (pos != -1) {
+                spinnerExercise.setSelection(pos)
+            }
+        } else {
+            spinnerExercise.isEnabled = !isTraining // 트레이닝 중이 아니라면 활성화
+            spinnerExercise.alpha = 1.0f
+        }
+    }
+
+    private fun updateTargetUi() {
+        val isScheduled = scheduleId != null
+        val targetType = ActivityUtils.getTargetType(selectedExercise)
+
+        // findViewById를 한 번 더 호출하는 대신, onViewCreated에서 바인딩된 뷰를 사용합니다.
+        // 현재 tvSystemSubtitle은 바인딩되어 있지 않으므로 임시로 findViewById를 사용하거나,
+        // 이 뷰가 레이아웃에 포함되어 있다고 가정합니다. (여기서는 기존 코드를 유지합니다.)
+        val tvSystemSubtitle: TextView = requireView().findViewById(R.id.tvSystemSubtitle)
+
+        if (isScheduled) {
+            val exerciseLabel = ActivityUtils.getLabel(selectedExercise)
+
+            val targetText = when (targetType) {
+                TargetType.REPS -> if (scheduleRepsTarget != null) "$exerciseLabel Target: ${scheduleRepsTarget} Reps" else "$exerciseLabel Scheduled"
+                TargetType.DURATION -> if (scheduleDurationTarget != null) "$exerciseLabel Target: ${scheduleDurationTarget} Secs" else "$exerciseLabel Scheduled"
+                else -> "$exerciseLabel Scheduled"
+            }
+            tvSystemSubtitle.text = targetText
+        } else {
+            tvSystemSubtitle.text = "Start your session"
+        }
+    }
+
     fun beginWorkout() {
         isTraining = true
-        repCount = 0
-        points = 0
 
         val now = System.currentTimeMillis()
-        counter = when (selectedExercise) {
-            Exercise.SQUAT -> SquatCounter().also { it.reset(now) }
-            Exercise.PLANK -> PlankTimer().also { it.reset(now) }
-            Exercise.LUNGE -> LungeCounter().also { it.reset(now) }
+        val activity = selectedExercise.lowercase(Locale.getDefault())
+
+        counter = when (activity) {
+            "squat" -> SquatCounter().also { it.reset(now) }
+            "plank" -> PlankTimer().also { it.reset(now) }
+            "lunge" -> LungeCounter().also { it.reset(now) }
+            // TODO: 리팩토링 시 BaseCounter를 상속받는 클래스 맵을 만들 수 있으나, 현재는 이렇게 유지
+            else -> SquatCounter().also { it.reset(now) }
         }
 
         trackingLocked = false
@@ -325,8 +467,10 @@ class AiCoachFragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener {
         disarmUntilMs = 0L
         tvCountdown.visibility = View.GONE
 
-        coachViewModel.beginTraining()
-        coachViewModel.setSessionActive(true)
+        coachViewModel.beginTraining(activity, scheduleId)
+
+        handleScheduleLocking()
+
         feedbackText.text = COACH_MSG_ANALYZING
         applyTrainingButtonStyle()
         updateTrainingUiState()
@@ -335,9 +479,31 @@ class AiCoachFragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener {
 
     private fun pauseWorkout() {
         if (isCountingDown) cancelCountdown()
+        if (!isTraining) return
+
         isTraining = false
-        coachViewModel.pauseTraining()
-        coachViewModel.setSessionActive(false)
+
+        val targetType = ActivityUtils.getTargetType(selectedExercise)
+        val currentCounter = counter
+
+        // 1. 결과 추출 및 WorkoutResult 객체 생성
+        val workoutResult: WorkoutResult = when (targetType) {
+            TargetType.DURATION -> {
+                val duration = (currentCounter as? PlankTimer)?.holdSeconds()?.toInt()
+                WorkoutResult(durationSeconds = duration)
+            }
+            TargetType.REPS, null -> {
+                val reps = currentCounter?.count
+                WorkoutResult(repsCount = reps)
+            }
+        }
+
+        // 2. ViewModel에 WorkoutResult 객체 전달
+        coachViewModel.pauseTraining(workoutResult)
+
+        handleScheduleLocking()
+
+        // 3. Fragment Local 상태 정리
         feedbackText.text = COACH_MSG_IDLE
         applyTrainingButtonStyle()
         updateTrainingUiState()
@@ -378,55 +544,22 @@ class AiCoachFragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener {
         }
     }
 
-    private fun applyExerciseUi(ex: Exercise) {
-        when (ex) {
-            Exercise.SQUAT -> {
-                tvCurrentExerciseEmoji.text = "🦵"
-                labelReps.text = "REPS"
-            }
-            Exercise.PLANK -> {
-                tvCurrentExerciseEmoji.text = "⚡"
-                labelReps.text = "SECONDS"
-            }
-            Exercise.LUNGE -> {
-                tvCurrentExerciseEmoji.text = "🦵"
-                labelReps.text = "REPS"
-            }
+    private fun applyExerciseUi(exerciseName: String) {
+        val lowerCaseName = exerciseName.lowercase(Locale.getDefault())
+        val targetType = ActivityUtils.getTargetType(lowerCaseName)
+
+        // 1. ActivityUtils에서 이모지 가져오기
+        tvCurrentExerciseEmoji.text = ActivityUtils.getEmoji(lowerCaseName)
+
+        // 2. 운동 종류에 따라 라벨 변경
+        labelReps.text = when (targetType) {
+            TargetType.DURATION -> "SECONDS"
+            TargetType.REPS, null -> "REPS"
         }
+
         // 디스플레이 초기화
-        repCountText.text = if (ex == Exercise.PLANK) "0.0" else "0"
+        repCountText.text = if (targetType == TargetType.DURATION) "0.0" else "0"
         pointsText.text = "+0"
-    }
-
-    private fun mapSelectionToExercise(s: String): Exercise {
-        val t = s.lowercase()
-        return when {
-            "plank" in t -> Exercise.PLANK
-            "squat" in t -> Exercise.SQUAT
-            "lunge" in t -> Exercise.LUNGE
-            else -> Exercise.SQUAT
-        }
-    }
-
-    // ✅ rep 증가 시 중앙 팝업
-    private fun updateRepCount(count: Int) {
-        val prev = repCount
-        repCount = count
-        points = count * 10
-        coachViewModel.updateRepCount(count)
-
-        if (selectedExercise == Exercise.PLANK) {
-            // 플랭크는 중앙 팝업 없이 시간만 표시
-            pointsText.text = "+$points"
-        } else {
-            repCountText.text = count.toString()
-            pointsText.text = "+$points"
-
-            // 스쿼트/런지에서 rep가 증가한 순간에만 팝업
-            if (isTraining && count > prev) {
-                showRepPopup(count)
-            }
-        }
     }
 
     // ✅ 중앙 REP 팝업 애니메이션
@@ -457,8 +590,12 @@ class AiCoachFragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener {
     private fun startCountdownThenBegin(seconds: Int = 10) {
         if (isCountingDown) return
         isCountingDown = true
+
+        // ✅ (추가) ViewModel에 '세션 준비 중' 상태를 알립니다. (Bottom Nav Lock 시작)
+        coachViewModel.setSessionPreparing(true)
+
         updateTrainingUiStateForCountdown(true)
-        startPauseButton.isEnabled = false
+        // startPauseButton.isEnabled = false
         tvCountdown.visibility = View.VISIBLE
 
         countdownTimer?.cancel()
@@ -468,12 +605,17 @@ class AiCoachFragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener {
                 tvCountdown.text = remain.toString()
             }
             override fun onFinish() {
+                // ✅ 로컬 카운트다운이 끝났으니 ViewModel의 '준비 중' 상태를 해제
+                // 이제 VM의 beginTraining()이 호출될 준비가 되었다.
+                coachViewModel.setSessionPreparing(false)
+
                 tvCountdown.visibility = View.GONE
-                startPauseButton.isEnabled = true
+                // startPauseButton.isEnabled = true
                 isCountingDown = false
                 beginWorkout()
             }
         }.start()
+        // UI 업데이트 (버튼 텍스트를 "Cancel" 등으로 변경하는 로직을 추가할 수도 있다.)
     }
 
     private fun updateTrainingUiStateForCountdown(show: Boolean) {
@@ -496,6 +638,9 @@ class AiCoachFragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener {
         feedbackText.text = COACH_MSG_IDLE
         applyTrainingButtonStyle()
         updateTrainingUiState()
+
+        // ✅ (추가) ViewModel의 상태를 해제 (Bottom Nav Lock 해제)
+        coachViewModel.cancelCountdown()
     }
 
     // ---------------- Utils ----------------
@@ -514,46 +659,13 @@ class AiCoachFragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener {
         return x in 0f..1f && y in 0f..1f
     }
 
-    private fun safeVis(p: com.google.mediapipe.tasks.components.containers.NormalizedLandmark): Float {
-        val visProb = toProbMaybeLogit((p.visibility() as? Number)?.toFloat())
-        val presProb = toProbMaybeLogit((p.presence() as? Number)?.toFloat())
-        val best = listOfNotNull(visProb, presProb).maxOrNull()
-        if (best != null) return best.coerceIn(0f, 1f)
-        return if (inFrame(p)) 1f else 0f
-    }
-
-    private fun lowerBodyVisibleCount(
-        lm: List<com.google.mediapipe.tasks.components.containers.NormalizedLandmark>,
-        thresh: Float = VIS_THRESH
-    ): Int {
-        var ok = 0
-        for (i in LOWER_NEEDED) {
-            val s = safeVis(lm[i])
-            if (s >= thresh) ok++
-        }
-        return ok
-    }
-
-    override fun onRequestPermissionsResult(
-        requestCode: Int, permissions: Array<String>, grantResults: IntArray
-    ) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-        if (requestCode == REQUEST_CODE_PERMISSIONS && allPermissionsGranted()) {
-            setupCameraProvider()
-        }
-    }
-
-    override fun onDestroy() {
-        super.onDestroy()
-        countdownTimer?.cancel()
-        countdownTimer = null
-        if (::poseLandmarkerHelper.isInitialized) {
-            poseLandmarkerHelper.clearPoseLandmarker()
-        }
-        cameraExecutor.shutdown()
-    }
-
     companion object {
+        // ✅ 수정: Navigation Component에서 사용하는 Argument Key 상수 정의
+        private const val ARG_SCHEDULE_ID = "scheduleId"
+        private const val ARG_ACTIVITY_KEY = "activityKey"
+        private const val ARG_REPS_TARGET = "repsTarget"
+        private const val ARG_DURATION_TARGET = "durationTarget"
+
         private const val REQUEST_CODE_PERMISSIONS = 10
         private val REQUIRED_PERMISSIONS = arrayOf(Manifest.permission.CAMERA)
     }

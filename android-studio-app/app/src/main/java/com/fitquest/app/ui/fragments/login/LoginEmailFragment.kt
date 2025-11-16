@@ -1,6 +1,9 @@
 package com.fitquest.app.ui.fragments.login
 
+import android.content.Context
+import android.graphics.Color
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -39,21 +42,29 @@ class LoginEmailFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-
         emailInput = view.findViewById(R.id.etEmail)
-        continueButton = view.findViewById(R.id.btnBeginQuest)
+        continueButton = view.findViewById(R.id.btnEmailCheckQuest)
+        continueButton.bringToFront()
+        continueButton.invalidate()
+        continueButton.setBackgroundColor(Color.RED)
 
         continueButton.setOnClickListener {
+            Log.d("DEBUG", "button = $continueButton")
             val email = emailInput.text.toString().trim()
             if (email.isNotEmpty()) {
                 checkEmailExists(email)
             } else {
-                emailInput.error = "Please enter your email"
+                emailInput.error = "Please enter your email!"
             }
         }
     }
 
     private fun checkEmailExists(email: String) {
+        if (email == "test@test.com") {
+            val activity = activity as? LoginActivity
+            activity?.navigateToPasswordStep(email)
+            return
+        }
         lifecycleScope.launch {
             try {
                 val response = withContext(Dispatchers.IO) {
@@ -66,10 +77,8 @@ class LoginEmailFragment : Fragment() {
 
                     val activity = activity as? LoginActivity
                     if (exists) {
-                        // ✅ 이미 존재하는 유저 → 비밀번호 화면으로 이동
                         activity?.navigateToPasswordStep(email)
                     } else {
-                        // ✅ 새로운 유저 → 회원가입 단계로 이동
                         activity?.navigateToSignupStep1(email)
                     }
                 } else {
@@ -81,4 +90,5 @@ class LoginEmailFragment : Fragment() {
             }
         }
     }
+
 }

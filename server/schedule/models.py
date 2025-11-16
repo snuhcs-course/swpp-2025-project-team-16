@@ -1,75 +1,72 @@
+from datetime import timedelta
 from django.db import models
-from django.conf import settings  # accounts.Account 참조용
+from django.conf import settings
+from django.core.exceptions import ValidationError
 
-class Sport(models.Model):
-    name = models.CharField(max_length=100)
-    description = models.TextField()
-    total_sessions = models.IntegerField()
+class ActivityType(models.TextChoices):
+    SQUAT = 'squat', 'Squat'
+    PLANK = 'plank', 'Plank'
+    LUNGE = 'lunge', 'Lunge'
 
-    def __str__(self):
-        return self.name
+ACTIVITY_TYPE_MAP = {
+    ActivityType.SQUAT: 'reps',
+    ActivityType.PLANK: 'duration',
+    ActivityType.LUNGE: 'reps'
+}
 
+def validate_activity_fields(activity, reps=None, duration=None):
+    expected_field = ACTIVITY_TYPE_MAP.get(activity)
+    if (reps is None and duration is None) or (reps is not None and duration is not None):
+        raise ValidationError("Must have either reps or duration, not both.")
+    if expected_field == 'reps':
+        if reps is None:
+            raise ValidationError(f"{activity} requires reps.")
+        if duration is not None:
+            raise ValidationError(f"{activity} cannot have duration.")
+    elif expected_field == 'duration':
+        if duration is None:
+            raise ValidationError(f"{activity} requires duration.")
+        if reps is not None:
+            raise ValidationError(f"{activity} cannot have reps.")
+    else:
+        raise ValidationError(f"Unknown activity type: {activity}")
 
-class Session(models.Model):
-    user = models.ManyToManyField(settings.AUTH_USER_MODEL, related_name='sessions', default=1)
-    title = models.CharField(max_length=200)
-    description = models.TextField()
-    sport = models.ForeignKey(Sport, on_delete=models.CASCADE, related_name='sessions')
-    difficulty_level = models.CharField(max_length=50)
-    length = models.IntegerField(help_text="Length in minutes")
-    previous_session = models.ForeignKey('self', on_delete=models.SET_NULL, null=True, blank=True, related_name='next_sessions')
-
-    def __str__(self):
-        return self.title
-
+def zero_duration():
+    return timedelta(seconds=0)
 
 class Schedule(models.Model):
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='schedules', default=1)
-    session = models.ForeignKey(Session, on_delete=models.CASCADE)
-    date = models.DateField()
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='schedules')
+    scheduled_date = models.DateField()
     start_time = models.TimeField()
     end_time = models.TimeField()
-    name = models.CharField(max_length=200)
-    is_finished = models.BooleanField(default=False)
+    activity = models.CharField(max_length=20, choices=ActivityType.choices)
+    reps_target = models.IntegerField(null=True, blank=True)
+    reps_done = models.IntegerField(null=True, blank=True, default=0)
+    duration_target = models.DurationField(null=True, blank=True)
+    duration_done = models.DurationField(null=True, blank=True, default=zero_duration)
+    status = models.CharField(max_length=20, choices=[('planned','Planned'),('completed','Completed'),('partial','Partial'),('missed','Missed')], default='planned')
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
 
-    def __str__(self):
-        return f"{self.user.email} - {self.name}"
+    class Meta:
+        indexes = [models.Index(fields=['user', 'scheduled_date'])]
 
+class Session(models.Model):
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='sessions')
+    activity = models.CharField(max_length=20, choices=ActivityType.choices)
+    reps_count = models.IntegerField(null=True, blank=True)
+    duration = models.DurationField(null=True, blank=True)
+    schedule = models.ForeignKey(Schedule, on_delete=models.CASCADE, related_name='sessions', null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
 
-class SportStatus(models.Model):
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='sport_statuses',default=1)
-    sport = models.ForeignKey(Sport, on_delete=models.CASCADE)
-    session = models.ForeignKey(Session, on_delete=models.CASCADE, related_name='sport_statuses')
-    proficiency_level = models.CharField(max_length=50)
-    last_practiced = models.DateField()
+    class Meta:
+        indexes = [models.Index(fields=['user'])]
 
-    def __str__(self):
-        return f"{self.user.email} - {self.sport.name}"
+class Feedback(models.Model):
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='feedbacks')
+    schedule = models.OneToOneField(Schedule, on_delete=models.CASCADE, related_name='feedback')
+    summary_text = models.TextField(blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
 
-class Exercise(models.Model):
-    session = models.ForeignKey('Session', on_delete=models.CASCADE, related_name='exercises')
-    name = models.CharField(max_length=100)
-    description = models.TextField(blank=True)
-    rep_target = models.IntegerField(null=True, blank=True)
-    duration = models.CharField(max_length=50, blank=True)
-    order = models.PositiveIntegerField(default=1)
-    xp = models.IntegerField(default=0)                         # 경험치
-    accuracy = models.FloatField(null=True, blank=True)         # 정확도 (AI 추적용)
-    status = models.CharField(max_length=30, default="Ready")   # Ready / Completed / Skipped
-    rep_done = models.IntegerField(default=0)                   # 완료된 횟수
-
-    def __str__(self):
-        return f"{self.session.title} - {self.name}"
-
-class WorkoutPlan(models.Model):
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="workout_plans")
-    date = models.DateField()
-    start_time = models.TimeField()
-    finish_time = models.TimeField()
-    exercises = models.ManyToManyField(Exercise, related_name="plans")
-    points = models.IntegerField(default=0)
-    is_completed = models.BooleanField(default=False)
-    feedback = models.TextField(blank=True)
-
-    def __str__(self):
-        return f"{self.user.username} - {self.date}"
+    class Meta:
+        indexes = [models.Index(fields=['user'])]

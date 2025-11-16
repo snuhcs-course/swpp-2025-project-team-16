@@ -1,9 +1,11 @@
 package com.fitquest.app.ui.fragments
 
+import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import android.view.*
 import android.widget.*
+import androidx.annotation.RequiresApi
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import com.fitquest.app.R
@@ -13,6 +15,7 @@ import com.fitquest.app.model.Exercise
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import kotlinx.coroutines.launch
+import org.threeten.bp.LocalDate
 
 class ProfileFragment : Fragment() {
 
@@ -46,12 +49,12 @@ class ProfileFragment : Fragment() {
                     val historyList = response.body() ?: emptyList()
 
                     // ✅ 오늘 날짜
-                    val today = java.time.LocalDate.now()
+                    val today = LocalDate.now()
 
                     // ✅ 오늘 포함 "이전" 데이터만 필터링
                     val filtered = historyList.filter { item ->
                         try {
-                            val date = java.time.LocalDate.parse(item.date)
+                            val date = LocalDate.parse(item.date)
                             !date.isAfter(today)   // 오늘 이후면 제외
                         } catch (e: Exception) {
                             false // 날짜 파싱 실패 시 제외
@@ -134,6 +137,10 @@ class ProfileFragment : Fragment() {
         fetchHistoryFromServer()
         setupRankButton()
         fetchUserStats()
+    }
+
+    private fun fetchUserStats() {
+        // TODO: 나중에 구현
     }
 
     private fun setupRankButton() {
@@ -224,39 +231,5 @@ class ProfileFragment : Fragment() {
 
         dialog.show()
     }
-
-    private fun fetchUserStats() {
-        val prefs = requireContext().getSharedPreferences("auth", 0)
-        val token = prefs.getString("token", null) ?: return
-
-        lifecycleScope.launch {
-            try {
-                val response = RetrofitClient.profileApiService.getUserStats("Bearer $token")
-                if (response.isSuccessful) {
-                    val stats = response.body() ?: return@launch
-                    updateStatsUI(stats)
-                } else {
-                    Log.e("ProfileStats", "Error: ${response.code()}")
-                }
-            } catch (e: Exception) {
-                Log.e("ProfileStats", "Network error: ${e.localizedMessage}")
-            }
-        }
-    }
-    private fun updateStatsUI(stats: UserStatsResponse) {
-        val root = requireView()
-
-        // Rank
-        val tvStatRank = root.findViewById<TextView>(R.id.tvStatRank)
-        tvStatRank.text = stats.rank.toString()
-
-        // XP
-        val tvStatXp = root.findViewById<TextView>(R.id.tvStatXP)
-        tvStatXp.text = stats.xp.toString()
-
-
-    }
-
-
 
 }

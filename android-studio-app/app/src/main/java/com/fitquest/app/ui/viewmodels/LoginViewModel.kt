@@ -3,12 +3,10 @@ package com.fitquest.app.ui.viewmodels
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import com.fitquest.app.model.FitnessLevel
-import com.fitquest.app.model.User
 
 /**
  * ViewModel for managing login/signup flow state
- */
+
 class LoginViewModel : ViewModel() {
 
     private val _loginState = MutableLiveData<LoginState>()
@@ -64,3 +62,4 @@ class LoginViewModel : ViewModel() {
         object Loading : LoginState()
     }
 }
+*/

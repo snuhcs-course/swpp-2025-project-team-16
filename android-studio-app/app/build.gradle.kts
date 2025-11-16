@@ -2,6 +2,7 @@ plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
     id("kotlin-parcelize")
+    id("androidx.navigation.safeargs.kotlin")
 }
 
 android {
@@ -61,6 +62,9 @@ dependencies {
     implementation("androidx.coordinatorlayout:coordinatorlayout:1.2.0")
     implementation("com.google.android.material:material:1.12.0")
 
+    // ThreeTenABP (java.time backport)
+    implementation("com.jakewharton.threetenabp:threetenabp:1.4.4")
+
     // Image loading
     implementation("com.github.bumptech.glide:glide:4.16.0")
 
@@ -97,6 +101,7 @@ dependencies {
     androidTestImplementation("androidx.test.ext:junit:1.1.5")
     androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")
     androidTestImplementation ("androidx.test.espresso:espresso-intents:3.5.1")
+    androidTestImplementation ("androidx.test.espresso:espresso-contrib:3.5.1")
     androidTestImplementation ("androidx.fragment:fragment-testing:1.6.2")
 
 
@@ -126,4 +131,6 @@ dependencies {
 
     // --- CalendarView 지원
     implementation("com.prolificinteractive:material-calendarview:1.4.3")
+
+    implementation("com.google.android.material:material:1.11.0")
 }

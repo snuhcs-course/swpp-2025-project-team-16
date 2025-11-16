@@ -24,6 +24,7 @@ import java.util.concurrent.Executors
 import com.fitquest.app.LoginActivity
 import com.fitquest.app.data.remote.InitialCountRequest
 import com.fitquest.app.data.remote.RetrofitClient
+import com.fitquest.app.data.remote.TokenManager
 import kotlinx.coroutines.launch
 import com.fitquest.app.ui.coachutils.OverlayView
 import com.fitquest.app.ui.coachutils.PoseLandmarkerHelper
@@ -345,12 +346,9 @@ class SignupStep2Fragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener 
     }
 
     // --- 기존 저장 로직 유지 ---
-
     private fun stopSession() {
         val initialCount = tvCountNumber.text.toString().toIntOrNull() ?: 0
-
-        val prefs = requireContext().getSharedPreferences("auth", 0)
-        val token = prefs.getString("token", null) ?: return
+        val token = TokenManager.getToken(requireContext()) ?: return
 
         lifecycleScope.launch {
             try {
@@ -360,26 +358,13 @@ class SignupStep2Fragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener 
                 )
 
                 if (response.isSuccessful) {
-                    val result = response.body()
-                    Toast.makeText(
-                        requireContext(),
-                        "Saved: ${result?.initial_reps}",
-                        Toast.LENGTH_SHORT
-                    ).show()
+                    Toast.makeText(requireContext(), "Saved: ${response.body()?.initial_reps}", Toast.LENGTH_SHORT).show()
                 } else {
-                    Toast.makeText(
-                        requireContext(),
-                        "Failed: ${response.code()}",
-                        Toast.LENGTH_SHORT
-                    ).show()
+                    Toast.makeText(requireContext(), "Failed: ${response.code()}", Toast.LENGTH_SHORT).show()
                 }
             } catch (e: Exception) {
                 e.printStackTrace()
-                Toast.makeText(
-                    requireContext(),
-                    "Network error: ${e.localizedMessage}",
-                    Toast.LENGTH_SHORT
-                ).show()
+                Toast.makeText(requireContext(), "Network error: ${e.localizedMessage}", Toast.LENGTH_SHORT).show()
             }
         }
 

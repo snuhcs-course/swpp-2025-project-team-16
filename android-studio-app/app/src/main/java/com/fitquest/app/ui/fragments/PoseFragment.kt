@@ -51,7 +51,7 @@ class PoseFragment : Fragment() {
     private var cameraProvider: ProcessCameraProvider? = null
 
     // 현재 렌즈 방향 (기본: 전면)
-    private var lensFacing: Int = CameraSelector.LENS_FACING_FRONT
+    private var lensFacing: Int = CameraSelector.LENS_FACING_BACK
 
     private lateinit var previewView: PreviewView
     private lateinit var btnCapture: ImageButton

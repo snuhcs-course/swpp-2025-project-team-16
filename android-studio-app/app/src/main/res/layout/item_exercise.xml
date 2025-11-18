@@ -55,24 +55,33 @@
         </LinearLayout>
 
         <!-- Progress Chip -->
-        <LinearLayout
-            android:id="@+id/progressChip"
+        <TextView
+            android:id="@+id/tvProgressText"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:background="@drawable/bg_chip_cyan"
-            android:orientation="horizontal"
-            android:paddingHorizontal="10dp"
-            android:paddingVertical="4dp"
-            android:gravity="center">
+            android:text="planned"
+            android:textStyle="italic"
+            android:textColor="@color/text_secondary"
+            android:textSize="13sp"
+            android:layout_marginTop="2dp" />
+<!--        <LinearLayout-->
+<!--            android:id="@+id/progressChip"-->
+<!--            android:layout_width="wrap_content"-->
+<!--            android:layout_height="wrap_content"-->
+<!--            android:background="@drawable/bg_chip_cyan"-->
+<!--            android:orientation="horizontal"-->
+<!--            android:paddingHorizontal="10dp"-->
+<!--            android:paddingVertical="4dp"-->
+<!--            android:gravity="center">-->
 
-            <TextView
-                android:id="@+id/tvProgressText"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Ready"
-                android:textColor="@android:color/white"
-                android:textStyle="bold"
-                android:textSize="12sp" />
-        </LinearLayout>
+<!--            <TextView-->
+<!--                android:id="@+id/tvProgressText"-->
+<!--                android:layout_width="wrap_content"-->
+<!--                android:layout_height="wrap_content"-->
+<!--                android:text="Ready"-->
+<!--                android:textColor="@android:color/white"-->
+<!--                android:textStyle="bold"-->
+<!--                android:textSize="12sp" />-->
+<!--        </LinearLayout>-->
     </LinearLayout>
 </androidx.cardview.widget.CardView>

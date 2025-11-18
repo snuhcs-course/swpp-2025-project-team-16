@@ -3,29 +3,55 @@ package com.fitquest.app.ui.viewmodels
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import com.fitquest.app.model.WorkoutPlan
+import androidx.lifecycle.viewModelScope
+import com.fitquest.app.model.DailyWorkoutItem
+import com.fitquest.app.model.WorkoutItem
+import com.fitquest.app.repository.ScheduleRepository
+import kotlinx.coroutines.launch
+import org.threeten.bp.LocalDate
+import org.threeten.bp.LocalDateTime
+import org.threeten.bp.LocalTime
 
-/**
- * ViewModel for JourneyFragment
- */
-class JourneyViewModel : ViewModel() {
+class JourneyViewModel(private val repository: ScheduleRepository) : ViewModel() {
 
-    private val _workoutPlans = MutableLiveData<List<WorkoutPlan>>()
-    val workoutPlans: LiveData<List<WorkoutPlan>> = _workoutPlans
+    private val _dailyWorkouts = MutableLiveData<List<DailyWorkoutItem>>()
+    val dailyWorkouts: LiveData<List<DailyWorkoutItem>> = _dailyWorkouts
 
-    private val _selectedWorkout = MutableLiveData<WorkoutPlan?>()
-    val selectedWorkout: LiveData<WorkoutPlan?> = _selectedWorkout
+    fun loadUpcomingSchedules() {
+        viewModelScope.launch {
+            val now = LocalDateTime.now()
+            val schedules = repository.getSchedules()
 
-    fun loadWorkoutPlans() {
-        // TODO: Backend - Fetch upcoming workout plans
-        // _workoutPlans.value = fetchedPlans
+            val upcoming = schedules.filter {
+                val scheduleEnd = LocalDateTime.of(LocalDate.parse(it.scheduledDate),
+                    LocalTime.parse(it.endTime))
+                scheduleEnd.isAfter(now) || scheduleEnd.isEqual(now)
+            }
+
+            val grouped = upcoming.groupBy { it.scheduledDate }
+
+            val dailyItems = grouped.map { (date, scheduleList) ->
+                val exercises = scheduleList.map { schedule ->
+                    WorkoutItem(
+                        name = schedule.activity,
+                        targetCount = schedule.repsTarget,
+                        targetDuration = schedule.durationTarget,
+                        status = schedule.status
+                    )
+                }
+                DailyWorkoutItem(
+                    dateLabel = formatDate(date),
+                    exercises = exercises
+                )
+            }.sortedBy { it.dateLabel }
+
+            _dailyWorkouts.value = dailyItems
+        }
     }
 
-    fun selectWorkout(workout: WorkoutPlan) {
-        _selectedWorkout.value = workout
-    }
-
-    fun clearSelection() {
-        _selectedWorkout.value = null
+    private fun formatDate(date: String): String {
+        val parsed = LocalDate.parse(date)
+        val month = parsed.month.name.lowercase().replaceFirstChar { it.uppercase() }.take(3)
+        return "$month ${parsed.dayOfMonth}"
     }
 }

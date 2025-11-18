@@ -9,7 +9,6 @@
     android:background="@color/background_dark"
     tools:context=".ui.fragments.JourneyFragment">
 
-    <!-- ===== Header ===== -->
     <LinearLayout
         android:id="@+id/headerContainer"
         android:layout_width="0dp"
@@ -56,7 +55,6 @@
         app:layout_constraintTop_toBottomOf="@id/headerContainer"
         app:layout_constraintBottom_toBottomOf="parent">
 
-        <!-- 중앙 세로선 -->
         <View
             android:id="@+id/timelineVerticalLine"
             android:layout_width="4dp"
@@ -65,23 +63,28 @@
             android:background="@drawable/gradient_timeline_vertical"
             android:elevation="2dp" />
 
-        <!-- ScrollView -->
-        <ScrollView
-            android:id="@+id/scrollTimeline"
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/recyclerJourney"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:fillViewport="true"
-            android:overScrollMode="never">
+            android:overScrollMode="never"
+            android:paddingTop="24dp"
+            android:paddingBottom="24dp"
+            android:clipToPadding="false"
+            tools:listitem="@layout/item_journey_daynode"
+            tools:itemCount="5"/>
 
-            <LinearLayout
-                android:id="@+id/timelineContainer"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:paddingVertical="24dp">
-                <!-- 동적으로 노드(RelativeLayout) 추가 -->
-            </LinearLayout>
-        </ScrollView>
+        <TextView
+            android:id="@+id/tvEmpty"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:text="Upcoming schedules not found."
+            android:textColor="@color/text_secondary"
+            android:textSize="16sp"
+            android:visibility="gone"
+            android:layout_marginBottom="40dp"/>
+
     </FrameLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

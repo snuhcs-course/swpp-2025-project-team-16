@@ -128,6 +128,24 @@ class AiCoachFragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener {
         // ✅ 중앙 REP 팝업 바인딩
         repPopupText = view.findViewById(R.id.tvRepPopup)
 
+        arguments?.let {
+            val id = it.getInt(ARG_SCHEDULE_ID, -1).takeIf { i -> i != -1 }
+            scheduleId = id
+
+            // 전달된 타겟 값이 -1이 아닐 경우에만 저장
+            val repsTarget = it.getInt(ARG_REPS_TARGET, -1).takeIf { t -> t != -1 }
+            scheduleRepsTarget = repsTarget
+
+            val durationTarget = it.getInt(ARG_DURATION_TARGET, -1).takeIf { t -> t != -1 }
+            scheduleDurationTarget = durationTarget
+
+            // 운동 키를 받아 현재 운동으로 설정합니다.
+            val scheduledActivity = it.getString(ARG_ACTIVITY_KEY)?.lowercase()
+            if (scheduledActivity != null) {
+                selectedExercise = scheduledActivity
+            }
+        }
+
         // Pose helper
         cameraExecutor = Executors.newSingleThreadExecutor()
         cameraExecutor.execute {

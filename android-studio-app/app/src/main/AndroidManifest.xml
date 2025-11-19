@@ -32,6 +32,11 @@
         <!-- 메인 액티비티 (로그인 성공 후 이동) -->
         <activity android:name=".MainActivity" />
 
+        <activity
+            android:name=".PoseResultActivity"
+            android:exported="false" />
+
+
     </application>
 
 </manifest>

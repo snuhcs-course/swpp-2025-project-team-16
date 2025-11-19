@@ -153,12 +153,8 @@ class AiCoachFragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener {
         )
 
         // --- Spinner 초기화 및 바인딩 ---
-        val exerciseLabels = ActivityUtils.labelMap.values.toTypedArray()
-
-        // "💪 Squat" 형태로 표시
-        val exerciseListWithEmoji = ActivityUtils.labelMap.map { (key, label) ->
-            val emoji = ActivityUtils.getEmoji(key)
-            "$emoji $label"
+        val exerciseListWithEmoji = ActivityUtils.activityMetadataMap.values.map { metadata ->
+            "${metadata.emoji} ${metadata.label}"
         }.toTypedArray()
 
         val adapter = ArrayAdapter(
@@ -171,11 +167,13 @@ class AiCoachFragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener {
 
         spinnerExercise.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
             override fun onItemSelected(parent: AdapterView<*>?, v: View?, pos: Int, id: Long) {
-                val selectedItemWithEmoji = parent?.getItemAtPosition(pos)?.toString() ?: ""
-                val selectedLabel = selectedItemWithEmoji.substringAfter(" ").trim()
-
-                selectedExercise = ActivityUtils.labelMap.entries
-                    .find { it.value == selectedLabel }?.key ?: "squat"
+                if (!spinnerExercise.isEnabled) {
+                    // 잠금 상태일 때 선택이 바뀌어도 selectedExercise를 변경하지 않고 리턴
+                    return
+                }
+                // 선택된 아이템의 순서(pos)를 사용하여 원래의 운동 키(소문자)를 찾습니다.
+                val selectedKey = ActivityUtils.activityMetadataMap.keys.toList().getOrNull(pos) ?: "squat"
+                selectedExercise = selectedKey
 
                 applyExerciseUi(selectedExercise)
             }
@@ -371,17 +369,26 @@ class AiCoachFragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener {
 
     // ---------------- Training control ----------------
 
-    private fun lowerBodyVisibleCount(lm: List<com.google.mediapipe.tasks.components.containers.NormalizedLandmark>, thresh: Float): Int {
-        var count = 0
+    private fun lowerBodyVisibleCount(
+        lm: List<com.google.mediapipe.tasks.components.containers.NormalizedLandmark>,
+        thresh: Float = VIS_THRESH
+    ): Int {
+        var ok = 0
         for (i in LOWER_NEEDED) {
-            val p = lm[i]
-            val visProb = toProbMaybeLogit((p.visibility() as? Number)?.toFloat()) ?: 0f
-            if (visProb >= thresh && inFrame(p)) {
-                count++
-            }
+            val s = safeVis(lm[i])
+            if (s >= thresh) ok++
         }
-        return count
+        return ok
     }
+
+    private fun safeVis(p: com.google.mediapipe.tasks.components.containers.NormalizedLandmark): Float {
+        val visProb = toProbMaybeLogit((p.visibility() as? Number)?.toFloat())
+        val presProb = toProbMaybeLogit((p.presence() as? Number)?.toFloat())
+        val best = listOfNotNull(visProb, presProb).maxOrNull()
+        if (best != null) return best.coerceIn(0f, 1f)
+        return if (inFrame(p)) 1f else 0f
+    }
+
 
     private fun handleScheduleLocking() {
         val isScheduled = scheduleId != null
@@ -431,6 +438,9 @@ class AiCoachFragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener {
         isTraining = true
 
         val now = System.currentTimeMillis()
+        val activity = selectedExercise.lowercase(Locale.getDefault())
+
+
         counter = when (selectedExercise.lowercase(Locale.getDefault())) {
             "squat" -> SquatCounter().also { it.reset(now) }
             "plank" -> PlankTimer().also { it.reset(now) }

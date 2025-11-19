@@ -1,14 +1,13 @@
 package com.fitquest.app.repository
 
 import com.fitquest.app.data.remote.EndSessionRequest
-import com.fitquest.app.data.remote.RetrofitClient
+import com.fitquest.app.data.remote.SessionApiService
 import com.fitquest.app.data.remote.StartSessionRequest
 import com.fitquest.app.model.Session
 import retrofit2.HttpException
 import java.io.IOException
 
-class SessionRepository {
-    private val service = RetrofitClient.sessionApiService
+class SessionRepository(private val service: SessionApiService) {
 
     suspend fun startSession(activity: String, scheduleId: Int?): Result<Session> {
         return try {

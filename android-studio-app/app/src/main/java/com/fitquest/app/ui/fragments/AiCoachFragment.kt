@@ -18,8 +18,8 @@ import androidx.core.widget.ImageViewCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import com.fitquest.app.R
+import com.fitquest.app.data.remote.RetrofitClient
 import com.fitquest.app.model.WorkoutResult
-import com.fitquest.app.repository.SessionRepository
 import com.fitquest.app.ui.coachutils.OverlayView
 import com.fitquest.app.ui.coachutils.PoseLandmarkerHelper
 import com.fitquest.app.ui.coachutils.counter.BaseCounter
@@ -64,11 +64,8 @@ class AiCoachFragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener {
     private var lensFacing: Int = CameraSelector.LENS_FACING_FRONT
     private lateinit var poseLandmarkerHelper: PoseLandmarkerHelper
 
-    // VM
     private val coachViewModel: AiCoachViewModel by activityViewModels {
-        AiCoachViewModelFactory(
-            SessionRepository()
-        )
+        AiCoachViewModelFactory(RetrofitClient.sessionApiService)
     }
 
     // State

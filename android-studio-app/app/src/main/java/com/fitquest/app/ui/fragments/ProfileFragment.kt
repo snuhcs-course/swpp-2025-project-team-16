@@ -18,6 +18,8 @@ import com.fitquest.app.repository.ScheduleRepository
 import com.fitquest.app.ui.adapters.HistoryAdapter
 import com.fitquest.app.ui.viewmodels.HistoryViewModel
 import com.fitquest.app.ui.viewmodels.HistoryViewModelFactory
+import com.fitquest.app.ui.viewmodels.ScheduleViewModel
+import com.fitquest.app.ui.viewmodels.ScheduleViewModelFactory
 import com.fitquest.app.util.ActivityUtils.getEmoji
 import com.fitquest.app.util.ActivityUtils.calculateDailyHistoryAverageCompletion
 import com.fitquest.app.util.ActivityUtils.calculateDailyHistoryTotalDuration
@@ -35,7 +37,7 @@ class ProfileFragment : Fragment() {
     private val binding get() = _binding!!
 
     private val historyViewModel: HistoryViewModel by viewModels {
-        HistoryViewModelFactory(ScheduleRepository())
+        HistoryViewModelFactory(RetrofitClient.scheduleApiService)
     }
 
     private lateinit var historyAdapter: HistoryAdapter

@@ -7,6 +7,7 @@ import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.fitquest.app.data.remote.RetrofitClient
 import com.fitquest.app.databinding.FragmentJourneyBinding
 import com.fitquest.app.databinding.ItemExerciseBinding
 import com.fitquest.app.databinding.LayoutJourneyDaydetailBinding
@@ -15,6 +16,8 @@ import com.fitquest.app.repository.ScheduleRepository
 import com.fitquest.app.ui.adapters.DailyWorkoutAdapter
 import com.fitquest.app.ui.viewmodels.JourneyViewModel
 import com.fitquest.app.ui.viewmodels.JourneyViewModelFactory
+import com.fitquest.app.ui.viewmodels.ScheduleViewModel
+import com.fitquest.app.ui.viewmodels.ScheduleViewModelFactory
 import com.fitquest.app.util.ActivityUtils.getEmoji
 import com.google.android.material.bottomsheet.BottomSheetDialog
 
@@ -24,7 +27,7 @@ class JourneyFragment : Fragment() {
     private val binding get() = _binding!!
 
     private val viewModel: JourneyViewModel by viewModels {
-        JourneyViewModelFactory(ScheduleRepository())
+        JourneyViewModelFactory(RetrofitClient.scheduleApiService)
     }
 
     private lateinit var adapter: DailyWorkoutAdapter

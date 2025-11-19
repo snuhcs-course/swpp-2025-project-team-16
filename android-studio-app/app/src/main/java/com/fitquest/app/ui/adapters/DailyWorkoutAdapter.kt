@@ -9,6 +9,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.fitquest.app.databinding.ItemJourneyDaynodeBinding
 import com.fitquest.app.model.DailyWorkoutItem
 import com.fitquest.app.util.ActivityUtils.calculateDailyWorkoutTotalXp
+import com.fitquest.app.util.ActivityUtils.formatExercisesSummary
 
 class DailyWorkoutAdapter(
     private val onItemClick: (DailyWorkoutItem) -> Unit
@@ -32,7 +33,7 @@ class DailyWorkoutAdapter(
             val currentCardBinding = if (position % 2 == 0) rightCardBinding else leftCardBinding
 
             currentCardBinding.tvDate.text = item.dateLabel
-            currentCardBinding.tvWorkoutSummary.text = item.exercises.joinToString(", ") { it.name }
+            currentCardBinding.tvWorkoutSummary.text = formatExercisesSummary(item)
             currentCardBinding.tvXp.text = "+${calculateDailyWorkoutTotalXp(item.exercises)} XP"
 
             binding.root.setOnClickListener { onItemClick(item) }

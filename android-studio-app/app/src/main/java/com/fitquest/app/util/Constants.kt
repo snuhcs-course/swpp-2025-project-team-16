@@ -1,5 +1,7 @@
 package com.fitquest.app.util
 
+import com.fitquest.app.model.DailyHistoryItem
+import com.fitquest.app.model.DailyWorkoutItem
 import com.fitquest.app.model.Schedule
 import com.fitquest.app.model.WorkoutItem
 import org.threeten.bp.Duration
@@ -44,6 +46,22 @@ object ActivityUtils {
 
     fun getTargetType(activity: String): TargetType? =
         activityMetadataMap[activity.lowercase()]?.targetType
+
+    fun formatExercisesSummary(item: DailyWorkoutItem): String {
+        val exerciseNames = item.exercises.map { it.name }
+        val counts = exerciseNames.groupingBy { it }.eachCount()
+        return counts.entries.joinToString(", ") { (name, count) ->
+            if (count > 1) "$name * $count set" else name
+        }
+    }
+
+    fun formatExercisesSummary(item: DailyHistoryItem): String {
+        val exerciseNames = item.exercises.map { it.activity }
+        val counts = exerciseNames.groupingBy { it }.eachCount()
+        return counts.entries.joinToString(", ") { (name, count) ->
+            if (count > 1) "$name * $count set" else name
+        }
+    }
 
     fun calculateWorkoutItemXp(item: WorkoutItem): Int {
         val targetType = getTargetType(item.name)

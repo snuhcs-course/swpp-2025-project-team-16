@@ -7,6 +7,7 @@ import androidx.lifecycle.viewModelScope
 import com.fitquest.app.model.DailyWorkoutItem
 import com.fitquest.app.model.WorkoutItem
 import com.fitquest.app.repository.ScheduleRepository
+import com.fitquest.app.util.DateUtils.formatDate
 import kotlinx.coroutines.launch
 import org.threeten.bp.LocalDate
 import org.threeten.bp.LocalDateTime
@@ -40,18 +41,13 @@ class JourneyViewModel(private val repository: ScheduleRepository) : ViewModel()
                     )
                 }
                 DailyWorkoutItem(
+                    date = LocalDate.parse(date),
                     dateLabel = formatDate(date),
                     exercises = exercises
                 )
-            }.sortedBy { it.dateLabel }
+            }.sortedBy { it.date }
 
             _dailyWorkouts.value = dailyItems
         }
-    }
-
-    private fun formatDate(date: String): String {
-        val parsed = LocalDate.parse(date)
-        val month = parsed.month.name.lowercase().replaceFirstChar { it.uppercase() }.take(3)
-        return "$month ${parsed.dayOfMonth}"
     }
 }

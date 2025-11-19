@@ -34,10 +34,11 @@ class HistoryViewModel(private val repository: ScheduleRepository) : ViewModel()
 
             val dailyItems = grouped.map { (date, scheduleList) ->
                 DailyHistoryItem(
+                    date = LocalDate.parse(date),
                     dateLabel = formatDate(date),
                     exercises = scheduleList
                 )
-            }.sortedByDescending { it.dateLabel }
+            }.sortedByDescending { it.date }
 
             _dailyHistories.value = dailyItems
         }

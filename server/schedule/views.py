@@ -6,6 +6,7 @@ from django.db.models import F
 from django.shortcuts import get_object_or_404
 from django.conf import settings
 from django.core.exceptions import ValidationError
+from django.utils import timezone
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
@@ -208,6 +209,7 @@ def schedules_auto_generate(request):
     # ✅ AI 프롬프트 생성 함수
     # ------------------
     def generate_prompt(history_data, num_sched, target_d):
+        today_str = timezone.localdate().isoformat()
         return f"""
         You are a professional fitness coach creating personalized workout schedules.
 
@@ -216,7 +218,7 @@ def schedules_auto_generate(request):
         - Recent history: {json.dumps(history_data, indent=2) if history_data else "No history available"}
 
         Task:
-        Generate {num_sched} realistic daily workout schedule(s){f" for {target_d}" if target_d else ""}.
+        Generate {num_sched} realistic daily workout schedule(s) {f"for {target_d}" if target_d else f"starting from {today_str}"}.
 
         Rules:
         1. {activity_rule}
@@ -231,14 +233,14 @@ def schedules_auto_generate(request):
         {{
             "schedules": [
                 {{
-                    "scheduled_date": "2025-11-09",
+                    "scheduled_date": "{today_str}",
                     "start_time": "08:00",
                     "end_time": "09:00",
                     "activity": "squat",
                     "reps_target": 25
                 }},
                 {{
-                    "scheduled_date": "2025-11-09",
+                    "scheduled_date": "{today_str}",
                     "start_time": "18:30",
                     "end_time": "19:30",
                     "activity": "plank",
@@ -312,14 +314,21 @@ def schedules_auto_generate(request):
     errors = []
     
     for idx, sched in enumerate(schedule_data.get("schedules", [])):
-        serializer = ScheduleSerializer(data={
+        activity_type = ACTIVITY_TYPE_MAP.get(sched.get("activity"))
+    
+        serializer_data = {
             "scheduled_date": sched.get("scheduled_date"),
             "start_time": sched.get("start_time"),
             "end_time": sched.get("end_time"),
             "activity": sched.get("activity"),
-            "reps_target": sched.get("reps_target"),
-            "duration_target": sched.get("duration_target")
-        })
+        }
+    
+        if activity_type == 'reps':
+            serializer_data["reps_target"] = sched.get("reps_target")
+        elif activity_type == 'duration':
+            serializer_data["duration_target"] = sched.get("duration_target")
+        
+        serializer = ScheduleSerializer(data=serializer_data)
         
         if serializer.is_valid():
             serializer.save(user=user)

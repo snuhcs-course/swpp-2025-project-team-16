@@ -16,17 +16,27 @@ ACTIVITY_TYPE_MAP = {
 
 def validate_activity_fields(activity, reps=None, duration=None):
     expected_field = ACTIVITY_TYPE_MAP.get(activity)
-    if (reps is None and duration is None) or (reps is not None and duration is not None):
+    
+    reps_val = reps if reps else None
+    duration_val = None
+    if duration is not None:
+        if isinstance(duration, timedelta):
+            duration_val = duration if duration.total_seconds() > 0 else None
+        else:
+            duration_val = duration
+    
+    if (reps_val is None and duration_val is None) or (reps_val is not None and duration_val is not None):
         raise ValidationError("Must have either reps or duration, not both.")
+    
     if expected_field == 'reps':
-        if reps is None:
+        if reps_val is None:
             raise ValidationError(f"{activity} requires reps.")
-        if duration is not None:
+        if duration_val is not None:
             raise ValidationError(f"{activity} cannot have duration.")
     elif expected_field == 'duration':
-        if duration is None:
+        if duration_val is None:
             raise ValidationError(f"{activity} requires duration.")
-        if reps is not None:
+        if reps_val is not None:
             raise ValidationError(f"{activity} cannot have reps.")
     else:
         raise ValidationError(f"Unknown activity type: {activity}")

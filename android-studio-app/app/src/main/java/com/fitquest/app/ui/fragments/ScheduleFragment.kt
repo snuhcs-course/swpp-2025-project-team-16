@@ -8,8 +8,8 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.fitquest.app.data.remote.RetrofitClient
 import com.fitquest.app.databinding.FragmentScheduleBinding
-import com.fitquest.app.repository.ScheduleRepository
 import com.fitquest.app.ui.adapters.ScheduleAdapter
 import com.fitquest.app.ui.viewmodels.ScheduleViewModel
 import com.fitquest.app.ui.viewmodels.ScheduleViewModelFactory
@@ -18,7 +18,10 @@ class ScheduleFragment : Fragment() {
 
     private var _binding: FragmentScheduleBinding? = null
     private val binding get() = _binding!!
-    private val viewModel: ScheduleViewModel by viewModels { ScheduleViewModelFactory(ScheduleRepository()) }
+
+    private val viewModel: ScheduleViewModel by viewModels {
+        ScheduleViewModelFactory(RetrofitClient.scheduleApiService)
+    }
     private lateinit var adapter: ScheduleAdapter
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?) =

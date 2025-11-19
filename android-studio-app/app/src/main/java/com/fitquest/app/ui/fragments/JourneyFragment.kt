@@ -1,152 +1,85 @@
 package com.fitquest.app.ui.fragments
 
 import android.os.Bundle
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.LinearLayout
-import android.widget.ScrollView
-import android.widget.TextView
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.lifecycleScope
-import com.fitquest.app.R
+import androidx.fragment.app.viewModels
+import androidx.recyclerview.widget.LinearLayoutManager
 import com.fitquest.app.data.remote.RetrofitClient
-import com.fitquest.app.model.Exercise
+import com.fitquest.app.databinding.FragmentJourneyBinding
+import com.fitquest.app.databinding.ItemExerciseBinding
+import com.fitquest.app.databinding.LayoutJourneyDaydetailBinding
+import com.fitquest.app.model.DailyWorkoutItem
+import com.fitquest.app.repository.ScheduleRepository
+import com.fitquest.app.ui.adapters.DailyWorkoutAdapter
+import com.fitquest.app.ui.viewmodels.JourneyViewModel
+import com.fitquest.app.ui.viewmodels.JourneyViewModelFactory
+import com.fitquest.app.ui.viewmodels.ScheduleViewModel
+import com.fitquest.app.ui.viewmodels.ScheduleViewModelFactory
+import com.fitquest.app.util.ActivityUtils.getEmoji
 import com.google.android.material.bottomsheet.BottomSheetDialog
-import kotlinx.coroutines.launch
 
 class JourneyFragment : Fragment() {
 
-    private lateinit var timelineContainer: LinearLayout
+    private var _binding: FragmentJourneyBinding? = null
+    private val binding get() = _binding!!
 
-    data class WorkoutDay(
-        val date: String,
-        val exercises: List<Exercise>,
-        val xp: String
-    )
+    private val viewModel: JourneyViewModel by viewModels {
+        JourneyViewModelFactory(RetrofitClient.scheduleApiService)
+    }
 
-    private var scheduleList: List<WorkoutDay> = emptyList()
+    private lateinit var adapter: DailyWorkoutAdapter
 
-    override fun onCreateView(
-        inflater: LayoutInflater,
-        container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ): View? {
-        return inflater.inflate(R.layout.fragment_journey, container, false)
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
+        _binding = FragmentJourneyBinding.inflate(inflater, container, false)
+        return binding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        timelineContainer = view.findViewById(R.id.timelineContainer)
 
-        // ✅ 서버에서 일정 데이터 가져오기
-        fetchScheduleFromServer()
+        adapter = DailyWorkoutAdapter { dailyItem -> showWorkoutDetails(dailyItem) }
+        binding.recyclerJourney.layoutManager = LinearLayoutManager(context)
+        binding.recyclerJourney.adapter = adapter
+
+        viewModel.dailyWorkouts.observe(viewLifecycleOwner) { dailyItems ->
+            adapter.submitList(dailyItems)
+            // RecyclerView가 비었을 때 TextView 보여주기
+            binding.tvEmpty.visibility = if (dailyItems.isEmpty()) View.VISIBLE else View.GONE
+        }
+
+        viewModel.loadUpcomingSchedules()
     }
 
-    private fun populateTimeline() {
-        val inflater = LayoutInflater.from(requireContext())
-        timelineContainer.removeAllViews()
 
-        scheduleList.forEachIndexed { index, workout ->
-            val nodeView = inflater.inflate(R.layout.item_journey_daynode, timelineContainer, false)
+    private fun showWorkoutDetails(dailyItem: DailyWorkoutItem) {
+        val dialog = BottomSheetDialog(requireContext())
+        val detailBinding = LayoutJourneyDaydetailBinding.inflate(layoutInflater)
+        dialog.setContentView(detailBinding.root)
 
-            val leftCard = nodeView.findViewById<View>(R.id.summaryCardLeft)
-            val rightCard = nodeView.findViewById<View>(R.id.summaryCardRight)
-            val activeCard = if (index % 2 == 0) rightCard else leftCard
-            val inactiveCard = if (index % 2 == 0) leftCard else rightCard
-            inactiveCard.visibility = View.GONE
-            activeCard.visibility = View.VISIBLE
+        detailBinding.tvDayTitle.text = dailyItem.dateLabel
+        detailBinding.exerciseListContainer.removeAllViews()
 
-            val tvDate = activeCard.findViewById<TextView>(R.id.tvDate)
-            val tvWorkoutSummary = activeCard.findViewById<TextView>(R.id.tvWorkoutSummary)
-            val tvXp = activeCard.findViewById<TextView>(R.id.tvXp)
-
-            tvDate.text = workout.date
-            tvWorkoutSummary.text = workout.exercises.joinToString(", ") { it.name }
-            tvXp.text = workout.xp
-
-            if (index == 0) activeCard.setBackgroundResource(R.drawable.card_glow_outer)
-
-            activeCard.setOnClickListener {
-                showWorkoutDetails(workout)
+        dailyItem.exercises.forEach { ex ->
+            val itemBinding = ItemExerciseBinding.inflate(layoutInflater)
+            itemBinding.tvExerciseEmoji.text = getEmoji(ex.name)
+            itemBinding.tvExerciseName.text = ex.name
+            itemBinding.tvProgressText.text = ex.status
+            itemBinding.tvExerciseDetails.text = when {
+                ex.targetCount != null -> "${ex.targetCount} reps"
+                ex.targetDuration != null -> "${ex.targetDuration} sec"
+                else -> ""
             }
-
-            timelineContainer.addView(nodeView)
-        }
-        val scrollView = view?.findViewById<ScrollView>(R.id.scrollTimeline)
-        scrollView?.post {
-            scrollView.fullScroll(View.FOCUS_DOWN)
-        }
-    }
-
-    private fun showWorkoutDetails(workout: WorkoutDay) {
-        val dialog = BottomSheetDialog(requireContext(), R.style.BottomSheetDialogTheme)
-        val view = layoutInflater.inflate(R.layout.layout_journey_daydetail, null)
-        dialog.setContentView(view)
-
-        val tvDayTitle = view.findViewById<TextView>(R.id.tvDayTitle)
-        val exerciseListContainer = view.findViewById<LinearLayout>(R.id.exerciseListContainer)
-        val btnClose = view.findViewById<View>(R.id.btnClose)
-
-        tvDayTitle.text = workout.date
-        btnClose.setOnClickListener { dialog.dismiss() }
-
-        workout.exercises.forEach { ex ->
-            val itemView = layoutInflater.inflate(R.layout.item_exercise, exerciseListContainer, false)
-            itemView.findViewById<TextView>(R.id.tvExerciseEmoji).text = ex.emoji
-            itemView.findViewById<TextView>(R.id.tvExerciseName).text = ex.name
-            itemView.findViewById<TextView>(R.id.tvExerciseDetails).text = ex.detail
-            itemView.findViewById<TextView>(R.id.tvProgressText).text = ex.status
-            exerciseListContainer.addView(itemView)
+            detailBinding.exerciseListContainer.addView(itemBinding.root)
         }
 
         dialog.show()
     }
 
-    private fun fetchScheduleFromServer() {
-        val prefs = requireContext().getSharedPreferences("auth", 0)
-        val token = prefs.getString("token", null) ?: return
-
-        lifecycleScope.launch {
-            try {
-                val response = RetrofitClient.journeyApiService.getUserSchedules("Bearer $token")
-
-                if (response.isSuccessful) {
-                    val data = response.body() ?: emptyList()
-
-                    // ✅ 오늘 날짜 구하기 (yyyy-MM-dd 형식으로)
-                    val today = java.time.LocalDate.now()
-
-                    // ✅ 오늘 이후(또는 오늘 포함) 데이터만 필터링
-                    val filtered = data.filter { workout ->
-                        try {
-                            val workoutDate = java.time.LocalDate.parse(workout.date)
-                            !workoutDate.isBefore(today) // 오늘보다 이전 날짜는 제외
-                        } catch (e: Exception) {
-                            false // 날짜 파싱 실패 시 제외
-                        }
-                    }
-
-                    // ✅ 서버 데이터 → UI용으로 매핑
-                    scheduleList = filtered.map { workout ->
-                        WorkoutDay(
-                            date = workout.date,
-                            xp = "+${workout.xp} XP",
-                            exercises = workout.exercises.map {
-                                Exercise("🏋️", it.name, it.detail, it.status)
-                            }
-                        )
-                    }
-
-                    populateTimeline()
-                } else {
-                    Log.e("Journey", "Server Error: ${response.code()} ${response.message()}")
-                }
-            } catch (e: Exception) {
-                Log.e("Journey", "Network error: ${e.localizedMessage}")
-            }
-        }
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
     }
-
 }

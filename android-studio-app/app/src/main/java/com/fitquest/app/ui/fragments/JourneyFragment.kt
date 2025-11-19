@@ -15,7 +15,7 @@ import com.fitquest.app.repository.ScheduleRepository
 import com.fitquest.app.ui.adapters.DailyWorkoutAdapter
 import com.fitquest.app.ui.viewmodels.JourneyViewModel
 import com.fitquest.app.ui.viewmodels.JourneyViewModelFactory
-import com.fitquest.app.util.ActivityUtils
+import com.fitquest.app.util.ActivityUtils.getEmoji
 import com.google.android.material.bottomsheet.BottomSheetDialog
 
 class JourneyFragment : Fragment() {
@@ -61,7 +61,7 @@ class JourneyFragment : Fragment() {
 
         dailyItem.exercises.forEach { ex ->
             val itemBinding = ItemExerciseBinding.inflate(layoutInflater)
-            itemBinding.tvExerciseEmoji.text = ActivityUtils.getEmoji(ex.name)
+            itemBinding.tvExerciseEmoji.text = getEmoji(ex.name)
             itemBinding.tvExerciseName.text = ex.name
             itemBinding.tvProgressText.text = ex.status
             itemBinding.tvExerciseDetails.text = when {

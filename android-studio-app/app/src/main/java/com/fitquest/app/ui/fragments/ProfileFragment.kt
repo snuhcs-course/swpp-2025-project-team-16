@@ -14,19 +14,10 @@ import com.fitquest.app.databinding.FragmentProfileBinding
 import com.fitquest.app.databinding.ItemExercisedoneBinding
 import com.fitquest.app.databinding.LayoutHistoryDetailBinding
 import com.fitquest.app.model.DailyHistoryItem
-import com.fitquest.app.repository.ScheduleRepository
 import com.fitquest.app.ui.adapters.HistoryAdapter
 import com.fitquest.app.ui.viewmodels.HistoryViewModel
 import com.fitquest.app.ui.viewmodels.HistoryViewModelFactory
-import com.fitquest.app.ui.viewmodels.ScheduleViewModel
-import com.fitquest.app.ui.viewmodels.ScheduleViewModelFactory
 import com.fitquest.app.util.ActivityUtils.getEmoji
-import com.fitquest.app.util.ActivityUtils.calculateDailyHistoryAverageCompletion
-import com.fitquest.app.util.ActivityUtils.calculateDailyHistoryTotalDuration
-import com.fitquest.app.util.ActivityUtils.calculateDailyHistoryTotalEarnedXp
-import com.fitquest.app.util.ActivityUtils.calculateScheduleCompletionPercent
-import com.fitquest.app.util.ActivityUtils.calculateScheduleDuration
-import com.fitquest.app.util.ActivityUtils.calculateScheduleEarnedXp
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import kotlinx.coroutines.launch
@@ -154,10 +145,10 @@ class ProfileFragment : Fragment() {
         dialog.setContentView(detailBinding.root)
 
         detailBinding.tvDayTitle.text = dailyItem.dateLabel
-        detailBinding.tvTotalXp.text = "+${calculateDailyHistoryTotalEarnedXp(dailyItem.exercises)} XP"
-        detailBinding.tvCompletion.text = "+${calculateDailyHistoryAverageCompletion(dailyItem.exercises)} %"
-        detailBinding.tvTotalTime.text = "+${calculateDailyHistoryTotalDuration(dailyItem.exercises)} min"
-        detailBinding.exercisedoneListContainer.removeAllViews()
+//        detailBinding.tvTotalXp.text = "+${calculateDailyHistoryTotalEarnedXp(dailyItem.exercises)} XP"
+//        detailBinding.tvCompletion.text = "+${calculateDailyHistoryAverageCompletion(dailyItem.exercises)} %"
+//        detailBinding.tvTotalTime.text = "+${calculateDailyHistoryTotalDuration(dailyItem.exercises)} min"
+//        detailBinding.exercisedoneListContainer.removeAllViews()
 
         dailyItem.exercises.forEach { ex ->
             val itemBinding = ItemExercisedoneBinding.inflate(layoutInflater)
@@ -169,10 +160,10 @@ class ProfileFragment : Fragment() {
                 else -> ""
             }
             itemBinding.tvExerciseDetails.text = "${ex.status}: ${text}"
-            itemBinding.tvXp.text = "${calculateScheduleEarnedXp(ex)} XP"
-            itemBinding.tvPercent.text = "${calculateScheduleCompletionPercent(ex)} %"
-            itemBinding.tvTime.text = "${calculateScheduleDuration(ex)} min"
-            detailBinding.exercisedoneListContainer.addView(itemBinding.root)
+//            itemBinding.tvXp.text = "${calculateScheduleEarnedXp(ex)} XP"
+//            itemBinding.tvPercent.text = "${calculateScheduleCompletionPercent(ex)} %"
+//            itemBinding.tvTime.text = "${calculateScheduleDuration(ex)} min"
+//            detailBinding.exercisedoneListContainer.addView(itemBinding.root)
         }
 
         dialog.show()

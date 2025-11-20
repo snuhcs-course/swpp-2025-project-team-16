@@ -23,10 +23,7 @@ class HistoryViewModel(private val repository: ScheduleRepository) : ViewModel()
             val schedules = repository.getSchedules()
 
             val past = schedules.filter {
-                val scheduleEnd = LocalDateTime.of(
-                    LocalDate.parse(it.scheduledDate),
-                    LocalTime.parse(it.endTime)
-                )
+                val scheduleEnd = LocalDateTime.of(it.scheduledDate, it.endTime)
                 scheduleEnd.isBefore(now)
             }
 
@@ -34,7 +31,7 @@ class HistoryViewModel(private val repository: ScheduleRepository) : ViewModel()
 
             val dailyItems = grouped.map { (date, scheduleList) ->
                 DailyHistoryItem(
-                    date = LocalDate.parse(date),
+                    date = date,
                     dateLabel = formatDate(date),
                     exercises = scheduleList
                 )

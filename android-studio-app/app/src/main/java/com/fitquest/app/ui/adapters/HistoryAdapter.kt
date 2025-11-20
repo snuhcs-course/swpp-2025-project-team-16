@@ -8,10 +8,6 @@ import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.fitquest.app.databinding.ItemHistorynodeBinding
 import com.fitquest.app.model.DailyHistoryItem
-import com.fitquest.app.util.ActivityUtils.calculateDailyHistoryAverageCompletion
-import com.fitquest.app.util.ActivityUtils.calculateDailyHistoryTotalDuration
-import com.fitquest.app.util.ActivityUtils.calculateDailyHistoryTotalEarnedXp
-import com.fitquest.app.util.ActivityUtils.formatExercisesSummary
 
 class HistoryAdapter(
     private val onItemClick: (DailyHistoryItem) -> Unit
@@ -36,10 +32,10 @@ class HistoryAdapter(
             val currentCardBinding = if (position % 2 == 0) rightCardBinding else leftCardBinding
 
             currentCardBinding.tvDate.text = dailyItem.dateLabel
-            currentCardBinding.tvWorkoutSummary.text = formatExercisesSummary(dailyItem)
-            currentCardBinding.tvXp.text = "+${calculateDailyHistoryTotalEarnedXp(dailyItem.exercises)} XP"
-            currentCardBinding.tvPercent.text = "${calculateDailyHistoryAverageCompletion(dailyItem.exercises)} %"
-            currentCardBinding.tvTime.text = "${calculateDailyHistoryTotalDuration(dailyItem.exercises)} min"
+            //currentCardBinding.tvWorkoutSummary.text = formatExercisesSummary(dailyItem)
+            //currentCardBinding.tvXp.text = "+${calculateDailyHistoryTotalEarnedXp(dailyItem.exercises)} XP"
+            //currentCardBinding.tvPercent.text = "${calculateDailyHistoryAverageCompletion(dailyItem.exercises)} %"
+            //currentCardBinding.tvTime.text = "${calculateDailyHistoryTotalDuration(dailyItem.exercises)} min"
 
             binding.root.setOnClickListener { onItemClick(dailyItem) }
         }

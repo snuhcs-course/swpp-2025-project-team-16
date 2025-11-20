@@ -10,6 +10,7 @@ import kotlinx.coroutines.launch
 import org.threeten.bp.LocalDate
 import org.threeten.bp.LocalDateTime
 import org.threeten.bp.LocalTime
+import org.threeten.bp.ZoneId
 
 class JourneyViewModel(private val repository: ScheduleRepository) : ViewModel() {
 
@@ -18,11 +19,14 @@ class JourneyViewModel(private val repository: ScheduleRepository) : ViewModel()
 
     fun loadUpcomingSchedules() {
         viewModelScope.launch {
-            val now = LocalDateTime.now()
+            val now = LocalDateTime.now(ZoneId.of("Asia/Seoul"))
             val schedules = repository.getSchedules()
 
             val upcoming = schedules.filter {
                 val scheduleEnd = LocalDateTime.of(it.scheduledDate, it.endTime)
+                val isUpcoming = scheduleEnd.isAfter(now)
+                println("Schedule: ${it.scheduledDate} ${it.endTime}, Now: $now, IsUpcoming: $isUpcoming")
+                isUpcoming
                 scheduleEnd.isAfter(now) || scheduleEnd.isEqual(now)
             }
 

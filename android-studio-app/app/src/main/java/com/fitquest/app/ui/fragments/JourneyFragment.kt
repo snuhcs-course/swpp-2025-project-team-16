@@ -6,8 +6,8 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
+import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.fitquest.app.R
 import com.fitquest.app.data.remote.RetrofitClient
 import com.fitquest.app.databinding.FragmentJourneyBinding
 import com.fitquest.app.databinding.ItemScheduleBinding
@@ -22,6 +22,8 @@ import com.fitquest.app.util.ActivityUtils.getLabel
 import com.fitquest.app.util.DateUtils.formatDate
 import com.fitquest.app.util.DateUtils.formatTime
 import com.google.android.material.bottomsheet.BottomSheetDialog
+import org.threeten.bp.LocalDateTime
+import org.threeten.bp.ZoneId
 
 class JourneyFragment() : Fragment() {
 
@@ -69,6 +71,8 @@ class JourneyFragment() : Fragment() {
         detailBinding.tvDayTitle.text = formatDate(dailyItem.date)
         detailBinding.exerciseListContainer.removeAllViews()
 
+        val currentTime = LocalDateTime.now(ZoneId.of("Asia/Seoul"))
+
         dailyItem.schedules.forEach { schedule ->
             val itemBinding = ItemScheduleBinding.inflate(layoutInflater)
             itemBinding.tvActivityLabel.text = getLabel(schedule.activity)
@@ -80,13 +84,34 @@ class JourneyFragment() : Fragment() {
                 else -> ""
             }
 
-            // itemBinding.btnStartSession.setOnClickListener { onStartSession(schedule) }
+            if (currentTime.isAfter(LocalDateTime.of(schedule.scheduledDate, schedule.startTime)) && currentTime.isBefore(LocalDateTime.of(schedule.scheduledDate, schedule.endTime))) {
+                itemBinding.btnStartSession.visibility = View.VISIBLE
+                itemBinding.btnStartSession.setOnClickListener {
+                    onStartSession(schedule)
+                    dialog.dismiss()
+                }
+            } else {
+                itemBinding.btnStartSession.visibility = View.GONE
+            }
 
             detailBinding.exerciseListContainer.addView(itemBinding.root)
         }
 
         dialog.show()
     }
+
+    private fun onStartSession(schedule: Schedule) {
+        val repsTarget = schedule.repsTarget ?: -1
+        val durationTarget = schedule.durationTarget ?: -1
+
+        val action = JourneyFragmentDirections.actionJourneyFragmentToAiCoachFragment(
+            scheduleId = schedule.id!!,
+            activityKey = schedule.activity.lowercase(),
+            repsTarget = repsTarget,
+            durationTarget = durationTarget)
+        findNavController().navigate(action)
+    }
+
 
     override fun onDestroyView() {
         super.onDestroyView()

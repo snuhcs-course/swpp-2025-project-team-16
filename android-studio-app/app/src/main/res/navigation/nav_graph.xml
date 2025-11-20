@@ -9,6 +9,13 @@
         android:id="@+id/journeyFragment"
         android:name="com.fitquest.app.ui.fragments.JourneyFragment"
         android:label="Journey" />
+        <action
+            android:id="@+id/action_journeyFragment_to_aiCoachFragment"
+            app:destination="@id/aiCoachFragment"
+            app:enterAnim="@android:anim/slide_in_left"
+            app:exitAnim="@android:anim/slide_out_right"
+            app:popEnterAnim="@android:anim/slide_in_left"
+            app:popExitAnim="@android:anim/slide_out_right" />
 
     <!-- Schedule Fragment -->
     <fragment

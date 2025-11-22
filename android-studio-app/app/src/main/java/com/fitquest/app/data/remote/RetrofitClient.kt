@@ -77,4 +77,7 @@ object RetrofitClient {
         retrofit.create(SessionApiService::class.java)
     }
 
+    val poseAnalysisApiService: PoseAnalysisApiService by lazy {
+        retrofit.create(PoseAnalysisApiService::class.java)
+    }
 }

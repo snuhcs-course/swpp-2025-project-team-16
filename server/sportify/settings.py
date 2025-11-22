@@ -38,6 +38,7 @@ ALLOWED_HOSTS = ["127.0.0.1", "localhost", "10.0.2.2", "147.46.78.29"]
 # Application definition
 
 INSTALLED_APPS = [
+    'pose',
     'schedule',
     'accounts',
     'django.contrib.admin',

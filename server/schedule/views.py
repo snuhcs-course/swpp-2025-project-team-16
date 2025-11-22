@@ -17,6 +17,7 @@ from openai import OpenAI, OpenAIError
 from .models import Schedule, Session, Feedback, ActivityType, ACTIVITY_TYPE_MAP
 from .serializers import ScheduleSerializer, SessionSerializer, FeedbackSerializer
 from .utils.feedback import generate_feedback_from_schedule
+from .tasks import mark_missed_schedules
 
 from django.utils.dateparse import parse_date, parse_time
 
@@ -390,3 +391,12 @@ def schedules_are_future(schedule_list):
             return False
 
     return True
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def mark_missed_schedules_view(request):
+    try:
+        mark_missed_schedules()
+        return Response({"detail": "Missed schedules processed"}, status=status.HTTP_200_OK)
+    except Exception as e:
+        return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

@@ -2,9 +2,16 @@ package com.fitquest.app
 
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
+import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.lifecycleScope
+import com.fitquest.app.data.remote.RetrofitClient
 import com.fitquest.app.ui.fragments.login.*
+import com.fitquest.app.ui.viewmodels.LoginViewModel
+import com.fitquest.app.ui.viewmodels.LoginViewModelFactory
+import kotlinx.coroutines.launch
 
 /**
  * LoginActivity handles the multi-step login/signup flow
@@ -15,6 +22,10 @@ import com.fitquest.app.ui.fragments.login.*
  * 2b. If new -> SignupStep1Fragment -> SignupStep2Fragment
  */
 class LoginActivity : AppCompatActivity() {
+
+    private val loginViewModel: LoginViewModel by viewModels {
+        LoginViewModelFactory(RetrofitClient.scheduleApiService)
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -54,9 +65,17 @@ class LoginActivity : AppCompatActivity() {
      * Complete login and navigate to MainActivity
      */
     fun completeLogin() {
-        val intent = Intent(this, MainActivity::class.java)
-        startActivity(intent)
-        finish()
+        lifecycleScope.launch {
+            try {
+                loginViewModel.markMissedSchedules()
+            } catch (e: Exception) {
+                Log.e("LoginActivity", "Failed to mark missed schedules: ${e.localizedMessage}")
+            } finally {
+                val intent = Intent(this@LoginActivity, MainActivity::class.java)
+                startActivity(intent)
+                finish()
+            }
+        }
     }
 
     private fun navigateToFragment(fragment: Fragment) {

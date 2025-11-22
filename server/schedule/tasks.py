@@ -36,10 +36,11 @@ def mark_missed_schedules():
 
             s.save()
 
-            # --- 피드백 생성 or 업데이트 ---
-            feedback_text = generate_feedback_from_schedule(s.user, s)
-            Feedback.objects.update_or_create(
-                user=s.user,
-                schedule=s,
-                defaults={"summary_text": feedback_text}
-            )
+            # feedback_exists = Feedback.objects.filter(user=s.user, schedule=s).exists()
+            # if not feedback_exists:
+            #     feedback_text = generate_feedback_from_schedule(s.user, s)
+            #     Feedback.objects.create(
+            #         user=s.user,
+            #         schedule=s,
+            #         summary_text=feedback_text
+            #     )

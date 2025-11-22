@@ -8,6 +8,10 @@ import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.fitquest.app.databinding.ItemHistorynodeBinding
 import com.fitquest.app.model.DailyHistoryItem
+import com.fitquest.app.util.ActivityUtils.calculateAverageCompletionPercent
+import com.fitquest.app.util.ActivityUtils.calculateTotalEarnedXp
+import com.fitquest.app.util.ActivityUtils.formatActivitiesSummary
+import com.fitquest.app.util.DateUtils.formatDate
 
 class HistoryAdapter(
     private val onItemClick: (DailyHistoryItem) -> Unit
@@ -31,11 +35,10 @@ class HistoryAdapter(
 
             val currentCardBinding = if (position % 2 == 0) rightCardBinding else leftCardBinding
 
-            currentCardBinding.tvDate.text = dailyItem.dateLabel
-            //currentCardBinding.tvWorkoutSummary.text = formatExercisesSummary(dailyItem)
-            //currentCardBinding.tvXp.text = "+${calculateDailyHistoryTotalEarnedXp(dailyItem.exercises)} XP"
-            //currentCardBinding.tvPercent.text = "${calculateDailyHistoryAverageCompletion(dailyItem.exercises)} %"
-            //currentCardBinding.tvTime.text = "${calculateDailyHistoryTotalDuration(dailyItem.exercises)} min"
+            currentCardBinding.tvDate.text = formatDate(dailyItem.date)
+            currentCardBinding.tvWorkoutSummary.text = formatActivitiesSummary(dailyItem.schedules, dailyItem.sessions)
+            currentCardBinding.tvXp.text = "+${calculateTotalEarnedXp(dailyItem.schedules, dailyItem.sessions)} XP"
+            currentCardBinding.tvPercent.text = "${calculateAverageCompletionPercent(dailyItem.schedules)} %"
 
             binding.root.setOnClickListener { onItemClick(dailyItem) }
         }
@@ -43,7 +46,7 @@ class HistoryAdapter(
 
     class DiffCallback : DiffUtil.ItemCallback<DailyHistoryItem>() {
         override fun areItemsTheSame(oldItem: DailyHistoryItem, newItem: DailyHistoryItem) =
-            oldItem.dateLabel == newItem.dateLabel
+            oldItem.date == newItem.date
 
         override fun areContentsTheSame(oldItem: DailyHistoryItem, newItem: DailyHistoryItem) =
             oldItem == newItem

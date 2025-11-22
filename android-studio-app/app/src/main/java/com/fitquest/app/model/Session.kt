@@ -1,6 +1,7 @@
 package com.fitquest.app.model
 
 import com.google.gson.annotations.SerializedName
+import org.threeten.bp.LocalDateTime
 
 data class Session(
     val id: Int? = null,
@@ -14,5 +15,5 @@ data class Session(
     val schedule: Int? = null,
 
     @SerializedName("created_at")
-    val createdAt: String? = null
+    val createdAt: LocalDateTime? = null
 )

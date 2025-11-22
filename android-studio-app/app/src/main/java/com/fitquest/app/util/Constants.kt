@@ -3,6 +3,7 @@ package com.fitquest.app.util
 import com.fitquest.app.model.DailyHistoryItem
 import com.fitquest.app.model.DailyWorkoutItem
 import com.fitquest.app.model.Schedule
+import com.fitquest.app.model.Session
 import com.fitquest.app.model.WorkoutItem
 import org.threeten.bp.Duration
 import org.threeten.bp.LocalTime
@@ -47,78 +48,78 @@ object ActivityUtils {
     fun getTargetType(activity: String): TargetType? =
         activityMetadataMap[activity.lowercase()]?.targetType
 
-    fun formatActivitiesSummary(schedules: List<Schedule>): String {
-        val activityNames = schedules.map { it.activity }
-        val counts = activityNames.groupingBy { it }.eachCount()
-        return counts.entries.joinToString(", ") { (name, count) ->
-            if (count > 1) "$name * $count set" else name
+    fun formatActivitiesSummary(
+        schedules: List<Schedule>,
+        sessions: List<Session> = emptyList()
+    ): String {
+
+        val activityCountMap = mutableMapOf<String, Int>()
+
+        schedules.forEach { schedule ->
+            val key = schedule.activity
+            activityCountMap[key] = (activityCountMap[key] ?: 0) + 1
         }
+
+        sessions.forEach { session ->
+            val key = session.activity
+            activityCountMap[key] = (activityCountMap[key] ?: 0) + 1
+        }
+
+        return activityCountMap.entries.joinToString(", ") { (activity, count) ->
+            if (count > 1) "$activity x $count" else activity
+        }
+    }
+
+    fun calculateXp(targetType: TargetType?, actualValue: Int?): Int {
+        val value = actualValue ?: 0
+        return when (targetType) {
+            TargetType.REPS -> value * 10
+            TargetType.DURATION -> value
+            else -> 0
+        }
+    }
+
+    fun calculateXp(activity: String, actualValue: Int?): Int {
+        val targetType = getTargetType(activity)
+        return calculateXp(targetType, actualValue)
+    }
+
+    fun calculateTotalEarnedXpForSchedules(schedules: List<Schedule>): Int {
+        return schedules.sumOf { calculateEarnedXpForSchedule(it) }
+    }
+
+    fun calculateTotalEarnedXpForSessions(sessions: List<Session>): Int {
+        return sessions.sumOf { calculateEarnedXpForSession(it) }
     }
 
     fun calculateTargetXp(schedule: Schedule): Int {
         val targetType = getTargetType(schedule.activity)
-        return when (targetType) {
-            TargetType.REPS -> (schedule.repsTarget ?: 0) * 10
-            TargetType.DURATION -> schedule.durationTarget ?: 0
-            else -> 0
-        }
+        val actualValue = if (targetType == TargetType.REPS) schedule.repsTarget else schedule.durationTarget
+        return calculateXp(targetType, actualValue)
     }
 
     fun calculateTotalTargetXp(schedules: List<Schedule>): Int {
         return schedules.sumOf { calculateTargetXp(it) }
     }
 
-    fun calculateEarnedXp(schedule: Schedule): Int {
+    fun calculateEarnedXpForSchedule(schedule: Schedule): Int {
         val targetType = getTargetType(schedule.activity)
-        return when (targetType) {
-            TargetType.REPS -> (schedule.repsDone ?: 0) * 10
-            TargetType.DURATION -> schedule.durationDone ?: 0
-            else -> 0
-        }
+        val actualValue = if (targetType == TargetType.REPS) schedule.repsDone else schedule.durationDone
+        return calculateXp(targetType, actualValue)
     }
 
-    fun calculateTotalEarnedXp(schedules: List<Schedule>): Int {
-        return schedules.sumOf { calculateEarnedXp(it) }
+    fun calculateEarnedXpForSession(session: Session): Int {
+        val targetType = getTargetType(session.activity)
+        val actualValue = if (targetType == TargetType.REPS) session.repsCount else session.duration
+        return calculateXp(targetType, actualValue)
     }
 
-//    fun calculateWorkoutItemXp(item: WorkoutItem): Int {
-//        val targetType = getTargetType(item.name)
-//        return when (targetType) {
-//            TargetType.REPS -> (item.targetCount ?: 0) * 10
-//            TargetType.DURATION -> item.targetDuration ?: 0
-//            else -> 0
-//        }
-//    }
-//
-//    fun calculateScheduleTargetXp(schedule: Schedule): Int {
-//        val targetType = getTargetType(schedule.activity)
-//        return when (targetType) {
-//            TargetType.REPS -> (schedule.repsTarget ?: 0) * 10
-//            TargetType.DURATION -> schedule.durationTarget ?: 0
-//            else -> 0
-//        }
-//    }
-//
-//    fun calculateScheduleEarnedXp(schedule: Schedule): Int {
-//        val targetType = getTargetType(schedule.activity)
-//        return when (targetType) {
-//            TargetType.REPS -> (schedule.repsDone ?: 0) * 10
-//            TargetType.DURATION -> schedule.durationDone ?: 0
-//            else -> 0
-//        }
-//    }
-//
-//    fun calculateDailyWorkoutTotalXp(items: List<WorkoutItem>): Int {
-//        return items.sumOf { calculateWorkoutItemXp(it) }
-//    }
-//
-//    fun calculateDailyHistoryTotalTargetXp(schedules: List<Schedule>): Int {
-//        return schedules.sumOf { calculateScheduleTargetXp(it) }
-//    }
-//
-//    fun calculateDailyHistoryTotalEarnedXp(schedules: List<Schedule>): Int {
-//        return schedules.sumOf { calculateScheduleEarnedXp(it) }
-//    }
+    fun calculateTotalEarnedXp(
+        schedules: List<Schedule>,
+        sessions: List<Session> = emptyList()
+    ): Int {
+        return calculateTotalEarnedXpForSchedules(schedules) + calculateTotalEarnedXpForSessions(sessions)
+    }
 
     fun calculateCompletionPercent(schedule: Schedule): Int {
         val targetType = getTargetType(schedule.activity)
@@ -152,20 +153,4 @@ object ActivityUtils {
 
         return totalPercent / schedules.size
     }
-
-//    fun calculateScheduleDuration(schedule: Schedule): Int {
-//        val seconds = try {
-//            val start = LocalTime.parse(schedule.startTime)
-//            val end = LocalTime.parse(schedule.endTime)
-//            Duration.between(start, end).seconds.toInt()
-//        } catch (e: Exception) {
-//            0
-//        }
-//        return seconds / 60
-//    }
-//
-//    fun calculateDailyHistoryTotalDuration(schedules: List<Schedule>): Int {
-//        val totalMinutes = schedules.sumOf { calculateScheduleDuration(it) }
-//        return totalMinutes
-//    }
 }

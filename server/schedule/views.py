@@ -6,6 +6,7 @@ from django.db.models import F
 from django.shortcuts import get_object_or_404
 from django.conf import settings
 from django.core.exceptions import ValidationError
+from datetime import datetime, time
 from django.utils import timezone
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
@@ -110,6 +111,16 @@ def end_session(request, session_id):
     serializer = SessionSerializer(session)
     return Response(serializer.data, status=status.HTTP_200_OK)
 
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def sessions_view(request):
+    user = request.user
+
+    if request.method == 'GET':
+        sessions = Session.objects.filter(user=user).order_by('-created_at')
+        serializer = SessionSerializer(sessions, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
 # -----------------------------------
 # 🟢 Schedule CRUD
 # -----------------------------------
@@ -209,7 +220,10 @@ def schedules_auto_generate(request):
     # ✅ AI 프롬프트 생성 함수
     # ------------------
     def generate_prompt(history_data, num_sched, target_d):
-        today_str = timezone.localdate().isoformat()
+        now_local = timezone.localtime() 
+        now_str = now_local.isoformat()
+        today_str = now_local.date().isoformat()
+        logger.warning(f"오늘 날짜: {today_str}, 현재 시각: {now_str}")
         return f"""
         You are a professional fitness coach creating personalized workout schedules.
 
@@ -218,7 +232,7 @@ def schedules_auto_generate(request):
         - Recent history: {json.dumps(history_data, indent=2) if history_data else "No history available"}
 
         Task:
-        Generate {num_sched} realistic daily workout schedule(s) {f"for {target_d}" if target_d else f"starting from {today_str}"}.
+        Generate {num_sched} realistic daily workout schedule(s) {f"for {target_d}" if target_d else f"starting from {now_str}"}.
 
         Rules:
         1. {activity_rule}
@@ -228,12 +242,17 @@ def schedules_auto_generate(request):
         5. **Schedule Time Flexibility**: Set the 'start_time' and 'end_time' to create a wide, flexible window (e.g., 60-90 minutes) around the estimated short actual workout time (e.g., 10-20 minutes). This gives the user flexibility to fit the workout into their life.
         6. **Time Distribution**: Distribute the schedules across different times of the day (morning, noon, evening) to cover various opportunities, but avoid unreasonable times (e.g., 03:00 AM).
         7. **Conservative Quantity**: Since the user cannot delete or edit schedules, generate only a conservative number ({num_sched} schedules) that is manageable to avoid excessive 'missed' statuses.
+        8. The output format shown below is only an example of the required *structure*. You must follow the JSON format and key layout, but you should not copy or reuse the example values (such as times or numbers).
+        9. All generated schedules must be set after the current time ({now_str}). 
+           Do NOT generate schedules in the past (including earlier times on the same day). 
+           If the current time has already passed common workout windows (e.g., evening), 
+           generate schedules for the next valid day instead.
 
         Output Format (valid JSON only, no markdown):
         {{
             "schedules": [
                 {{
-                    "scheduled_date": "{today_str}",
+                    "scheduled_date": "YYYY-MM-DD",
                     "start_time": "08:00",
                     "end_time": "09:00",
                     "activity": "squat",
@@ -306,6 +325,10 @@ def schedules_auto_generate(request):
                     {"error": "An unexpected error occurred. Please try again."},
                     status=status.HTTP_500_INTERNAL_SERVER_ERROR
                 )
+    
+    if not schedules_are_future(schedule_data["schedules"]):
+        logger.warning("AI generated schedules in the past. Retrying...")
+        raise ValueError("Generated schedules are in the past")
 
     # ------------------
     # ✅ 스케줄 저장 로직 (재시도 성공 후 실행)
@@ -350,3 +373,20 @@ def schedules_auto_generate(request):
         logger.warning(f"Some schedules failed validation: {errors}")
     
     return Response(response_data["schedules"], status=status.HTTP_201_CREATED)
+
+def schedules_are_future(schedule_list):
+    now = timezone.localtime()
+    today = now.date()
+    now_time = now.time()
+
+    for s in schedule_list:
+        s_date = datetime.strptime(s["scheduled_date"], "%Y-%m-%d").date()
+        s_start = datetime.strptime(s["start_time"], "%H:%M").time()
+
+        if s_date > today:
+            continue
+        
+        if s_date == today and s_start < now_time:
+            return False
+
+    return True

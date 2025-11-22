@@ -14,13 +14,22 @@ import com.fitquest.app.databinding.FragmentProfileBinding
 import com.fitquest.app.databinding.ItemExercisedoneBinding
 import com.fitquest.app.databinding.LayoutHistoryDetailBinding
 import com.fitquest.app.model.DailyHistoryItem
+import com.fitquest.app.model.Schedule
+import com.fitquest.app.model.Session
 import com.fitquest.app.ui.adapters.HistoryAdapter
 import com.fitquest.app.ui.viewmodels.HistoryViewModel
 import com.fitquest.app.ui.viewmodels.HistoryViewModelFactory
+import com.fitquest.app.util.ActivityUtils.calculateAverageCompletionPercent
+import com.fitquest.app.util.ActivityUtils.calculateCompletionPercent
+import com.fitquest.app.util.ActivityUtils.calculateEarnedXpForSchedule
+import com.fitquest.app.util.ActivityUtils.calculateEarnedXpForSession
+import com.fitquest.app.util.ActivityUtils.calculateTotalEarnedXp
 import com.fitquest.app.util.ActivityUtils.getEmoji
+import com.fitquest.app.util.DateUtils.formatDate
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import kotlinx.coroutines.launch
+import org.threeten.bp.LocalTime
 
 class ProfileFragment : Fragment() {
 
@@ -28,7 +37,7 @@ class ProfileFragment : Fragment() {
     private val binding get() = _binding!!
 
     private val historyViewModel: HistoryViewModel by viewModels {
-        HistoryViewModelFactory(RetrofitClient.scheduleApiService)
+        HistoryViewModelFactory(RetrofitClient.scheduleApiService, RetrofitClient.sessionApiService)
     }
 
     private lateinit var historyAdapter: HistoryAdapter
@@ -55,12 +64,16 @@ class ProfileFragment : Fragment() {
         binding.recyclerHistory.adapter = historyAdapter
 
         historyViewModel.dailyHistories.observe(viewLifecycleOwner) { dailyItems ->
+            Log.d("ProfileFragment", "Loaded daily items: ${dailyItems.size}")
+            dailyItems.forEach { di ->
+                Log.d("ProfileFragment", "Date ${di.date}: schedules=${di.schedules.size}, sessions=${di.sessions.size}")
+            }
             historyAdapter.submitList(dailyItems)
             // RecyclerView가 비었을 때 TextView 보여주기
             binding.tvEmpty.visibility = if (dailyItems.isEmpty()) View.VISIBLE else View.GONE
         }
 
-        historyViewModel.loadPastSchedules()
+        historyViewModel.loadHistory()
 
         // 3. 랭킹 관련 UI 초기화 (기존 findViewById 로직 유지)
         rankOverlay = binding.rankOverlay.root
@@ -144,26 +157,48 @@ class ProfileFragment : Fragment() {
         val detailBinding = LayoutHistoryDetailBinding.inflate(layoutInflater)
         dialog.setContentView(detailBinding.root)
 
-        detailBinding.tvDayTitle.text = dailyItem.dateLabel
-//        detailBinding.tvTotalXp.text = "+${calculateDailyHistoryTotalEarnedXp(dailyItem.exercises)} XP"
-//        detailBinding.tvCompletion.text = "+${calculateDailyHistoryAverageCompletion(dailyItem.exercises)} %"
-//        detailBinding.tvTotalTime.text = "+${calculateDailyHistoryTotalDuration(dailyItem.exercises)} min"
-//        detailBinding.exercisedoneListContainer.removeAllViews()
+        detailBinding.tvDayTitle.text = formatDate(dailyItem.date)
+        detailBinding.tvTotalXp.text = "+${calculateTotalEarnedXp(dailyItem.schedules, dailyItem.sessions)} XP"
+        detailBinding.tvCompletion.text = "+${calculateAverageCompletionPercent(dailyItem.schedules)} %"
+        detailBinding.exercisedoneListContainer.removeAllViews()
 
-        dailyItem.exercises.forEach { ex ->
-            val itemBinding = ItemExercisedoneBinding.inflate(layoutInflater)
-            itemBinding.tvExerciseEmoji.text = getEmoji(ex.activity)
-            itemBinding.tvExerciseName.text = ex.activity
-            val text = when {
-                ex.repsTarget != null -> "${ex.repsDone} / ${ex.repsTarget} reps"
-                ex.durationTarget != null -> "${ex.durationDone} / ${ex.durationTarget} sec"
-                else -> ""
+        val combinedItems = (dailyItem.schedules.map { it as Any } + dailyItem.sessions.map { it as Any })
+            .sortedBy {
+                when(it) {
+                    is Schedule -> it.startTime
+                    is Session -> it.createdAt?.toLocalTime() ?: LocalTime.MIN
+                    else -> LocalTime.MIN
+                }
             }
-            itemBinding.tvExerciseDetails.text = "${ex.status}: ${text}"
-//            itemBinding.tvXp.text = "${calculateScheduleEarnedXp(ex)} XP"
-//            itemBinding.tvPercent.text = "${calculateScheduleCompletionPercent(ex)} %"
-//            itemBinding.tvTime.text = "${calculateScheduleDuration(ex)} min"
-//            detailBinding.exercisedoneListContainer.addView(itemBinding.root)
+
+        combinedItems.forEach { item ->
+            val itemBinding = ItemExercisedoneBinding.inflate(layoutInflater)
+            when(item) {
+                is Schedule -> {
+                    itemBinding.tvExerciseEmoji.text = getEmoji(item.activity)
+                    itemBinding.tvExerciseName.text = item.activity
+                    val text = when {
+                        item.repsTarget != null -> "${item.repsDone} / ${item.repsTarget} reps"
+                        item.durationTarget != null -> "${item.durationDone} / ${item.durationTarget} sec"
+                        else -> ""
+                    }
+                    itemBinding.tvExerciseDetails.text = "${item.status}: $text"
+                    itemBinding.tvXp.text = "${calculateEarnedXpForSchedule(item)} XP"
+                    itemBinding.tvPercent.text = "${calculateCompletionPercent(item)} %"
+                }
+                is Session -> {
+                    itemBinding.tvExerciseEmoji.text = getEmoji(item.activity)
+                    itemBinding.tvExerciseName.text = item.activity
+                    itemBinding.tvExerciseDetails.text = when {
+                        item.repsCount != null -> "${item.repsCount} reps"
+                        item.duration != null -> "${item.duration} sec"
+                        else -> ""
+                    }
+                    itemBinding.tvXp.text = "${calculateEarnedXpForSession(item)} XP"
+                    itemBinding.tvPercent.visibility = View.GONE
+                }
+            }
+            detailBinding.exercisedoneListContainer.addView(itemBinding.root)
         }
 
         dialog.show()

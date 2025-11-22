@@ -9,6 +9,9 @@ import java.io.IOException
 
 class SessionRepository(private val service: SessionApiService) {
 
+    suspend fun getSessions(): List<Session> =
+        service.getSessions()
+
     suspend fun startSession(activity: String, scheduleId: Int?): Result<Session> {
         return try {
             val req = StartSessionRequest(activity = activity, schedule_id = scheduleId)

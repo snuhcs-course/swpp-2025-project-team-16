@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<objectAnimator xmlns:android="http://schemas.android.com/apk/res/android"
+    android:propertyName="scaleY"
+    android:duration="420"
+    android:valueFrom="0"
+    android:valueTo="1"
+    android:valueType="floatType"
+    android:interpolator="@android:interpolator/fast_out_slow_in" />
+
+
+    <!-- 사용 예시 1: TextView에 왼쪽 아이콘으로 놓기 (res/layout/your_layout.xml) -->
+    <!-- Set drawableStart에 벡터를 넣고 drawableTint로 색을 제어하세요. -->
+    <!--
+    <TextView
+        android:id="@+id/tv_conquest_history"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:drawableStart="@drawable/ic_conquest_history"
+        android:drawablePadding="8dp"
+        android:drawableTint="?attr/colorOnBackground"
+        android:text="Conquest History"
+        android:gravity="center_vertical" />
+    -->
+
+
+    <!-- 사용 예시 2: AnimatedVector를 ImageView에 넣어 코드로 재생 -->
+    <!-- layout: -->
+    <!--
+    <ImageView
+        android:id="@+id/iv_conquest_history"
+        android:layout_width="24dp"
+        android:layout_height="24dp"
+        android:src="@drawable/avd_ic_conquest_history_grow"
+        android:contentDescription="Conquest History icon" />
+    -->
+
+    <!-- Kotlin 코드: 액티비티/프래그먼트에서 애니메이션 시작 -->
+    <!--
+    val iv = findViewById<ImageView>(R.id.iv_conquest_history)
+    val drawable = iv.drawable
+    if (drawable is android.graphics.drawable.AnimatedVectorDrawable) {
+        drawable.start()
+    } else if (drawable is androidx.vectordrawable.graphics.drawable.AnimatedVectorDrawableCompat) {
+        drawable.start()
+    }
+    -->
+
+
+    <!-- 팁 -->
+    <!-- - 아이콘 기본 크기는 24dp 권장. TextView에 넣을 땐 android:drawableStart를 사용하세요.
+         - 색 변경은 drawableTint(레이아웃)나 android:tint 속성(벡터 내부)을 사용하세요.
+         - 아이콘이 너무 얇으면 strokeWidth를 2.2 등으로 조절하세요.
+         - 애니메이션을 여러 번 반복하거나 reverse 하려면 objectAnimator에 android:repeatCount/ android:repeatMode 추가하세요. -->

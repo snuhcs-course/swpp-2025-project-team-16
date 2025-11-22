@@ -12,6 +12,7 @@ import com.fitquest.app.repository.ScheduleRepository
 class LoginViewModel(private val scheduleRepository: ScheduleRepository) : ViewModel() {
 
     suspend fun markMissedSchedules() = scheduleRepository.markMissedSchedules()
+    suspend fun autoGenerateSchedules() = scheduleRepository.autoGenerateSchedules()
 
 //    private val _loginState = MutableLiveData<LoginState>()
 //    val loginState: LiveData<LoginState> = _loginState

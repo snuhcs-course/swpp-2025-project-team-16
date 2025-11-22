@@ -68,6 +68,7 @@ class LoginActivity : AppCompatActivity() {
         lifecycleScope.launch {
             try {
                 loginViewModel.markMissedSchedules()
+                loginViewModel.autoGenerateSchedules()
             } catch (e: Exception) {
                 Log.e("LoginActivity", "Failed to mark missed schedules: ${e.localizedMessage}")
             } finally {

@@ -13,6 +13,8 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework import status
 from openai import OpenAI, OpenAIError
+from rest_framework.request import Request
+from rest_framework.test import APIRequestFactory, force_authenticate
 
 from .models import Schedule, Session, Feedback, ActivityType, ACTIVITY_TYPE_MAP
 from .serializers import ScheduleSerializer, SessionSerializer, FeedbackSerializer
@@ -260,7 +262,7 @@ def schedules_auto_generate(request):
                     "reps_target": 25
                 }},
                 {{
-                    "scheduled_date": "{today_str}",
+                    "scheduled_date": "YYYY-MM-DD",
                     "start_time": "18:30",
                     "end_time": "19:30",
                     "activity": "plank",
@@ -400,3 +402,48 @@ def mark_missed_schedules_view(request):
         return Response({"detail": "Missed schedules processed"}, status=status.HTTP_200_OK)
     except Exception as e:
         return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+AUTO_GENERATE_DAYS = 4
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def auto_generate_schedules_view(request):
+    user = request.user
+    today = timezone.localdate()
+    
+    existing_dates = Schedule.objects.filter(
+        user=user,
+        scheduled_date__gte=today,
+        scheduled_date__lte=today + timedelta(days=AUTO_GENERATE_DAYS-1)
+    ).values_list('scheduled_date', flat=True)
+
+    missing_dates = [
+        today + timedelta(days=i)
+        for i in range(AUTO_GENERATE_DAYS)
+        if (today + timedelta(days=i)) not in existing_dates
+    ]
+
+    created_schedules = []
+
+    factory = APIRequestFactory()
+    for date in missing_dates:
+        req = factory.post(
+            '/schedules/auto-generate/',
+            data={"target_date": str(date), "num_schedules": 3},
+            format='json'
+        )
+        force_authenticate(req, user=user)
+        resp = schedules_auto_generate(req)
+        if resp.status_code in [200, 201]:
+            created_schedules.extend(resp.data)
+        else:
+            logger.warning(f"Failed to auto-generate schedules for {date}: {resp.data}")
+
+    return Response(
+        {
+            "created_count": len(created_schedules),
+            "dates_generated": [s['scheduled_date'] for s in created_schedules]
+        },
+        status=status.HTTP_201_CREATED
+    )

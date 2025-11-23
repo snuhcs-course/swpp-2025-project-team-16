@@ -17,7 +17,7 @@ def generate_feedback_from_schedule(user, schedule):
     else:
         raise ValueError("Schedule has no target; cannot generate feedback.")
     
-    prompt = f"""
+    prompt_detail = f"""
         You are an AI fitness coach.
 
         ### User & Workout Information

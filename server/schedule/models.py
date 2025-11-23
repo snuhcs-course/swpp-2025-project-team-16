@@ -75,7 +75,7 @@ class Session(models.Model):
 class Feedback(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='feedbacks')
     schedule = models.OneToOneField(Schedule, on_delete=models.CASCADE, related_name='feedback')
-    summary_text = models.TextField(blank=True)
+    summary_text = models.TextField(blank=True, db_collation='utf8mb4_unicode_ci')
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:

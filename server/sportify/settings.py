@@ -96,6 +96,11 @@ DATABASES = {
         'OPTIONS': {
             'unix_socket': '/tmp/mysql.sock',
             'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
+            'charset': 'utf8mb4',
+        },
+        'TEST': {
+            'CHARSET': 'utf8mb4',
+            'COLLATION': 'utf8mb4_unicode_ci',
         },
     }
 }

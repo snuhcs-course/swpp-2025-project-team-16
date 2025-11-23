@@ -20,4 +20,7 @@ interface ScheduleApiService {
 
     @POST("schedules/auto-generate/")
     suspend fun autoGenerateSchedules(): List<Schedule>
+
+    @POST("schedules/mark-missed/")
+    suspend fun markMissedSchedules()
 }

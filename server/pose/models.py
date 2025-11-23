@@ -1,3 +1,14 @@
 from django.db import models
+from django.conf import settings
 
-# Create your models here.
+class PoseAnalysis(models.Model):
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    schedule = models.ForeignKey('schedule.Schedule', on_delete=models.CASCADE, null=True, blank=True)
+    session = models.ForeignKey('schedule.Session', on_delete=models.CASCADE, null=True, blank=True)
+    image_url = models.URLField(blank=True, null=True)
+    pose_data = models.JSONField(blank=True, null=True)
+    ai_comment = models.TextField(blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        indexes = [models.Index(fields=['user'])]

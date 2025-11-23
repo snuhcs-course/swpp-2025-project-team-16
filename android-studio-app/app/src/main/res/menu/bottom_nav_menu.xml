@@ -3,17 +3,17 @@
     <item
         android:id="@+id/journeyFragment"
         android:icon="@drawable/ic_journey"
-        android:title="Journey" />
+        android:title="Quest" />
 
     <item
         android:id="@+id/scheduleFragment"
         android:icon="@drawable/ic_schedule"
-        android:title="Schedule" />
+        android:title="Plan" />
 
     <item
         android:id="@+id/aiCoachFragment"
         android:icon="@drawable/ic_ai_coach"
-        android:title="AI Coach" />
+        android:title="Train" />
 
     <item
         android:id="@+id/poseFragment"
@@ -23,5 +23,5 @@
     <item
         android:id="@+id/profileFragment"
         android:icon="@drawable/ic_profile"
-        android:title="Profile" />
+        android:title="Hero" />
 </menu>

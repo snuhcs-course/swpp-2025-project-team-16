@@ -22,11 +22,11 @@ import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.camera.core.*
 import androidx.camera.lifecycle.ProcessCameraProvider
-import androidx.camera.view.PreviewView
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.exifinterface.media.ExifInterface
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import com.fitquest.app.R
 import com.fitquest.app.PoseResultActivity
@@ -35,7 +35,6 @@ import com.fitquest.app.data.remote.RetrofitClient
 import com.fitquest.app.util.ActivityUtils
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import java.io.ByteArrayOutputStream
 import java.io.File
 import java.util.concurrent.ExecutorService
@@ -75,11 +74,10 @@ class PoseFragment : Fragment() {
     private var shouldResetCameraOnResume: Boolean = false
 
     override fun onCreateView(
-        inflater: LayoutInflater,
-        container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ): View? {
-        return inflater.inflate(R.layout.fragment_pose, container, false)
+        inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
+    ): View {
+        _binding = FragmentPoseBinding.inflate(inflater, container, false)
+        return binding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -207,12 +205,12 @@ class PoseFragment : Fragment() {
         val provider = cameraProvider ?: return
 
         val preview = Preview.Builder().build().also {
-            it.setSurfaceProvider(previewView.surfaceProvider)
+            it.setSurfaceProvider(binding.cameraPreview.surfaceProvider)
         }
 
         imageCapture = ImageCapture.Builder()
             .setCaptureMode(ImageCapture.CAPTURE_MODE_MINIMIZE_LATENCY)
-            .setTargetRotation(previewView.display?.rotation ?: Surface.ROTATION_0)
+            .setTargetRotation(binding.cameraPreview.display?.rotation ?: Surface.ROTATION_0)
             .build()
 
         val selector = CameraSelector.Builder()
@@ -243,9 +241,9 @@ class PoseFragment : Fragment() {
 
     // ================= COUNTDOWN =================
     private fun startCountdownAndCapture() {
-        tvCountdown.visibility = View.VISIBLE
-        btnCapture.isEnabled = false
         var seconds = 10
+        binding.tvCountdown.visibility = View.VISIBLE
+        binding.btnCapture.isEnabled = false
 
         countdownTimer?.cancel()
         countdownTimer = object : CountDownTimer(10_000, 1000) {
@@ -255,9 +253,9 @@ class PoseFragment : Fragment() {
             }
 
             override fun onFinish() {
-                tvCountdown.visibility = View.GONE
+                binding.tvCountdown.visibility = View.GONE
                 capturePhoto()
-                btnCapture.isEnabled = true
+                binding.btnCapture.isEnabled = true
             }
         }.start()
     }
@@ -340,8 +338,8 @@ class PoseFragment : Fragment() {
         // 카메라 해제 & 버튼 비활성화
         cameraProvider?.unbindAll()
         imageCapture = null
-        btnCapture.isEnabled = false
-        btnSwitchCamera.isEnabled = false
+        binding.btnCapture.isEnabled = false
+        binding.btnSwitchCamera.isEnabled = false
 
         val base64 = bitmapToBase64(bitmap)
         val fullUrl = "http://147.46.78.29:8004/pose/evaluate_posture/"
@@ -492,8 +490,9 @@ class PoseFragment : Fragment() {
     override fun onDestroyView() {
         super.onDestroyView()
         countdownTimer?.cancel()
-        cameraExecutor.shutdown()
         orientationListener?.disable()
+        cameraExecutor.shutdown()
+        _binding = null
     }
 
     companion object {

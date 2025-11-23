@@ -14,22 +14,26 @@ import com.fitquest.app.databinding.FragmentProfileBinding
 import com.fitquest.app.databinding.ItemExercisedoneBinding
 import com.fitquest.app.databinding.LayoutHistoryDetailBinding
 import com.fitquest.app.model.DailyHistoryItem
-import com.fitquest.app.repository.ScheduleRepository
+import com.fitquest.app.model.Schedule
+import com.fitquest.app.model.Session
 import com.fitquest.app.ui.adapters.HistoryAdapter
 import com.fitquest.app.ui.viewmodels.HistoryViewModel
 import com.fitquest.app.ui.viewmodels.HistoryViewModelFactory
-import com.fitquest.app.ui.viewmodels.ScheduleViewModel
-import com.fitquest.app.ui.viewmodels.ScheduleViewModelFactory
+import com.fitquest.app.ui.viewmodels.UserViewModel
+import com.fitquest.app.ui.viewmodels.UserViewModelFactory
+import com.fitquest.app.util.ActivityUtils.calculateAverageCompletionPercent
+import com.fitquest.app.util.ActivityUtils.calculateCompletionPercent
+import com.fitquest.app.util.ActivityUtils.calculateEarnedXpForSchedule
+import com.fitquest.app.util.ActivityUtils.calculateEarnedXpForSession
+import com.fitquest.app.util.ActivityUtils.calculateTotalEarnedXp
 import com.fitquest.app.util.ActivityUtils.getEmoji
-import com.fitquest.app.util.ActivityUtils.calculateDailyHistoryAverageCompletion
-import com.fitquest.app.util.ActivityUtils.calculateDailyHistoryTotalDuration
-import com.fitquest.app.util.ActivityUtils.calculateDailyHistoryTotalEarnedXp
-import com.fitquest.app.util.ActivityUtils.calculateScheduleCompletionPercent
-import com.fitquest.app.util.ActivityUtils.calculateScheduleDuration
-import com.fitquest.app.util.ActivityUtils.calculateScheduleEarnedXp
+import com.fitquest.app.util.DateUtils.formatDate
+import com.fitquest.app.util.DateUtils.formatTotalTime
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.bottomsheet.BottomSheetDialog
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
+import org.threeten.bp.LocalTime
 
 class ProfileFragment : Fragment() {
 
@@ -37,7 +41,11 @@ class ProfileFragment : Fragment() {
     private val binding get() = _binding!!
 
     private val historyViewModel: HistoryViewModel by viewModels {
-        HistoryViewModelFactory(RetrofitClient.scheduleApiService)
+        HistoryViewModelFactory(RetrofitClient.scheduleApiService, RetrofitClient.sessionApiService)
+    }
+
+    private val userViewModel: UserViewModel by viewModels {
+        UserViewModelFactory(RetrofitClient.userApiService)
     }
 
     private lateinit var historyAdapter: HistoryAdapter
@@ -65,11 +73,9 @@ class ProfileFragment : Fragment() {
 
         historyViewModel.dailyHistories.observe(viewLifecycleOwner) { dailyItems ->
             historyAdapter.submitList(dailyItems)
-            // RecyclerView가 비었을 때 TextView 보여주기
             binding.tvEmpty.visibility = if (dailyItems.isEmpty()) View.VISIBLE else View.GONE
         }
-
-        historyViewModel.loadPastSchedules()
+        historyViewModel.loadHistory()
 
         // 3. 랭킹 관련 UI 초기화 (기존 findViewById 로직 유지)
         rankOverlay = binding.rankOverlay.root
@@ -80,12 +86,45 @@ class ProfileFragment : Fragment() {
         tvSecondName = rankOverlay.findViewById(R.id.tvSecondName)
         tvThirdName = rankOverlay.findViewById(R.id.tvThirdName)
 
-        fetchUserStats()
         setupRankButton()
+        observeUserData()
+
+        userViewModel.getProfile()
+        userViewModel.getRankings()
     }
 
-    private fun fetchUserStats() {
-        // TODO: 나중에 구현
+    private fun observeUserData() {
+        viewLifecycleOwner.lifecycleScope.launch {
+            userViewModel.userProfile.collectLatest { user ->
+                user?.let {
+                    binding.statLevel.tvStatRank.text = it.rank.toString()
+                    binding.statLevel.tvStatLevel.text = it.level.toString()
+                    binding.statLevel.tvStatTime.text = formatTotalTime(it.totalTime)
+                    binding.statLevel.tvStatXP.text = it.xp.toString()
+                }
+            }
+        }
+
+        viewLifecycleOwner.lifecycleScope.launch {
+            userViewModel.rankings.collectLatest { ranks ->
+                rankListContainer.removeAllViews()
+
+                tvFirstName.text = "1st • ${ranks.getOrNull(0)?.name ?: "-"}"
+                tvSecondName.text = "2nd • ${ranks.getOrNull(1)?.name ?: "-"}"
+                tvThirdName.text = "3rd • ${ranks.getOrNull(2)?.name ?: "-"}"
+
+                ranks.drop(3).forEachIndexed { index, rank ->
+                    val tv = TextView(requireContext()).apply {
+                        text = "${index + 4}. ${rank.name} — ${rank.xp} XP"
+                        setTextColor(resources.getColor(R.color.text_primary, null))
+                        textSize = 13f
+                        gravity = android.view.Gravity.CENTER
+                        setPadding(0, 6, 0, 6)
+                    }
+                    rankListContainer.addView(tv)
+                }
+            }
+        }
     }
 
     private fun setupRankButton() {
@@ -93,8 +132,6 @@ class ProfileFragment : Fragment() {
             rankOverlay.visibility = View.VISIBLE
             rankOverlay.alpha = 0f
             rankOverlay.animate().alpha(1f).setDuration(250).start()
-
-            fetchRankData() // 서버 요청
 
             rankOverlay.findViewById<View>(R.id.btnCloseRank)?.setOnClickListener {
                 rankOverlay.animate()
@@ -106,72 +143,52 @@ class ProfileFragment : Fragment() {
         }
     }
 
-    private fun fetchRankData() {
-        val prefs = requireContext().getSharedPreferences("auth", 0)
-        val token = prefs.getString("token", null) ?: return
-
-        lifecycleScope.launch {
-            try {
-                val response = RetrofitClient.profileApiService.getRankings("Bearer $token")
-                if (response.isSuccessful) {
-                    val ranks = response.body() ?: emptyList()
-
-                    // Clear existing
-                    rankListContainer.removeAllViews()
-
-                    // 상위 3명 podium
-                    if (ranks.isNotEmpty()) {
-                        tvFirstName.text = "1st • ${ranks.getOrNull(0)?.name ?: "-"}"
-                        tvSecondName.text = "2nd • ${ranks.getOrNull(1)?.name ?: "-"}"
-                        tvThirdName.text = "3rd • ${ranks.getOrNull(2)?.name ?: "-"}"
-                    }
-
-                    // 4등 이후 리스트
-                    val inflater = LayoutInflater.from(requireContext())
-                    for (i in 3 until ranks.size) {
-                        val rank = ranks[i]
-                        val tv = TextView(requireContext()).apply {
-                            text = "${rank.rank}. ${rank.name} — ${rank.xp} XP"
-                            setTextColor(resources.getColor(R.color.text_primary, null))
-                            textSize = 13f
-                            gravity = Gravity.CENTER
-                            setPadding(0, 6, 0, 6)
-                        }
-                        rankListContainer.addView(tv)
-                    }
-                } else {
-                    Log.e("RankFetch", "HTTP ${response.code()}")
-                }
-            } catch (e: Exception) {
-                Log.e("RankFetch", "Error: ${e.localizedMessage}")
-            }
-        }
-    }
-
     private fun showHistoryDetails(dailyItem: DailyHistoryItem) {
         val dialog = BottomSheetDialog(requireContext())
         val detailBinding = LayoutHistoryDetailBinding.inflate(layoutInflater)
         dialog.setContentView(detailBinding.root)
 
-        detailBinding.tvDayTitle.text = dailyItem.dateLabel
-        detailBinding.tvTotalXp.text = "+${calculateDailyHistoryTotalEarnedXp(dailyItem.exercises)} XP"
-        detailBinding.tvCompletion.text = "+${calculateDailyHistoryAverageCompletion(dailyItem.exercises)} %"
-        detailBinding.tvTotalTime.text = "+${calculateDailyHistoryTotalDuration(dailyItem.exercises)} min"
+        detailBinding.tvDayTitle.text = formatDate(dailyItem.date)
+        detailBinding.tvTotalXp.text = "+${calculateTotalEarnedXp(dailyItem.schedules, dailyItem.sessions)}"
+        detailBinding.tvCompletion.text = "+${calculateAverageCompletionPercent(dailyItem.schedules)}"
         detailBinding.exercisedoneListContainer.removeAllViews()
 
-        dailyItem.exercises.forEach { ex ->
-            val itemBinding = ItemExercisedoneBinding.inflate(layoutInflater)
-            itemBinding.tvExerciseEmoji.text = getEmoji(ex.activity)
-            itemBinding.tvExerciseName.text = ex.activity
-            val text = when {
-                ex.repsTarget != null -> "${ex.repsDone} / ${ex.repsTarget} reps"
-                ex.durationTarget != null -> "${ex.durationDone} / ${ex.durationTarget} sec"
-                else -> ""
+        val combinedItems = (dailyItem.schedules.map { it as Any } + dailyItem.sessions.map { it as Any })
+            .sortedBy {
+                when(it) {
+                    is Schedule -> it.startTime
+                    is Session -> it.createdAt?.toLocalTime() ?: LocalTime.MIN
+                    else -> LocalTime.MIN
+                }
             }
-            itemBinding.tvExerciseDetails.text = "${ex.status}: ${text}"
-            itemBinding.tvXp.text = "${calculateScheduleEarnedXp(ex)} XP"
-            itemBinding.tvPercent.text = "${calculateScheduleCompletionPercent(ex)} %"
-            itemBinding.tvTime.text = "${calculateScheduleDuration(ex)} min"
+
+        combinedItems.forEach { item ->
+            val itemBinding = ItemExercisedoneBinding.inflate(layoutInflater)
+            when(item) {
+                is Schedule -> {
+                    itemBinding.tvExerciseEmoji.text = getEmoji(item.activity)
+                    itemBinding.tvExerciseName.text = item.activity
+                    val text = when {
+                        item.repsTarget != null -> "${item.repsDone} / ${item.repsTarget} reps"
+                        item.durationTarget != null -> "${item.durationDone} / ${item.durationTarget} sec"
+                        else -> ""
+                    }
+                    itemBinding.tvExerciseDetails.text = "${item.status}: $text"
+                    itemBinding.tvXp.text = "${calculateEarnedXpForSchedule(item)} XP"
+                    itemBinding.tvPercent.text = "${calculateCompletionPercent(item)} %"
+                }
+                is Session -> {
+                    itemBinding.tvExerciseEmoji.text = getEmoji(item.activity)
+                    itemBinding.tvExerciseName.text = item.activity
+                    itemBinding.tvExerciseDetails.text = when {
+                        item.repsCount != null -> "${item.repsCount} reps"
+                        item.duration != null -> "${item.duration} sec"
+                        else -> ""
+                    }
+                    itemBinding.tvXp.text = "${calculateEarnedXpForSession(item)} XP"
+                    itemBinding.tvPercent.visibility = View.GONE
+                }
+            }
             detailBinding.exercisedoneListContainer.addView(itemBinding.root)
         }
 

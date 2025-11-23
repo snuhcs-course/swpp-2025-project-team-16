@@ -3,6 +3,7 @@ package com.fitquest.app.data.remote
 import com.fitquest.app.model.Session
 import retrofit2.Response
 import retrofit2.http.Body
+import retrofit2.http.GET
 import retrofit2.http.PATCH
 import retrofit2.http.POST
 import retrofit2.http.Path
@@ -14,10 +15,14 @@ data class StartSessionRequest(
 
 data class EndSessionRequest(
     val reps_count: Int? = null,
-    val duration: Int? = null // 초 단위
+    val duration: Int? = null, // 초 단위
+    val session_duration_seconds: Int
 )
 
 interface SessionApiService {
+
+    @GET("/sessions/")
+    suspend fun getSessions(): List<Session>
 
     @POST("/sessions/start/")
     suspend fun startSession(

@@ -8,8 +8,9 @@ import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.fitquest.app.databinding.ItemJourneyDaynodeBinding
 import com.fitquest.app.model.DailyWorkoutItem
-import com.fitquest.app.util.ActivityUtils.calculateDailyWorkoutTotalXp
-import com.fitquest.app.util.ActivityUtils.formatExercisesSummary
+import com.fitquest.app.util.ActivityUtils.calculateTotalTargetXp
+import com.fitquest.app.util.ActivityUtils.formatActivitiesSummary
+import com.fitquest.app.util.DateUtils.formatDate
 
 class DailyWorkoutAdapter(
     private val onItemClick: (DailyWorkoutItem) -> Unit
@@ -32,9 +33,9 @@ class DailyWorkoutAdapter(
 
             val currentCardBinding = if (position % 2 == 0) rightCardBinding else leftCardBinding
 
-            currentCardBinding.tvDate.text = item.dateLabel
-            currentCardBinding.tvWorkoutSummary.text = formatExercisesSummary(item)
-            currentCardBinding.tvXp.text = "+${calculateDailyWorkoutTotalXp(item.exercises)} XP"
+            currentCardBinding.tvDate.text = formatDate(item.date)
+            currentCardBinding.tvWorkoutSummary.text = formatActivitiesSummary(item.schedules)
+            currentCardBinding.tvXp.text = "+${calculateTotalTargetXp(item.schedules)} XP"
 
             binding.root.setOnClickListener { onItemClick(item) }
         }
@@ -42,7 +43,7 @@ class DailyWorkoutAdapter(
 
     class DiffCallback : DiffUtil.ItemCallback<DailyWorkoutItem>() {
         override fun areItemsTheSame(oldItem: DailyWorkoutItem, newItem: DailyWorkoutItem) =
-            oldItem.dateLabel == newItem.dateLabel
+            oldItem.date == newItem.date
 
         override fun areContentsTheSame(oldItem: DailyWorkoutItem, newItem: DailyWorkoutItem) =
             oldItem == newItem

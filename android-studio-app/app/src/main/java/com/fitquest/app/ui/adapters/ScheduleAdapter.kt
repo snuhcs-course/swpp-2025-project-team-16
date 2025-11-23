@@ -32,15 +32,15 @@ class ScheduleAdapter(
 
             val formattedDate = try {
                 // ... (기존 날짜/시간 포매팅 로직 유지)
-                LocalDate.parse(schedule.scheduledDate).format(dateFormatter)
+                schedule.scheduledDate.format(dateFormatter)
             } catch (e: Exception) { "-- --" }
 
             val formattedStartTime = try {
-                LocalTime.parse(schedule.startTime).format(timeFormatter)
+                schedule.startTime.format(timeFormatter)
             } catch (e: Exception) { "--:--" }
 
             val formattedEndTime = try {
-                LocalTime.parse(schedule.endTime).format(timeFormatter)
+                schedule.endTime.format(timeFormatter)
             } catch (e: Exception) { "--:--" }
 
             binding.tvStartEnd.text = binding.root.context.getString(

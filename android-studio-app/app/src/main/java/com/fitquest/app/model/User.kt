@@ -1,16 +1,26 @@
 package com.fitquest.app.model
 
-import java.util.Date
-/*
-data class User(
-    val id: String,
+import com.google.gson.annotations.SerializedName
+import org.threeten.bp.LocalDateTime
+
+data class User (
+    val id: Int,
+    val name: String,
     val email: String,
-    val username: String,
-    val fitnessLevel: FitnessLevel,
-    val createdAt: Date,
-    val totalWorkouts: Int = 0,
-    val streak: Int = 0,
-    val missedDays: Int = 0,
-    val totalPoints: Int = 0
+    val xp: Int = 0,
+    val level: Int = 1,
+
+    @SerializedName("initial_reps")
+    val initialReps: Int = 0,
+
+    @SerializedName("total_reps")
+    val totalReps: Int = 0,
+
+    @SerializedName("total_time")
+    val totalTime: Float = 0f,
+
+    @SerializedName("last_session_at")
+    val lastSessionAt: LocalDateTime? = null,
+
+    val rank: Int = 0,
 )
-*/

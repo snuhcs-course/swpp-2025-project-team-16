@@ -6,22 +6,26 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
+import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.fitquest.app.data.remote.RetrofitClient
 import com.fitquest.app.databinding.FragmentJourneyBinding
-import com.fitquest.app.databinding.ItemExerciseBinding
+import com.fitquest.app.databinding.ItemScheduleBinding
 import com.fitquest.app.databinding.LayoutJourneyDaydetailBinding
 import com.fitquest.app.model.DailyWorkoutItem
-import com.fitquest.app.repository.ScheduleRepository
+import com.fitquest.app.model.Schedule
 import com.fitquest.app.ui.adapters.DailyWorkoutAdapter
 import com.fitquest.app.ui.viewmodels.JourneyViewModel
 import com.fitquest.app.ui.viewmodels.JourneyViewModelFactory
-import com.fitquest.app.ui.viewmodels.ScheduleViewModel
-import com.fitquest.app.ui.viewmodels.ScheduleViewModelFactory
 import com.fitquest.app.util.ActivityUtils.getEmoji
+import com.fitquest.app.util.ActivityUtils.getLabel
+import com.fitquest.app.util.DateUtils.formatDate
+import com.fitquest.app.util.DateUtils.formatTime
 import com.google.android.material.bottomsheet.BottomSheetDialog
+import org.threeten.bp.LocalDateTime
+import org.threeten.bp.ZoneId
 
-class JourneyFragment : Fragment() {
+class JourneyFragment() : Fragment() {
 
     private var _binding: FragmentJourneyBinding? = null
     private val binding get() = _binding!!
@@ -40,8 +44,13 @@ class JourneyFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        adapter = DailyWorkoutAdapter { dailyItem -> showWorkoutDetails(dailyItem) }
-        binding.recyclerJourney.layoutManager = LinearLayoutManager(context)
+        adapter = DailyWorkoutAdapter { dailyItem -> showScheduleDetails(dailyItem) }
+        val layoutManager = LinearLayoutManager(context).apply {
+            orientation = LinearLayoutManager.VERTICAL
+            stackFromEnd = false
+            reverseLayout = true
+        }
+        binding.recyclerJourney.layoutManager = layoutManager
         binding.recyclerJourney.adapter = adapter
 
         viewModel.dailyWorkouts.observe(viewLifecycleOwner) { dailyItems ->
@@ -54,29 +63,55 @@ class JourneyFragment : Fragment() {
     }
 
 
-    private fun showWorkoutDetails(dailyItem: DailyWorkoutItem) {
+    private fun showScheduleDetails(dailyItem: DailyWorkoutItem) {
         val dialog = BottomSheetDialog(requireContext())
         val detailBinding = LayoutJourneyDaydetailBinding.inflate(layoutInflater)
         dialog.setContentView(detailBinding.root)
 
-        detailBinding.tvDayTitle.text = dailyItem.dateLabel
+        detailBinding.tvDayTitle.text = formatDate(dailyItem.date)
         detailBinding.exerciseListContainer.removeAllViews()
 
-        dailyItem.exercises.forEach { ex ->
-            val itemBinding = ItemExerciseBinding.inflate(layoutInflater)
-            itemBinding.tvExerciseEmoji.text = getEmoji(ex.name)
-            itemBinding.tvExerciseName.text = ex.name
-            itemBinding.tvProgressText.text = ex.status
-            itemBinding.tvExerciseDetails.text = when {
-                ex.targetCount != null -> "${ex.targetCount} reps"
-                ex.targetDuration != null -> "${ex.targetDuration} sec"
+        val currentTime = LocalDateTime.now(ZoneId.of("Asia/Seoul"))
+
+        dailyItem.schedules.forEach { schedule ->
+            val itemBinding = ItemScheduleBinding.inflate(layoutInflater)
+            itemBinding.tvActivityLabel.text = getLabel(schedule.activity)
+            itemBinding.tvActivityEmoji.text = getEmoji(schedule.activity)
+            itemBinding.tvStartEnd.text = "${formatTime(schedule.startTime)} - ${formatTime(schedule.endTime)}"
+            itemBinding.tvTarget.text = when {
+                schedule.repsTarget != null -> "Target: ${schedule.repsTarget} reps"
+                schedule.durationTarget != null -> "Target: ${schedule.durationTarget} secs"
                 else -> ""
             }
+
+            if (currentTime.isAfter(LocalDateTime.of(schedule.scheduledDate, schedule.startTime)) && currentTime.isBefore(LocalDateTime.of(schedule.scheduledDate, schedule.endTime))) {
+                itemBinding.btnStartSession.visibility = View.VISIBLE
+                itemBinding.btnStartSession.setOnClickListener {
+                    onStartSession(schedule)
+                    dialog.dismiss()
+                }
+            } else {
+                itemBinding.btnStartSession.visibility = View.GONE
+            }
+
             detailBinding.exerciseListContainer.addView(itemBinding.root)
         }
 
         dialog.show()
     }
+
+    private fun onStartSession(schedule: Schedule) {
+        val repsTarget = schedule.repsTarget ?: -1
+        val durationTarget = schedule.durationTarget ?: -1
+
+        val action = JourneyFragmentDirections.actionJourneyFragmentToAiCoachFragment(
+            scheduleId = schedule.id!!,
+            activityKey = schedule.activity.lowercase(),
+            repsTarget = repsTarget,
+            durationTarget = durationTarget)
+        findNavController().navigate(action)
+    }
+
 
     override fun onDestroyView() {
         super.onDestroyView()

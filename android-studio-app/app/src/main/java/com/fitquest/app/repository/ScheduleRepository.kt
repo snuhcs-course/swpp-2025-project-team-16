@@ -13,4 +13,7 @@ class ScheduleRepository(private val service: ScheduleApiService) {
 
     suspend fun autoGenerateSchedules(): List<Schedule> =
         service.autoGenerateSchedules()
+
+    suspend fun markMissedSchedules() =
+        service.markMissedSchedules()
 }

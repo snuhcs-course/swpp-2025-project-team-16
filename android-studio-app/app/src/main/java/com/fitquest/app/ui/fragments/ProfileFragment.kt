@@ -149,8 +149,8 @@ class ProfileFragment : Fragment() {
         dialog.setContentView(detailBinding.root)
 
         detailBinding.tvDayTitle.text = formatDate(dailyItem.date)
-        detailBinding.tvTotalXp.text = "+${calculateTotalEarnedXp(dailyItem.schedules, dailyItem.sessions)} XP"
-        detailBinding.tvCompletion.text = "+${calculateAverageCompletionPercent(dailyItem.schedules)} %"
+        detailBinding.tvTotalXp.text = "+${calculateTotalEarnedXp(dailyItem.schedules, dailyItem.sessions)}"
+        detailBinding.tvCompletion.text = "+${calculateAverageCompletionPercent(dailyItem.schedules)}"
         detailBinding.exercisedoneListContainer.removeAllViews()
 
         val combinedItems = (dailyItem.schedules.map { it as Any } + dailyItem.sessions.map { it as Any })

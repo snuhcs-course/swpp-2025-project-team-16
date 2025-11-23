@@ -26,12 +26,16 @@
 
     </LinearLayout>
 
-    <!-- ===== Divider ===== -->
-    <View
+    <!-- ===== Daily Summary ===== -->
+    <TextView
+        android:id="@+id/tvDailySummary"
         android:layout_width="match_parent"
-        android:layout_height="1dp"
-        android:background="@color/cyan_20"
-        android:layout_marginVertical="12dp" />
+        android:layout_height="wrap_content"
+        android:text="Excellent execution! Your form was impeccable."
+        android:textColor="@color/cyan_bright"
+        android:textSize="14sp"
+        android:paddingVertical="8dp"
+        android:textStyle="bold" />
 
     <!-- ===== Summary Section ===== -->
     <LinearLayout
@@ -40,32 +44,105 @@
         android:layout_height="wrap_content"
         android:orientation="horizontal"
         android:gravity="center"
-        android:layout_marginBottom="16dp">
+        android:layout_marginTop="5dp"
+        android:layout_marginBottom="16dp"
+        android:weightSum="2">
 
-        <TextView
-            android:id="@+id/tvTotalXp"
-            android:layout_width="wrap_content"
+        <!-- ===== XP Box ===== -->
+        <LinearLayout
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical"
+            android:gravity="start"
             android:background="@drawable/bg_badge_gold"
-            android:text="+250 XP"
-            android:textColor="@android:color/white"
-            android:textSize="12sp"
-            android:paddingHorizontal="10dp"
-            android:paddingVertical="4dp"
-            android:layout_marginEnd="8dp" />
+            android:padding="12dp"
+            android:layout_marginEnd="4dp"
+            android:clipToPadding="false"
+            android:clipChildren="false"
+            android:radius="16dp">
 
-        <TextView
-            android:id="@+id/tvCompletion"
-            android:layout_width="wrap_content"
+            <!-- 아이콘 + 라벨 -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:layout_marginBottom="6dp">
+
+                <ImageView
+                    android:id="@+id/ivXpIcon"
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    app:tint="#FFB800"
+                    android:src="@drawable/ic_trophy" />
+
+                <TextView
+                    android:id="@+id/tvXpLabel"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="XP Earned"
+                    android:textSize="14sp"
+                    android:textColor="#FFB800"
+                    android:layout_marginStart="8dp" />
+            </LinearLayout>
+
+            <TextView
+                android:id="@+id/tvTotalXp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="+250"
+                android:textSize="20sp"
+                android:textStyle="bold"
+                android:textColor="@android:color/white" />
+        </LinearLayout>
+
+        <!-- ===== Form Score Box ===== -->
+        <LinearLayout
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical"
+            android:gravity="start"
             android:background="@drawable/bg_badge_cyan"
-            android:text="95 %"
-            android:textColor="@android:color/white"
-            android:textSize="12sp"
-            android:paddingHorizontal="10dp"
-            android:paddingVertical="4dp"
-            android:layout_marginEnd="8dp" />
+            android:padding="12dp"
+            android:layout_marginStart="4dp"
+            android:clipToPadding="false"
+            android:clipChildren="false"
+            android:radius="16dp">
 
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:layout_marginBottom="6dp">
+
+                <ImageView
+                    android:id="@+id/ivFormIcon"
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:src="@drawable/ic_bolt" />
+
+                <TextView
+                    android:id="@+id/tvFormLabel"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Form Score"
+                    android:textSize="14sp"
+                    android:textColor="@color/cyan_bright"
+                    android:layout_marginStart="8dp" />
+            </LinearLayout>
+
+            <TextView
+                android:id="@+id/tvCompletion"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="95%"
+                android:textSize="20sp"
+                android:textStyle="bold"
+                android:textColor="@android:color/white" />
+        </LinearLayout>
     </LinearLayout>
 
     <!-- ===== Workout List ===== -->

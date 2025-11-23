@@ -34,7 +34,7 @@ class SessionViewModel(private val repo: SessionRepository) : ViewModel() {
         }
     }
 
-    fun endSession(reps: Int? = null, duration: Int? = null) {
+    fun endSession(reps: Int? = null, duration: Int? = null, sessionDurationSeconds: Int) {
         // 활성화된 세션 ID가 없다면 로그를 남기고 종료
         val sessionId = _currentSession.value?.id ?: run {
             // Log.w("SessionVM", "endSession called without active session ID.")
@@ -42,7 +42,7 @@ class SessionViewModel(private val repo: SessionRepository) : ViewModel() {
         }
 
         viewModelScope.launch {
-            val result = repo.endSession(sessionId, reps, duration)
+            val result = repo.endSession(sessionId, reps, duration, sessionDurationSeconds)
 
             result.onSuccess { session ->
                 _currentSession.value = session

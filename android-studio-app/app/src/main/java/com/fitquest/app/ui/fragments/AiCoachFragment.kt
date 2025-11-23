@@ -45,6 +45,8 @@ class AiCoachFragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener {
         AiCoachViewModelFactory(RetrofitClient.sessionApiService)
     }
 
+    private var sessionStartTime: Long? = null
+
     // ✅ 중앙 REP 팝업용 TextView
     private lateinit var repPopupText: TextView
 
@@ -415,6 +417,8 @@ class AiCoachFragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener {
     fun beginWorkout() {
         isTraining = true
 
+        sessionStartTime = System.currentTimeMillis()
+
         val now = System.currentTimeMillis()
         val activity = selectedExercise.lowercase(Locale.getDefault())
 
@@ -448,6 +452,11 @@ class AiCoachFragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener {
 
         isTraining = false
 
+        val start = sessionStartTime
+        val sessionDurationSec =
+            if (start != null) ((System.currentTimeMillis() - start) / 1000L).toInt()
+            else 0
+
         val targetType = ActivityUtils.getTargetType(selectedExercise)
         val currentCounter = counter
 
@@ -455,11 +464,15 @@ class AiCoachFragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener {
         val workoutResult: WorkoutResult = when (targetType) {
             TargetType.DURATION -> {
                 val duration = (currentCounter as? PlankTimer)?.holdSeconds()?.toInt()
-                WorkoutResult(durationSeconds = duration)
+                WorkoutResult(
+                    durationSeconds = duration,
+                    sessionDurationSeconds = sessionDurationSec)
             }
             TargetType.REPS, null -> {
                 val reps = currentCounter?.count
-                WorkoutResult(repsCount = reps)
+                WorkoutResult(
+                    repsCount = reps,
+                    sessionDurationSeconds = sessionDurationSec)
             }
         }
 

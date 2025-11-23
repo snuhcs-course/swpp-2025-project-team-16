@@ -123,9 +123,10 @@ class AiCoachViewModel(
 
         val reps = result.repsCount
         val duration = result.durationSeconds
+        val sessionDurationSeconds = result.sessionDurationSeconds
 
         viewModelScope.launch {
-            val endResult = sessionRepository.endSession(sessionId, reps, duration)
+            val endResult = sessionRepository.endSession(sessionId, reps, duration, sessionDurationSeconds)
 
             // ✅ 세션 종료 후 모든 상태 초기화
             _isTraining.value = false

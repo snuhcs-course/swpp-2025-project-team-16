@@ -28,9 +28,9 @@ class SessionRepository(private val service: SessionApiService) {
         }
     }
 
-    suspend fun endSession(sessionId: Int, repsCount: Int?, duration: Int?): Result<Session> {
+    suspend fun endSession(sessionId: Int, repsCount: Int?, duration: Int?, sessionDurationSeconds: Int): Result<Session> {
         return try {
-            val req = EndSessionRequest(reps_count = repsCount, duration = duration)
+            val req = EndSessionRequest(reps_count = repsCount, duration = duration, session_duration_seconds = sessionDurationSeconds)
             val response = service.endSession(sessionId, req)
             if (response.isSuccessful) {
                 Result.success(response.body()!!)

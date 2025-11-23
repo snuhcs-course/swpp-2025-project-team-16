@@ -63,6 +63,7 @@ def end_session(request, session_id):
 
     reps_count = request.data.get('reps_count')
     duration_seconds = request.data.get('duration')
+    session_duration_seconds = request.data.get('session_duration_seconds')
     duration = timedelta(seconds=duration_seconds) if duration_seconds is not None else None
 
     # --- 세션 업데이트 ---
@@ -83,6 +84,15 @@ def end_session(request, session_id):
         user.xp += int(reps_count) * 10
     elif duration is not None:
         user.xp += int(duration.total_seconds()) * 2
+
+    if session_duration_seconds is not None:
+        try:
+            user.total_time += float(session_duration_seconds)
+        except ValueError:
+            return Response({"error": "Invalid session_duration_seconds"}, status.HTTP_400_BAD_REQUEST)
+
+        user.last_session_at = timezone.now()
+
     user.save()
 
     # --- 스케줄과 연결된 경우 ---

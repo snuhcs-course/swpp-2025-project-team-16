@@ -60,6 +60,7 @@ class PoseFragment : Fragment() {
 
     // State
     private var countdownTimer: CountDownTimer? = null
+    private var loadingTimer: CountDownTimer? = null
     private var lastPhotoFile: File? = null
     private var orientationListener: OrientationEventListener? = null
 
@@ -275,6 +276,39 @@ class PoseFragment : Fragment() {
         }.start()
     }
 
+    private fun startLoadingProgress() {
+        // progress bar 초기 설정
+        binding.progressLoading.visibility = View.VISIBLE
+        binding.tvProgressPercent.visibility = View.VISIBLE
+
+        binding.progressLoading.isIndeterminate = false
+        binding.progressLoading.max = 100
+        binding.progressLoading.progress = 0
+        binding.tvProgressPercent.text = "0%"
+
+        // 기존 타이머 있으면 정리
+        loadingTimer?.cancel()
+
+        val totalDuration = 60_000L      // 60초
+        val targetProgress = 90          // 90%까지 채우기
+
+        loadingTimer = object : CountDownTimer(totalDuration, 1000L) {
+            override fun onTick(millisUntilFinished: Long) {
+                val elapsed = totalDuration - millisUntilFinished
+                val fraction = elapsed.toFloat() / totalDuration.toFloat()
+                val progress = (fraction * targetProgress).toInt()
+                binding.progressLoading.setProgressCompat(progress, true)
+                binding.tvProgressPercent.text = "$progress%"
+            }
+
+            override fun onFinish() {
+                // 60초가 다 지나도 아직 응답 안 왔으면 90%까지만 채워둠
+                binding.progressLoading.setProgressCompat(targetProgress, true)
+                binding.tvProgressPercent.text = "$targetProgress%"
+            }
+        }.start()
+    }
+
     // ================= TAKE PHOTO =================
     private fun capturePhoto() {
         val imageCapture = imageCapture ?: return
@@ -364,7 +398,7 @@ class PoseFragment : Fragment() {
         val base64 = bitmapToBase64(bitmap)
         val fullUrl = "http://147.46.78.29:8004/pose-analyses/evaluate_posture/"
 
-        binding.progressLoading.visibility = View.VISIBLE
+        startLoadingProgress()
 
         viewLifecycleOwner.lifecycleScope.launch {
             var goodPointsResult = ""
@@ -401,7 +435,15 @@ class PoseFragment : Fragment() {
                 }
             }
 
+            // 🔹 여기서 응답이 온 시점
+            //    → 타이머 정지 + 100%로 채우고 숨기기
+            loadingTimer?.cancel()
+            binding.progressLoading.setProgressCompat(100, true)
+            binding.tvProgressPercent.text = "100%"
+
+
             binding.progressLoading.visibility = View.GONE
+            binding.tvProgressPercent.visibility = View.GONE
             binding.btnUpload.isEnabled = true
 
             if (errorMessage != null) {
@@ -415,8 +457,6 @@ class PoseFragment : Fragment() {
 
             shouldResetCameraOnResume = true
 
-            // 🔹 여기서부터는 lastPhotoFile이 "보정된 이미지 파일"이라
-            //    결과 화면에서도 올바른 방향으로 보임
             val intent = Intent(requireContext(), PoseResultActivity::class.java).apply {
                 putExtra(PoseResultActivity.EXTRA_GOOD_POINTS, goodPointsResult)
                 putExtra(PoseResultActivity.EXTRA_IMPROVE_POINTS, improvePointsResult)
@@ -445,7 +485,9 @@ class PoseFragment : Fragment() {
         binding.btnSwitchCamera.isEnabled = true
 
         // 로딩 초기화
+        loadingTimer?.cancel()
         binding.progressLoading.visibility = View.GONE
+        binding.progressLoading.progress = 0
 
         // 카메라 다시 시작
         if (allPermissionsGranted()) {
@@ -526,6 +568,7 @@ class PoseFragment : Fragment() {
     override fun onDestroyView() {
         super.onDestroyView()
         countdownTimer?.cancel()
+        loadingTimer?.cancel()
         orientationListener?.disable()
         cameraExecutor.shutdown()
         _binding = null

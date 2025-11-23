@@ -17,12 +17,10 @@ import android.view.OrientationEventListener
 import android.view.Surface
 import android.view.View
 import android.view.ViewGroup
+import android.widget.*
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.camera.core.CameraSelector
-import androidx.camera.core.ImageCapture
-import androidx.camera.core.ImageCaptureException
-import androidx.camera.core.Preview
+import androidx.camera.core.*
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
@@ -30,11 +28,12 @@ import androidx.exifinterface.media.ExifInterface
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
-import com.fitquest.app.data.remote.PoseUploadRequest
+import com.fitquest.app.R
+import com.fitquest.app.PoseResultActivity
+import com.fitquest.app.data.remote.EvaluatePostureRequest
 import com.fitquest.app.data.remote.RetrofitClient
-import com.fitquest.app.databinding.FragmentPoseBinding
-import com.fitquest.app.ui.viewmodels.PoseViewModel
-import com.fitquest.app.ui.viewmodels.PoseViewModelFactory
+import com.fitquest.app.util.ActivityUtils
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import java.io.ByteArrayOutputStream
 import java.io.File
@@ -43,25 +42,36 @@ import java.util.concurrent.Executors
 
 class PoseFragment : Fragment() {
 
-    private var _binding: FragmentPoseBinding? = null
-    private val binding get() = _binding!!
+    // ==== Exercise Spinner ====
+    private lateinit var spinnerExercisePose: Spinner
+    private var selectedExercise: String =
+        ActivityUtils.activityMetadataMap.keys.firstOrNull() ?: "squat"
 
-    private val viewModel: PoseViewModel by viewModels {
-        PoseViewModelFactory(RetrofitClient.poseAnalysisApiService)
-    }
-
+    // Camera
     private lateinit var cameraExecutor: ExecutorService
     private var imageCapture: ImageCapture? = null
     private var cameraProvider: ProcessCameraProvider? = null
-
-    // 현재 렌즈 방향 (기본: 전면)
     private var lensFacing: Int = CameraSelector.LENS_FACING_BACK
+
+    // UI
+    private lateinit var previewView: PreviewView
+    private lateinit var btnCapture: ImageButton
+    private lateinit var btnUpload: ImageButton
+    private lateinit var btnSwitchCamera: ImageButton
+    private lateinit var tvCountdown: TextView
+    private lateinit var imgAnalysisResult: ImageView
+    private lateinit var tvGuideText: TextView
+    private lateinit var progressLoading: ProgressBar
+    private lateinit var tvInfoMessage: TextView
+
     private var countdownTimer: CountDownTimer? = null
     private var lastPhotoFile: File? = null
     private var orientationListener: OrientationEventListener? = null
 
-    // 갤러리에서 이미지 선택용 런처
     private lateinit var pickImageLauncher: ActivityResultLauncher<Intent>
+
+    // 결과 화면 다녀온 뒤 카메라/화면을 리셋할지 여부
+    private var shouldResetCameraOnResume: Boolean = false
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
@@ -73,9 +83,54 @@ class PoseFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        // ==== Bind Views ====
+        spinnerExercisePose = view.findViewById(R.id.spinnerExercisePose)
+        previewView = view.findViewById(R.id.cameraPreview)
+        btnCapture = view.findViewById(R.id.btnCapture)
+        btnUpload = view.findViewById(R.id.btnUpload)
+        btnSwitchCamera = view.findViewById(R.id.btnSwitchCamera)
+        tvCountdown = view.findViewById(R.id.tvCountdown)
+        imgAnalysisResult = view.findViewById(R.id.imgAnalysisResult)
+        tvGuideText = view.findViewById(R.id.tvGuideText)
+        progressLoading = view.findViewById(R.id.progressLoading)
+        tvInfoMessage = view.findViewById(R.id.tvInfoMessage)
+
         cameraExecutor = Executors.newSingleThreadExecutor()
 
-        // 갤러리 선택 런처 등록
+        // ==== Exercise Spinner Init (AiCoachFragment와 동일한 목록) ====
+        val activityKeys = ActivityUtils.activityMetadataMap.keys.toList()
+        val exerciseListWithEmoji = ActivityUtils.activityMetadataMap.values.map { metadata ->
+            "${metadata.emoji} ${metadata.label}"
+        }
+
+        // 기본 선택 운동
+        selectedExercise = activityKeys.firstOrNull() ?: "squat"
+
+        val spinnerAdapter = ArrayAdapter(
+            requireContext(),
+            android.R.layout.simple_spinner_dropdown_item,
+            exerciseListWithEmoji
+        )
+        spinnerAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+        spinnerExercisePose.adapter = spinnerAdapter
+
+        spinnerExercisePose.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+            override fun onItemSelected(
+                parent: AdapterView<*>?,
+                v: View?,
+                pos: Int,
+                id: Long
+            ) {
+                val key = activityKeys.getOrNull(pos) ?: "squat"
+                selectedExercise = key.lowercase()
+            }
+
+            override fun onNothingSelected(parent: AdapterView<*>?) {
+                selectedExercise = activityKeys.firstOrNull() ?: "squat"
+            }
+        }
+
+        // ==== Gallery Picker ====
         pickImageLauncher = registerForActivityResult(
             ActivityResultContracts.StartActivityForResult()
         ) { result ->
@@ -87,14 +142,17 @@ class PoseFragment : Fragment() {
                         lastPhotoFile = file
                         processAndUpload(file)
                     } else {
-                        binding.tvCue.text = "이미지를 불러오지 못했습니다."
+                        Toast.makeText(
+                            requireContext(),
+                            "Failed to load selected image.",
+                            Toast.LENGTH_SHORT
+                        ).show()
                     }
-                } else {
-                    binding.tvCue.text = "이미지가 선택되지 않았습니다."
                 }
             }
         }
 
+        // ==== Camera Permission ====
         if (allPermissionsGranted()) {
             startCamera()
         } else {
@@ -105,7 +163,7 @@ class PoseFragment : Fragment() {
             )
         }
 
-        // 디바이스 회전 반영 → 캡처 회전 정확히
+        // ==== Orientation Listener ====
         orientationListener = object : OrientationEventListener(requireContext()) {
             override fun onOrientationChanged(orientation: Int) {
                 val rotation = when {
@@ -119,19 +177,22 @@ class PoseFragment : Fragment() {
         }
         orientationListener?.enable()
 
-        // 촬영 버튼: 10초 카운트다운 후 촬영
-        binding.btnCapture.setOnClickListener { startCountdownAndCapture() }
-
-        // 업로드 버튼: 갤러리에서 사진 선택 후 서버 업로드
-        binding.btnUpload.setOnClickListener {
-            openGalleryForImage()
-        }
-
-        // 카메라 전환 버튼
-        binding.btnSwitchCamera.setOnClickListener { toggleCamera() }
+        // ==== Buttons ====
+        btnCapture.setOnClickListener { startCountdownAndCapture() }
+        btnUpload.setOnClickListener { openGalleryForImage() }
+        btnSwitchCamera.setOnClickListener { toggleCamera() }
     }
 
-    // =============== CAMERA ==================
+    // 사용자가 PoseResultActivity에서 돌아왔을 때 호출
+    override fun onResume() {
+        super.onResume()
+        if (shouldResetCameraOnResume) {
+            shouldResetCameraOnResume = false
+            resetCameraUiAndRestart()
+        }
+    }
+
+    // ================= CAMERA =================
     private fun startCamera() {
         val cameraProviderFuture = ProcessCameraProvider.getInstance(requireContext())
         cameraProviderFuture.addListener({
@@ -157,19 +218,16 @@ class PoseFragment : Fragment() {
             .build()
 
         try {
-            if (!provider.hasCamera(selector)) {
-                binding.tvCue.text = if (lensFacing == CameraSelector.LENS_FACING_FRONT)
-                    "이 기기에는 전면 카메라가 없습니다."
-                else
-                    "이 기기에는 후면 카메라가 없습니다."
-                return
-            }
-
+            if (!provider.hasCamera(selector)) return
             provider.unbindAll()
             provider.bindToLifecycle(this, selector, preview, imageCapture)
         } catch (exc: Exception) {
             Log.e("PoseFragment", "Camera bind failed", exc)
-            binding.tvCue.text = "카메라 바인딩 실패: ${exc.message}"
+            Toast.makeText(
+                requireContext(),
+                "Failed to bind camera: ${exc.message}",
+                Toast.LENGTH_SHORT
+            ).show()
         }
     }
 
@@ -181,7 +239,7 @@ class PoseFragment : Fragment() {
         bindCameraUseCases()
     }
 
-    // =============== COUNTDOWN TIMER ==================
+    // ================= COUNTDOWN =================
     private fun startCountdownAndCapture() {
         var seconds = 10
         binding.tvCountdown.visibility = View.VISIBLE
@@ -189,8 +247,8 @@ class PoseFragment : Fragment() {
 
         countdownTimer?.cancel()
         countdownTimer = object : CountDownTimer(10_000, 1000) {
-            override fun onTick(millisUntilFinished: Long) {
-                binding.tvCountdown.text = seconds.toString()
+            override fun onTick(ms: Long) {
+                tvCountdown.text = seconds.toString()
                 seconds--
             }
 
@@ -202,42 +260,42 @@ class PoseFragment : Fragment() {
         }.start()
     }
 
-    // =============== TAKE PHOTO ==================
+    // ================= TAKE PHOTO =================
     private fun capturePhoto() {
         val imageCapture = imageCapture ?: return
-        val photoFile = File(
+        val file = File(
             requireContext().externalCacheDir,
             "pose_${System.currentTimeMillis()}.jpg"
         )
 
-        // 전면 카메라일 때 좌우반전 메타데이터 세팅
         val metadata = ImageCapture.Metadata().apply {
             isReversedHorizontal = (lensFacing == CameraSelector.LENS_FACING_FRONT)
         }
 
-        val outputOptions = ImageCapture.OutputFileOptions.Builder(photoFile)
-            .setMetadata(metadata)
-            .build()
+        val output = ImageCapture.OutputFileOptions.Builder(file)
+            .setMetadata(metadata).build()
 
         imageCapture.takePicture(
-            outputOptions,
+            output,
             ContextCompat.getMainExecutor(requireContext()),
             object : ImageCapture.OnImageSavedCallback {
                 override fun onError(exc: ImageCaptureException) {
-                    Log.e("PoseFragment", "Photo capture failed: ${exc.message}", exc)
-                    binding.tvCue.text = "사진 촬영 실패: ${exc.message}"
+                    Toast.makeText(
+                        requireContext(),
+                        "Capture failed: ${exc.message}",
+                        Toast.LENGTH_SHORT
+                    ).show()
                 }
 
                 override fun onImageSaved(output: ImageCapture.OutputFileResults) {
-                    Log.d("PoseFragment", "Photo saved: ${photoFile.absolutePath}")
-                    lastPhotoFile = photoFile
-                    processAndUpload(photoFile)
+                    lastPhotoFile = file
+                    processAndUpload(file)
                 }
             }
         )
     }
 
-    // =============== GALLERY PICK ==================
+    // ================= GALLERY =================
     private fun openGalleryForImage() {
         val intent = Intent(Intent.ACTION_PICK).apply {
             type = "image/*"
@@ -247,115 +305,132 @@ class PoseFragment : Fragment() {
 
     private fun createFileFromUri(uri: Uri): File? {
         return try {
-            val inputStream = requireContext().contentResolver.openInputStream(uri) ?: return null
-            val tempFile = File(
+            val input = requireContext().contentResolver.openInputStream(uri) ?: return null
+            val file = File(
                 requireContext().cacheDir,
                 "gallery_${System.currentTimeMillis()}.jpg"
             )
-            tempFile.outputStream().use { out ->
-                inputStream.use { it.copyTo(out) }
-            }
-            tempFile
+            file.outputStream().use { out -> input.copyTo(out) }
+            file
         } catch (e: Exception) {
             Log.e("PoseFragment", "Failed to create file from uri", e)
             null
         }
     }
 
-    // =============== PROCESS + UPLOAD ==================
+    // ================= PROCESS + UPLOAD =================
     private fun processAndUpload(photoFile: File) {
-        // 업로드 중엔 업로드 버튼 비활성화
-        binding.btnUpload.isEnabled = false
+        btnUpload.isEnabled = false
 
-        // 1) 파일 → Bitmap (EXIF 보정 포함)
         val bitmap = decodeBitmapWithExifCorrected(photoFile)
         if (bitmap == null) {
-            binding.tvCue.text = "이미지 로드 실패"
-            // 실패했으니 다시 업로드 가능하도록 되돌리기
-            binding.btnUpload.isEnabled = true
+            Toast.makeText(requireContext(), "Failed to decode image.", Toast.LENGTH_SHORT).show()
+            btnUpload.isEnabled = true
             return
         }
 
-        // 카메라 영역에 정지 이미지 표시 & 카메라 비활성화
-        binding.tvGuideText.visibility = View.GONE
-        binding.imgAnalysisResult.visibility = View.VISIBLE
-        binding.cameraPreview.visibility = View.GONE
-        binding.imgAnalysisResult.setImageBitmap(bitmap)
+        // 카메라 대신 정지 이미지 표시
+        tvGuideText.visibility = View.GONE
+        previewView.visibility = View.GONE
+        imgAnalysisResult.visibility = View.VISIBLE
+        imgAnalysisResult.setImageBitmap(bitmap)
 
-        // 카메라 사용 중지
+        // 카메라 해제 & 버튼 비활성화
         cameraProvider?.unbindAll()
         imageCapture = null
         binding.btnCapture.isEnabled = false
         binding.btnSwitchCamera.isEnabled = false
 
-        // 2) Bitmap → Base64 (다운스케일+압축으로 전송량 절감)
         val base64 = bitmapToBase64(bitmap)
+        val fullUrl = "http://147.46.78.29:8004/pose/evaluate_posture/"
 
-        // 3) 서버로 POST (코루틴 + Retrofit)
-        binding.tvCue.text = "업로드 중..."
-        viewModel.uploadPose(
-            PoseUploadRequest(
-                category = "squat",
-                image_base64 = base64
-            )
-        )
+        progressLoading.visibility = View.VISIBLE
 
         viewLifecycleOwner.lifecycleScope.launch {
-            // ViewModel의 로딩 상태 관찰
-            launch {
-                viewModel.loading.collect { isLoading ->
-                    if (isLoading) {
-                        binding.tvCue.text = "업로드 및 분석 중..."
+            var goodPointsResult = ""
+            var improvePointsResult = ""
+            var cueResult = ""
+            var errorMessage: String? = null
+
+            withContext(Dispatchers.IO) {
+                try {
+                    val body = EvaluatePostureRequest(
+                        category = selectedExercise,   // <-- AiCoach와 동일 key 사용
+                        image_base64 = base64
+                    )
+                    val resp = RetrofitClient.apiService.evaluatePosture(fullUrl, body)
+
+                    if (resp.isSuccessful) {
+                        val data = resp.body()
+                        if (data == null) {
+                            errorMessage = "Empty response."
+                        } else if (data.status == "success") {
+                            goodPointsResult = data.good_points.ifBlank { "None" }
+                            improvePointsResult = data.improvement_points.ifBlank { "None" }
+                            cueResult = data.improvement_methods?.ifBlank { "None" } ?: "None"
+                        } else {
+                            errorMessage = "Server status: ${data.status}"
+                        }
                     } else {
-                        // 로딩이 끝났을 때만 버튼을 다시 활성화 (결과 처리는 selectedAnalysis에서)
-                        // (결과 처리 후 활성화하도록 이 부분은 잠시 보류)
+                        errorMessage =
+                            "HTTP ${resp.code()} - ${resp.errorBody()?.string().orEmpty()}"
                     }
+                } catch (e: Exception) {
+                    Log.e("PoseFragment", "evaluatePosture failed", e)
+                    errorMessage = "Network error: ${e.message}"
                 }
             }
 
-            // ViewModel의 분석 결과 관찰
-            viewModel.selectedAnalysis.collect { analysis ->
-                // analysis가 null이 아니면 결과가 도착했음을 의미합니다.
-                if (analysis != null) {
-                    // 결과를 UI에 표시
-                    val aiComment = analysis.aiComment ?: "AI 분석 결과가 없습니다."
+            progressLoading.visibility = View.GONE
+            btnUpload.isEnabled = true
 
-                    // aiComment 필드만 있으므로, 이 필드를 분석하여 UI에 표시합니다.
-                    // 만약 서버에서 good_points, improvement_points 등을 바로 제공하는 필드가
-                    // 있다면 PoseAnalysis 모델에 추가해야 합니다.
-                    // 현재 PoseAnalysis 모델에는 aiComment만 있으므로 이 값을 사용합니다.
-
-                    // 서버 응답이 'good_points', 'improvement_points' 필드를 JSON으로 포함하는 경우:
-                    // (기존 하드코딩 로직을 최대한 유지하기 위해 poseData를 활용 가정)
-                    val poseData = analysis.poseData
-                    if (poseData != null) {
-                        val good = (poseData["good_points"] as? String)?.ifBlank { "없음" } ?: "없음"
-                        val improve = (poseData["improvement_points"] as? String)?.ifBlank { "없음" } ?: "없음"
-                        val methods = (poseData["improvement_methods"] as? String)?.ifBlank { "없음" } ?: "없음"
-
-                        val responseText = "✅ Good Points:\n$good\n\n⚠️ Improvement Points:\n$improve\n\n💡 Methods:\n$methods"
-                        binding.tvCue.text = responseText
-
-                        binding.tvGoodPoints.text = good
-                        binding.tvImprovePoints.text = improve
-                        // tvCue에 모든 텍스트를 출력하는 것으로 기존 로직을 따름
-                    } else {
-                        // poseData가 없을 경우, aiComment라도 출력
-                        binding.tvCue.text = "AI Comment: $aiComment"
-                    }
-
-                    // 업로드 완료/실패 후 다시 업로드 가능
-                    binding.btnUpload.isEnabled = true
-                }
+            if (errorMessage != null) {
+                Toast.makeText(
+                    requireContext(),
+                    "Failed to evaluate pose: $errorMessage",
+                    Toast.LENGTH_LONG
+                ).show()
+                return@launch
             }
+
+            // 🎯 결과 화면 갔다가 돌아오면 카메라/화면을 리셋하기 위해 플래그 켜두기
+            shouldResetCameraOnResume = true
+
+            // 결과 액티비티로 이동
+            val intent = Intent(requireContext(), PoseResultActivity::class.java).apply {
+                putExtra(PoseResultActivity.EXTRA_GOOD_POINTS, goodPointsResult)
+                putExtra(PoseResultActivity.EXTRA_IMPROVE_POINTS, improvePointsResult)
+                putExtra(PoseResultActivity.EXTRA_CUE, cueResult)
+            }
+            startActivity(intent)
         }
     }
 
+    // === 결과에서 돌아온 후 카메라/화면 리셋 ===
+    private fun resetCameraUiAndRestart() {
+        // 정지 이미지 제거
+        imgAnalysisResult.setImageDrawable(null)
+        imgAnalysisResult.visibility = View.GONE
 
+        // 가이드 텍스트 + 카메라 프리뷰 다시 표시
+        tvGuideText.visibility = View.VISIBLE
+        previewView.visibility = View.VISIBLE
 
-    // === Utils ===
+        // 버튼 다시 활성화
+        btnCapture.isEnabled = true
+        btnUpload.isEnabled = true
+        btnSwitchCamera.isEnabled = true
 
-    // EXIF(회전/미러) 보정 포함 디코드
+        // 로딩/메시지 초기화
+        progressLoading.visibility = View.GONE
+
+        // 카메라 다시 시작
+        if (allPermissionsGranted()) {
+            startCamera()
+        }
+    }
+
+    // ================= Utils =================
     private fun decodeBitmapWithExifCorrected(file: File): Bitmap? {
         val src = BitmapFactory.decodeFile(file.absolutePath) ?: return null
         val exif = try {
@@ -384,12 +459,10 @@ class PoseFragment : Fragment() {
         return try {
             Bitmap.createBitmap(src, 0, 0, src.width, src.height, m, true)
         } catch (e: Exception) {
-            // 메모리 부족 등 시 원본이라도 반환
             src
         }
     }
 
-    // 전송량 줄이기: 긴 변 720으로 다운스케일 + JPEG 85
     private fun bitmapToBase64(bitmap: Bitmap): String {
         val scaled = downscale(bitmap, 720)
         val baos = ByteArrayOutputStream()
@@ -409,9 +482,9 @@ class PoseFragment : Fragment() {
         return Bitmap.createScaledBitmap(src, nw, nh, true)
     }
 
-    // =============== PERMISSIONS ==================
     private fun allPermissionsGranted() = REQUIRED_PERMISSIONS.all {
-        ContextCompat.checkSelfPermission(requireContext(), it) == PackageManager.PERMISSION_GRANTED
+        ContextCompat.checkSelfPermission(requireContext(), it) ==
+                PackageManager.PERMISSION_GRANTED
     }
 
     override fun onDestroyView() {
@@ -424,6 +497,7 @@ class PoseFragment : Fragment() {
 
     companion object {
         private const val REQUEST_CODE_PERMISSIONS = 10
-        private val REQUIRED_PERMISSIONS = arrayOf(Manifest.permission.CAMERA)
+        private val REQUIRED_PERMISSIONS =
+            arrayOf(Manifest.permission.CAMERA)
     }
 }

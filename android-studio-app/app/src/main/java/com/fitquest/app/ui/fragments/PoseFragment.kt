@@ -115,38 +115,57 @@ class PoseFragment : Fragment() {
             }
         }
 
-        // ==== Gallery Picker ====
-        pickImageLauncher = registerForActivityResult(
-            ActivityResultContracts.StartActivityForResult()
-        ) { result ->
-            if (result.resultCode == Activity.RESULT_OK) {
-                val uri = result.data?.data
-                if (uri != null) {
-                    val file = createFileFromUri(uri)
-                    if (file != null) {
-                        lastPhotoFile = file
-                        processAndUpload(file)
-                    } else {
-                        Toast.makeText(
-                            requireContext(),
-                            "Failed to load selected image.",
-                            Toast.LENGTH_SHORT
-                        ).show()
-                    }
-                }
+        val poseExerciseKey = arguments?.getString("poseExerciseKey")
+        val poseImagePath = arguments?.getString("poseImagePath")
+
+        if (poseExerciseKey != null) {
+            val idx = activityKeys.indexOf(poseExerciseKey)
+            if (idx >= 0) {
+                binding.spinnerExercisePose.setSelection(idx)
+                selectedExercise = poseExerciseKey.lowercase()
             }
         }
 
-        // ==== Camera Permission ====
-        if (allPermissionsGranted()) {
-            startCamera()
+        val preloadedFile = poseImagePath?.let { File(it) }?.takeIf { it.exists() }
+        if (preloadedFile != null) {
+            // ✅ AiCoach에서 온 사진으로 바로 업로드 진행
+            lastPhotoFile = preloadedFile
+            processAndUpload(preloadedFile)
         } else {
-            ActivityCompat.requestPermissions(
-                requireActivity(),
-                REQUIRED_PERMISSIONS,
-                REQUEST_CODE_PERMISSIONS
-            )
+
+            // ==== Gallery Picker ====
+            pickImageLauncher = registerForActivityResult(
+                ActivityResultContracts.StartActivityForResult()
+            ) { result ->
+                if (result.resultCode == Activity.RESULT_OK) {
+                    val uri = result.data?.data
+                    if (uri != null) {
+                        val file = createFileFromUri(uri)
+                        if (file != null) {
+                            lastPhotoFile = file
+                            processAndUpload(file)
+                        } else {
+                            Toast.makeText(
+                                requireContext(),
+                                "Failed to load selected image.",
+                                Toast.LENGTH_SHORT
+                            ).show()
+                        }
+                    }
+                }
+            }
+            // 기존 카메라 시작 로직
+            if (allPermissionsGranted()) {
+                startCamera()
+            } else {
+                ActivityCompat.requestPermissions(
+                    requireActivity(),
+                    REQUIRED_PERMISSIONS,
+                    REQUEST_CODE_PERMISSIONS
+                )
+            }
         }
+
 
         // ==== Orientation Listener ====
         orientationListener = object : OrientationEventListener(requireContext()) {

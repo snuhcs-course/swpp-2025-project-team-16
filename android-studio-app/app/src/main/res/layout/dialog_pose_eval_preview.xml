@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="16dp"
+    android:background="@color/background_dark">
+
+    <TextView
+        android:id="@+id/tvTitle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Check your form?"
+        android:textColor="@android:color/white"
+        android:textSize="18sp"
+        android:textStyle="bold"
+        android:layout_marginBottom="8dp" />
+
+    <ImageView
+        android:id="@+id/imgPosePreview"
+        android:layout_width="match_parent"
+        android:layout_height="240dp"
+        android:adjustViewBounds="true"
+        android:scaleType="centerCrop"
+        android:background="@color/surface_dark_translucent" />
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Use this snapshot from your first rep to get a detailed pose evaluation."
+        android:textColor="@color/text_secondary"
+        android:textSize="13sp"
+        android:layout_marginTop="8dp"
+        android:layout_marginBottom="12dp" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="end">
+
+        <Button
+            android:id="@+id/btnLater"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Later" />
+
+        <Button
+            android:id="@+id/btnEvaluate"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Evaluate"
+            android:layout_marginStart="12dp" />
+    </LinearLayout>
+</LinearLayout>

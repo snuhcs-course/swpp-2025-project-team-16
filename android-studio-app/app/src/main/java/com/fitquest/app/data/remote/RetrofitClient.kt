@@ -62,12 +62,8 @@ object RetrofitClient {
         retrofit.create(ApiService::class.java)
     }
 
-    val journeyApiService: JourneyApiService by lazy {
-        retrofit.create(JourneyApiService::class.java)
-    }
-
-    val profileApiService: ProfileApiService by lazy {
-        retrofit.create(ProfileApiService::class.java)
+    val userApiService: UserApiService by lazy {
+        retrofit.create(UserApiService::class.java)
     }
     val scheduleApiService: ScheduleApiService by lazy {
         retrofit.create(ScheduleApiService::class.java)

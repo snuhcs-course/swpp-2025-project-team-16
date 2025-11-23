@@ -17,4 +17,12 @@ object DateUtils {
         val minute = time.minute.toString().padStart(2, '0')
         return "$hour:$minute"
     }
+
+    fun formatTotalTime(totalSeconds: Float): String {
+        return when {
+            totalSeconds < 60 -> String.format("%.0fs", totalSeconds)
+            totalSeconds < 3600 -> String.format("%.1fm", totalSeconds / 60f)
+            else -> String.format("%.1fh", totalSeconds / 3600f)
+        }
+    }
 }

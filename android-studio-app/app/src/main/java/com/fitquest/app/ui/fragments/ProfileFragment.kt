@@ -19,6 +19,8 @@ import com.fitquest.app.model.Session
 import com.fitquest.app.ui.adapters.HistoryAdapter
 import com.fitquest.app.ui.viewmodels.HistoryViewModel
 import com.fitquest.app.ui.viewmodels.HistoryViewModelFactory
+import com.fitquest.app.ui.viewmodels.UserViewModel
+import com.fitquest.app.ui.viewmodels.UserViewModelFactory
 import com.fitquest.app.util.ActivityUtils.calculateAverageCompletionPercent
 import com.fitquest.app.util.ActivityUtils.calculateCompletionPercent
 import com.fitquest.app.util.ActivityUtils.calculateEarnedXpForSchedule
@@ -26,8 +28,10 @@ import com.fitquest.app.util.ActivityUtils.calculateEarnedXpForSession
 import com.fitquest.app.util.ActivityUtils.calculateTotalEarnedXp
 import com.fitquest.app.util.ActivityUtils.getEmoji
 import com.fitquest.app.util.DateUtils.formatDate
+import com.fitquest.app.util.DateUtils.formatTotalTime
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.bottomsheet.BottomSheetDialog
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import org.threeten.bp.LocalTime
 
@@ -38,6 +42,10 @@ class ProfileFragment : Fragment() {
 
     private val historyViewModel: HistoryViewModel by viewModels {
         HistoryViewModelFactory(RetrofitClient.scheduleApiService, RetrofitClient.sessionApiService)
+    }
+
+    private val userViewModel: UserViewModel by viewModels {
+        UserViewModelFactory(RetrofitClient.userApiService)
     }
 
     private lateinit var historyAdapter: HistoryAdapter
@@ -64,15 +72,9 @@ class ProfileFragment : Fragment() {
         binding.recyclerHistory.adapter = historyAdapter
 
         historyViewModel.dailyHistories.observe(viewLifecycleOwner) { dailyItems ->
-            Log.d("ProfileFragment", "Loaded daily items: ${dailyItems.size}")
-            dailyItems.forEach { di ->
-                Log.d("ProfileFragment", "Date ${di.date}: schedules=${di.schedules.size}, sessions=${di.sessions.size}")
-            }
             historyAdapter.submitList(dailyItems)
-            // RecyclerView가 비었을 때 TextView 보여주기
             binding.tvEmpty.visibility = if (dailyItems.isEmpty()) View.VISIBLE else View.GONE
         }
-
         historyViewModel.loadHistory()
 
         // 3. 랭킹 관련 UI 초기화 (기존 findViewById 로직 유지)
@@ -84,12 +86,45 @@ class ProfileFragment : Fragment() {
         tvSecondName = rankOverlay.findViewById(R.id.tvSecondName)
         tvThirdName = rankOverlay.findViewById(R.id.tvThirdName)
 
-        fetchUserStats()
         setupRankButton()
+        observeUserData()
+
+        userViewModel.getProfile()
+        userViewModel.getRankings()
     }
 
-    private fun fetchUserStats() {
-        // TODO: 나중에 구현
+    private fun observeUserData() {
+        viewLifecycleOwner.lifecycleScope.launch {
+            userViewModel.userProfile.collectLatest { user ->
+                user?.let {
+                    binding.statLevel.tvStatRank.text = it.rank.toString()
+                    binding.statLevel.tvStatLevel.text = it.level.toString()
+                    binding.statLevel.tvStatTime.text = formatTotalTime(it.totalTime)
+                    binding.statLevel.tvStatXP.text = it.xp.toString()
+                }
+            }
+        }
+
+        viewLifecycleOwner.lifecycleScope.launch {
+            userViewModel.rankings.collectLatest { ranks ->
+                rankListContainer.removeAllViews()
+
+                tvFirstName.text = "1st • ${ranks.getOrNull(0)?.name ?: "-"}"
+                tvSecondName.text = "2nd • ${ranks.getOrNull(1)?.name ?: "-"}"
+                tvThirdName.text = "3rd • ${ranks.getOrNull(2)?.name ?: "-"}"
+
+                ranks.drop(3).forEachIndexed { index, rank ->
+                    val tv = TextView(requireContext()).apply {
+                        text = "${index + 4}. ${rank.name} — ${rank.xp} XP"
+                        setTextColor(resources.getColor(R.color.text_primary, null))
+                        textSize = 13f
+                        gravity = android.view.Gravity.CENTER
+                        setPadding(0, 6, 0, 6)
+                    }
+                    rankListContainer.addView(tv)
+                }
+            }
+        }
     }
 
     private fun setupRankButton() {
@@ -98,56 +133,12 @@ class ProfileFragment : Fragment() {
             rankOverlay.alpha = 0f
             rankOverlay.animate().alpha(1f).setDuration(250).start()
 
-            fetchRankData() // 서버 요청
-
             rankOverlay.findViewById<View>(R.id.btnCloseRank)?.setOnClickListener {
                 rankOverlay.animate()
                     .alpha(0f)
                     .setDuration(200)
                     .withEndAction { rankOverlay.visibility = View.GONE }
                     .start()
-            }
-        }
-    }
-
-    private fun fetchRankData() {
-        val prefs = requireContext().getSharedPreferences("auth", 0)
-        val token = prefs.getString("token", null) ?: return
-
-        lifecycleScope.launch {
-            try {
-                val response = RetrofitClient.profileApiService.getRankings("Bearer $token")
-                if (response.isSuccessful) {
-                    val ranks = response.body() ?: emptyList()
-
-                    // Clear existing
-                    rankListContainer.removeAllViews()
-
-                    // 상위 3명 podium
-                    if (ranks.isNotEmpty()) {
-                        tvFirstName.text = "1st • ${ranks.getOrNull(0)?.name ?: "-"}"
-                        tvSecondName.text = "2nd • ${ranks.getOrNull(1)?.name ?: "-"}"
-                        tvThirdName.text = "3rd • ${ranks.getOrNull(2)?.name ?: "-"}"
-                    }
-
-                    // 4등 이후 리스트
-                    val inflater = LayoutInflater.from(requireContext())
-                    for (i in 3 until ranks.size) {
-                        val rank = ranks[i]
-                        val tv = TextView(requireContext()).apply {
-                            text = "${rank.rank}. ${rank.name} — ${rank.xp} XP"
-                            setTextColor(resources.getColor(R.color.text_primary, null))
-                            textSize = 13f
-                            gravity = Gravity.CENTER
-                            setPadding(0, 6, 0, 6)
-                        }
-                        rankListContainer.addView(tv)
-                    }
-                } else {
-                    Log.e("RankFetch", "HTTP ${response.code()}")
-                }
-            } catch (e: Exception) {
-                Log.e("RankFetch", "Error: ${e.localizedMessage}")
             }
         }
     }

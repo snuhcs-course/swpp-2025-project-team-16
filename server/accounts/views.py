@@ -106,24 +106,44 @@ def user_rankings(request):
     GET /accounts/rankings/
     공동 순위 반영 버전
     """
-    users = Account.objects.filter(is_active=True).order_by('-xp', '-level')[:50]
+    users = Account.objects.filter(is_active=True).order_by('-level', '-xp')[:50]
 
     data = []
-    prev_xp = None
+    prev_level, prev_xp = None, None
     rank = 0
     display_rank = 0
 
     for u in users:
         display_rank += 1
-        if u.xp != prev_xp:
-            rank = display_rank 
+        if (u.level, u.xp) != (prev_level, prev_xp):
+            rank = display_rank
         data.append({
             "rank": rank,
             "name": u.name,
             "xp": u.xp,
             "level": u.level,
         })
-        prev_xp = u.xp
+        prev_level, prev_xp = u.level, u.xp
 
     return Response(data, status=status.HTTP_200_OK)
 
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def user_profile(request):
+    user = request.user
+
+    higher_users = Account.objects.filter(
+        is_active=True
+    ).filter(
+        level__gt=user.level
+    ) | Account.objects.filter(
+        level=user.level,
+        xp__gt=user.xp,
+        is_active=True
+    )
+    user_rank = higher_users.count() + 1
+    
+    serializer = AccountSerializer(user)
+    data = serializer.data
+    data['rank'] = user_rank
+    return Response(data, status=status.HTTP_200_OK)

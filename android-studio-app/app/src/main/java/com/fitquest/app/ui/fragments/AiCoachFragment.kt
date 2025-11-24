@@ -45,6 +45,11 @@ import java.util.Locale
 import kotlin.math.exp
 import androidx.recyclerview.widget.RecyclerView
 import androidx.viewpager2.widget.ViewPager2
+import nl.dionsegijn.konfetti.core.Party
+import nl.dionsegijn.konfetti.core.Position
+import nl.dionsegijn.konfetti.core.emitter.Emitter
+import nl.dionsegijn.konfetti.core.models.Size
+import java.util.concurrent.TimeUnit
 
 class AiCoachFragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener {
 
@@ -651,7 +656,15 @@ class AiCoachFragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener {
             // 이전 값보다 커졌을 때만 팝업 (rep 올라간 순간)
             if (isTraining && count > prev) {
                 showRepPopup(count)
-
+                if (isTraining && scheduleRepsTarget != null && count == scheduleRepsTarget) {
+                    confettiGoalAchieved()
+                }
+                else if (count % 10 == 0) {
+                    confettiMilestone2()
+                }
+                else if (count % 5 == 0) {
+                    confettiMilestone()
+                }
             }
         }
     }
@@ -858,6 +871,74 @@ class AiCoachFragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener {
             holder.imageView.setImageBitmap(bitmap)
         }
     }
+
+    private fun confettiMilestone() {
+        binding.confettiView.start(
+            Party(
+                speed = 10f,
+                maxSpeed = 50f,
+                damping = 0.88f,
+                spread = 360,
+                emitter = Emitter(duration = 900, TimeUnit.MILLISECONDS).max(120),
+                colors = listOf(
+                    Color.parseColor("#FFD54F"), // Yellow
+                    Color.parseColor("#FF6E40"), // Orange Accent
+                    Color.parseColor("#4DB6AC"), // Mint
+                    Color.parseColor("#9575CD")  // Lavender
+                ),
+                position = Position.Relative(0.5, 0.9),
+                size = listOf(
+                    Size.SMALL,
+                    Size.MEDIUM,
+                    Size.LARGE
+                )
+            )
+        )
+    }
+
+
+    private fun confettiGoalAchieved() {
+        binding.confettiView.start(
+            Party(
+                speed = 10f,
+                maxSpeed = 28f,
+                damping = 0.88f,
+                spread = 300,
+                emitter = Emitter(duration = 1200, TimeUnit.MILLISECONDS).max(120),
+                colors = listOf(
+                    Color.parseColor("#FF8A65"), // Orange
+                    Color.parseColor("#4DB6AC"), // Mint
+                    Color.parseColor("#FFD54F"), // Yellow
+                    Color.parseColor("#81D4FA")  // Sky Blue
+                ),
+                position = Position.Relative(0.5, 0.9) // Slightly above bottom
+            )
+        )
+    }
+
+    private fun  confettiMilestone2() {
+        binding.confettiView.start(
+            Party(
+                speed = 20f,
+                maxSpeed = 42f,
+                damping = 0.9f,
+                spread = 360,
+                emitter = Emitter(duration = 2200, TimeUnit.MILLISECONDS).perSecond(250),
+                colors = listOf(
+                    Color.parseColor("#FF8A65"),
+                    Color.parseColor("#4DB6AC"),
+                    Color.parseColor("#FFD54F"),
+                    Color.parseColor("#9575CD"),
+                    Color.parseColor("#81D4FA"),
+                    Color.parseColor("#FF5252")
+                ),
+                position = Position.Relative(0.5, 0.4) // Mid-screen explosion 💥
+            )
+        )
+    }
+
+
+
 
 
     companion object {

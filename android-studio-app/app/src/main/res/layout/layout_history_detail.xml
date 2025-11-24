@@ -177,7 +177,7 @@
             android:id="@+id/tvInfoMessage2"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginStart="2dp"
+            android:layout_marginStart="4dp"
             android:text="Feedbacks are automatically generated with the works by GPT."
             android:textColor="@color/text_secondary"
             android:textSize="11sp" />

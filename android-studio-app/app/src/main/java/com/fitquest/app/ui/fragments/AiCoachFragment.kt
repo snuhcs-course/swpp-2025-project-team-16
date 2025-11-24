@@ -2,7 +2,10 @@ package com.fitquest.app.ui.fragments
 
 import android.Manifest
 import android.content.pm.PackageManager
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.graphics.Color
+import android.graphics.Matrix
 import android.os.Bundle
 import android.os.CountDownTimer
 import android.view.LayoutInflater
@@ -14,8 +17,10 @@ import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.widget.ImageViewCompat
+import androidx.exifinterface.media.ExifInterface
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
+import androidx.navigation.fragment.findNavController
 import com.fitquest.app.R
 import com.fitquest.app.data.remote.RetrofitClient
 import com.fitquest.app.databinding.FragmentAiCoachBinding
@@ -30,11 +35,16 @@ import com.fitquest.app.ui.viewmodels.AiCoachViewModelFactory
 import com.fitquest.app.util.ActivityUtils
 import com.fitquest.app.util.TargetType
 import com.google.android.material.button.MaterialButton
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.mediapipe.tasks.vision.core.RunningMode
+import java.io.File
+import java.io.FileOutputStream
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 import java.util.Locale
 import kotlin.math.exp
+import androidx.recyclerview.widget.RecyclerView
+import androidx.viewpager2.widget.ViewPager2
 
 class AiCoachFragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener {
 
@@ -54,6 +64,7 @@ class AiCoachFragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener {
     private lateinit var cameraExecutor: ExecutorService
     private var cameraProvider: ProcessCameraProvider? = null
     private var imageAnalyzer: ImageAnalysis? = null
+    private var imageCapture: ImageCapture? = null
     private var lensFacing: Int = CameraSelector.LENS_FACING_BACK
     private lateinit var poseLandmarkerHelper: PoseLandmarkerHelper
 
@@ -86,6 +97,12 @@ class AiCoachFragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener {
 
     private val COACH_MSG_IDLE = "Position yourself in frame"
     private val COACH_MSG_ANALYZING = "Analyzing form... 🔍"
+
+    private val bottomRepPhotoFiles = mutableListOf<File>()
+    private var lastCapturedRepIndex: Int = -1
+
+    private var lastCaptureTimeMs: Long = 0L
+    private val MIN_CAPTURE_INTERVAL_MS: Long = 3000L
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         _binding = FragmentAiCoachBinding.inflate(inflater, container, false)
@@ -249,11 +266,18 @@ class AiCoachFragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener {
                     analysis.setAnalyzer(cameraExecutor) { detectPose(it) }
                 }
         } else null
+
+        imageCapture = ImageCapture.Builder()
+            .setCaptureMode(ImageCapture.CAPTURE_MODE_MINIMIZE_LATENCY)
+            .setTargetRotation(binding.cameraPreview.display.rotation)
+            .build()
+
         val selector = CameraSelector.Builder().requireLensFacing(lensFacing).build()
         try {
             provider.unbindAll()
             val useCases = mutableListOf<UseCase>(preview)
             imageAnalyzer?.let { useCases.add(it) }
+            imageCapture?.let { useCases.add(it) }
             provider.bindToLifecycle(this, selector, *useCases.toTypedArray())
         } catch (e: Exception) {
             e.printStackTrace()
@@ -334,6 +358,10 @@ class AiCoachFragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener {
             }
             counter?.update(pts, now)
 
+            val currentCount = counter?.count ?: 0
+            val currentPhase = counter?.phase
+            captureBottomRepPhotoIfNeeded(currentCount, currentPhase)
+
             // ---- UI 반영 ----
             val lowerName = selectedExercise.lowercase(Locale.getDefault())
             if (lowerName == "plank" && counter is PlankTimer) {
@@ -345,6 +373,7 @@ class AiCoachFragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener {
                 updateRepCount(counter?.count ?: 0)
             }
             binding.tvFeedback.text = "Phase: ${counter?.phase ?: "-"}"
+
         }
     }
 
@@ -418,6 +447,11 @@ class AiCoachFragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener {
         isTraining = true
 
         sessionStartTime = System.currentTimeMillis()
+
+        bottomRepPhotoFiles.clear()
+        lastCapturedRepIndex = -1
+
+        lastCaptureTimeMs = 0L
 
         val now = System.currentTimeMillis()
         val activity = selectedExercise.lowercase(Locale.getDefault())
@@ -494,7 +528,66 @@ class AiCoachFragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener {
         goodVisFrames = 0
         disarmUntilMs = 0L
         bindCameraUseCases(includeAnalyzer = false)
+
+        showPoseEvalDialogIfAvailable()
     }
+    private fun showPoseEvalDialogIfAvailable() {
+        // 저장된 사진이 없으면 다이얼로그 띄우지 않음
+        if (bottomRepPhotoFiles.isEmpty()) return
+
+        val dialogView = layoutInflater.inflate(R.layout.dialog_pose_eval_preview, null)
+        val viewPager = dialogView.findViewById<ViewPager2>(R.id.viewPagerPosePhotos)
+        val tvIndicator = dialogView.findViewById<TextView>(R.id.tvPageIndicator)
+        val btnLater = dialogView.findViewById<Button>(R.id.btnLater)
+        val btnEvaluate = dialogView.findViewById<Button>(R.id.btnEvaluate)
+
+        // ✅ 어댑터 설정
+        val adapter = PosePhotoPagerAdapter(bottomRepPhotoFiles)
+        viewPager.adapter = adapter
+
+        var selectedIndex = 0
+
+        fun updateIndicator(position: Int) {
+            tvIndicator.text = "${position + 1} / ${bottomRepPhotoFiles.size}"
+        }
+
+        updateIndicator(0)
+
+        viewPager.registerOnPageChangeCallback(object : ViewPager2.OnPageChangeCallback() {
+            override fun onPageSelected(position: Int) {
+                selectedIndex = position
+                updateIndicator(position)
+            }
+        })
+
+        val dialog = MaterialAlertDialogBuilder(requireContext())
+            .setView(dialogView)
+            .setCancelable(true)
+            .create()
+
+        btnLater.setOnClickListener {
+            dialog.dismiss()
+        }
+
+        btnEvaluate.setOnClickListener {
+            dialog.dismiss()
+            val chosenFile = bottomRepPhotoFiles.getOrNull(selectedIndex)
+            if (chosenFile != null) {
+                navigateToPoseWithPhoto(chosenFile)
+            }
+        }
+
+        dialog.show()
+    }
+
+    private fun navigateToPoseWithPhoto(photo: File) {
+        val bundle = Bundle().apply {
+            putString("poseImagePath", photo.absolutePath)
+            putString("poseExerciseKey", selectedExercise.lowercase(Locale.getDefault()))
+        }
+        findNavController().navigate(R.id.poseFragment, bundle)
+    }
+
 
     private fun updateTrainingUiState() {
         val v = if (isTraining) View.VISIBLE else View.GONE
@@ -558,6 +651,7 @@ class AiCoachFragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener {
             // 이전 값보다 커졌을 때만 팝업 (rep 올라간 순간)
             if (isTraining && count > prev) {
                 showRepPopup(count)
+
             }
         }
     }
@@ -649,6 +743,85 @@ class AiCoachFragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener {
         ContextCompat.checkSelfPermission(requireContext(), it) == PackageManager.PERMISSION_GRANTED
     }
 
+    private fun captureBottomRepPhotoIfNeeded(currentRep: Int, phase: String?) {
+        if (!isTraining) return
+
+        // BOTTOM 또는 DOWN_REACHED 가 아닐 때는 무시
+        if (phase != "BOTTOM" && phase != "DOWN_REACHED") return
+
+        // ✅ 시간 간격 체크: 마지막 캡처에서 3초 안 지났으면 캡처하지 않음
+        val nowMs = System.currentTimeMillis()
+        if (nowMs - lastCaptureTimeMs < MIN_CAPTURE_INTERVAL_MS) {
+            return
+        }
+
+        // 같은 rep에서 여러 번 찍히지 않게 방지 (여전히 유지)
+        if (currentRep <= lastCapturedRepIndex) return
+
+        val imageCapture = imageCapture ?: return
+
+        val file = File(
+            requireContext().externalCacheDir,
+            "aicoach_bottom_rep_${currentRep}_${System.currentTimeMillis()}.jpg"
+        )
+
+        val outputOptions = ImageCapture.OutputFileOptions.Builder(file).build()
+
+        // ✅ 캡처를 예약한 시점에 바로 lastCaptureTimeMs 업데이트
+        //    (콜백이 늦게 오더라도 3초 제한이 제대로 걸리도록)
+        lastCaptureTimeMs = nowMs
+
+        imageCapture.takePicture(
+            outputOptions,
+            ContextCompat.getMainExecutor(requireContext()),
+            object : ImageCapture.OnImageSavedCallback {
+                override fun onError(exception: ImageCaptureException) {
+                    // 실패해도 앱 기능은 그대로 진행
+                }
+
+                override fun onImageSaved(outputFileResults: ImageCapture.OutputFileResults) {
+                    try {
+                        // EXIF 기반 회전 보정
+                        val exif = ExifInterface(file.absolutePath)
+                        val orientation = exif.getAttributeInt(
+                            ExifInterface.TAG_ORIENTATION,
+                            ExifInterface.ORIENTATION_NORMAL
+                        )
+
+                        val bitmap = BitmapFactory.decodeFile(file.absolutePath)
+                        val matrix = Matrix()
+
+                        when (orientation) {
+                            ExifInterface.ORIENTATION_ROTATE_90 -> matrix.postRotate(90f)
+                            ExifInterface.ORIENTATION_ROTATE_180 -> matrix.postRotate(180f)
+                            ExifInterface.ORIENTATION_ROTATE_270 -> matrix.postRotate(270f)
+                        }
+
+                        val rotated = Bitmap.createBitmap(
+                            bitmap, 0, 0, bitmap.width, bitmap.height, matrix, true
+                        )
+
+                        FileOutputStream(file).use { out ->
+                            rotated.compress(Bitmap.CompressFormat.JPEG, 90, out)
+                        }
+
+                        rotated.recycle()
+                    } catch (e: Exception) {
+                        e.printStackTrace()
+                    }
+
+                    // ✅ 리스트에 추가 + 마지막 캡처된 rep 갱신
+                    bottomRepPhotoFiles.add(file)
+                    lastCapturedRepIndex = currentRep
+                }
+            }
+        )
+    }
+
+
+
+
+
     private fun toProbMaybeLogit(x: Float?): Float? {
         if (x == null || x.isNaN()) return null
         return if (x in 0f..1f) x else 1f / (1f + exp(-x))
@@ -658,6 +831,34 @@ class AiCoachFragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener {
         val x = p.x(); val y = p.y()
         return x in 0f..1f && y in 0f..1f
     }
+
+    // ✅ Pose 평가용 사진들을 슬라이드로 보여주는 어댑터
+    private inner class PosePhotoPagerAdapter(
+        private val photos: List<File>
+    ) : RecyclerView.Adapter<PosePhotoPagerAdapter.PhotoViewHolder>() {
+
+        inner class PhotoViewHolder(val imageView: ImageView) : RecyclerView.ViewHolder(imageView)
+
+        override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): PhotoViewHolder {
+            val imageView = ImageView(parent.context).apply {
+                layoutParams = ViewGroup.LayoutParams(
+                    ViewGroup.LayoutParams.MATCH_PARENT,
+                    ViewGroup.LayoutParams.MATCH_PARENT
+                )
+                scaleType = ImageView.ScaleType.CENTER_CROP
+            }
+            return PhotoViewHolder(imageView)
+        }
+
+        override fun getItemCount(): Int = photos.size
+
+        override fun onBindViewHolder(holder: PhotoViewHolder, position: Int) {
+            val file = photos[position]
+            val bitmap = BitmapFactory.decodeFile(file.absolutePath)
+            holder.imageView.setImageBitmap(bitmap)
+        }
+    }
+
 
     companion object {
         // ✅ 수정: Navigation Component에서 사용하는 Argument Key 상수 정의

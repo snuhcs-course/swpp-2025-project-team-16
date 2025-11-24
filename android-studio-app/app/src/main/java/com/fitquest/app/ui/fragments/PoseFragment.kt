@@ -20,21 +20,24 @@ import android.view.ViewGroup
 import android.widget.*
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.camera.core.*
+import androidx.camera.core.CameraSelector
+import androidx.camera.core.ImageCapture
+import androidx.camera.core.ImageCaptureException
+import androidx.camera.core.Preview
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.exifinterface.media.ExifInterface
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
-import com.fitquest.app.R
 import com.fitquest.app.PoseResultActivity
 import com.fitquest.app.data.remote.EvaluatePostureRequest
 import com.fitquest.app.data.remote.RetrofitClient
+import com.fitquest.app.databinding.FragmentPoseBinding
 import com.fitquest.app.util.ActivityUtils
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.io.ByteArrayOutputStream
 import java.io.File
 import java.util.concurrent.ExecutorService
@@ -42,8 +45,10 @@ import java.util.concurrent.Executors
 
 class PoseFragment : Fragment() {
 
-    // ==== Exercise Spinner ====
-    private lateinit var spinnerExercisePose: Spinner
+    private var _binding: FragmentPoseBinding? = null
+    private val binding get() = _binding!!
+
+    // ==== Exercise selection ====
     private var selectedExercise: String =
         ActivityUtils.activityMetadataMap.keys.firstOrNull() ?: "squat"
 
@@ -53,28 +58,22 @@ class PoseFragment : Fragment() {
     private var cameraProvider: ProcessCameraProvider? = null
     private var lensFacing: Int = CameraSelector.LENS_FACING_BACK
 
-    // UI
-    private lateinit var previewView: PreviewView
-    private lateinit var btnCapture: ImageButton
-    private lateinit var btnUpload: ImageButton
-    private lateinit var btnSwitchCamera: ImageButton
-    private lateinit var tvCountdown: TextView
-    private lateinit var imgAnalysisResult: ImageView
-    private lateinit var tvGuideText: TextView
-    private lateinit var progressLoading: ProgressBar
-    private lateinit var tvInfoMessage: TextView
-
+    // State
     private var countdownTimer: CountDownTimer? = null
+    private var loadingTimer: CountDownTimer? = null
     private var lastPhotoFile: File? = null
     private var orientationListener: OrientationEventListener? = null
 
+    // Gallery picker
     private lateinit var pickImageLauncher: ActivityResultLauncher<Intent>
 
     // 결과 화면 다녀온 뒤 카메라/화면을 리셋할지 여부
     private var shouldResetCameraOnResume: Boolean = false
 
     override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
     ): View {
         _binding = FragmentPoseBinding.inflate(inflater, container, false)
         return binding.root
@@ -82,18 +81,6 @@ class PoseFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-
-        // ==== Bind Views ====
-        spinnerExercisePose = view.findViewById(R.id.spinnerExercisePose)
-        previewView = view.findViewById(R.id.cameraPreview)
-        btnCapture = view.findViewById(R.id.btnCapture)
-        btnUpload = view.findViewById(R.id.btnUpload)
-        btnSwitchCamera = view.findViewById(R.id.btnSwitchCamera)
-        tvCountdown = view.findViewById(R.id.tvCountdown)
-        imgAnalysisResult = view.findViewById(R.id.imgAnalysisResult)
-        tvGuideText = view.findViewById(R.id.tvGuideText)
-        progressLoading = view.findViewById(R.id.progressLoading)
-        tvInfoMessage = view.findViewById(R.id.tvInfoMessage)
 
         cameraExecutor = Executors.newSingleThreadExecutor()
 
@@ -103,7 +90,6 @@ class PoseFragment : Fragment() {
             "${metadata.emoji} ${metadata.label}"
         }
 
-        // 기본 선택 운동
         selectedExercise = activityKeys.firstOrNull() ?: "squat"
 
         val spinnerAdapter = ArrayAdapter(
@@ -112,9 +98,9 @@ class PoseFragment : Fragment() {
             exerciseListWithEmoji
         )
         spinnerAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-        spinnerExercisePose.adapter = spinnerAdapter
+        binding.spinnerExercisePose.adapter = spinnerAdapter
 
-        spinnerExercisePose.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+        binding.spinnerExercisePose.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
             override fun onItemSelected(
                 parent: AdapterView<*>?,
                 v: View?,
@@ -130,38 +116,57 @@ class PoseFragment : Fragment() {
             }
         }
 
-        // ==== Gallery Picker ====
-        pickImageLauncher = registerForActivityResult(
-            ActivityResultContracts.StartActivityForResult()
-        ) { result ->
-            if (result.resultCode == Activity.RESULT_OK) {
-                val uri = result.data?.data
-                if (uri != null) {
-                    val file = createFileFromUri(uri)
-                    if (file != null) {
-                        lastPhotoFile = file
-                        processAndUpload(file)
-                    } else {
-                        Toast.makeText(
-                            requireContext(),
-                            "Failed to load selected image.",
-                            Toast.LENGTH_SHORT
-                        ).show()
-                    }
-                }
+        val poseExerciseKey = arguments?.getString("poseExerciseKey")
+        val poseImagePath = arguments?.getString("poseImagePath")
+
+        if (poseExerciseKey != null) {
+            val idx = activityKeys.indexOf(poseExerciseKey)
+            if (idx >= 0) {
+                binding.spinnerExercisePose.setSelection(idx)
+                selectedExercise = poseExerciseKey.lowercase()
             }
         }
 
-        // ==== Camera Permission ====
-        if (allPermissionsGranted()) {
-            startCamera()
+        val preloadedFile = poseImagePath?.let { File(it) }?.takeIf { it.exists() }
+        if (preloadedFile != null) {
+            // ✅ AiCoach에서 온 사진으로 바로 업로드 진행
+            lastPhotoFile = preloadedFile
+            processAndUpload(preloadedFile)
         } else {
-            ActivityCompat.requestPermissions(
-                requireActivity(),
-                REQUIRED_PERMISSIONS,
-                REQUEST_CODE_PERMISSIONS
-            )
+
+            // ==== Gallery Picker ====
+            pickImageLauncher = registerForActivityResult(
+                ActivityResultContracts.StartActivityForResult()
+            ) { result ->
+                if (result.resultCode == Activity.RESULT_OK) {
+                    val uri = result.data?.data
+                    if (uri != null) {
+                        val file = createFileFromUri(uri)
+                        if (file != null) {
+                            lastPhotoFile = file
+                            processAndUpload(file)
+                        } else {
+                            Toast.makeText(
+                                requireContext(),
+                                "Failed to load selected image.",
+                                Toast.LENGTH_SHORT
+                            ).show()
+                        }
+                    }
+                }
+            }
+            // 기존 카메라 시작 로직
+            if (allPermissionsGranted()) {
+                startCamera()
+            } else {
+                ActivityCompat.requestPermissions(
+                    requireActivity(),
+                    REQUIRED_PERMISSIONS,
+                    REQUEST_CODE_PERMISSIONS
+                )
+            }
         }
+
 
         // ==== Orientation Listener ====
         orientationListener = object : OrientationEventListener(requireContext()) {
@@ -178,12 +183,12 @@ class PoseFragment : Fragment() {
         orientationListener?.enable()
 
         // ==== Buttons ====
-        btnCapture.setOnClickListener { startCountdownAndCapture() }
-        btnUpload.setOnClickListener { openGalleryForImage() }
-        btnSwitchCamera.setOnClickListener { toggleCamera() }
+        binding.btnCapture.setOnClickListener { startCountdownAndCapture() }
+        binding.btnUpload.setOnClickListener { openGalleryForImage() }
+        binding.btnSwitchCamera.setOnClickListener { toggleCamera() }
     }
 
-    // 사용자가 PoseResultActivity에서 돌아왔을 때 호출
+    // PoseResultActivity에서 돌아왔을 때 호출
     override fun onResume() {
         super.onResume()
         if (shouldResetCameraOnResume) {
@@ -218,7 +223,18 @@ class PoseFragment : Fragment() {
             .build()
 
         try {
-            if (!provider.hasCamera(selector)) return
+            if (!provider.hasCamera(selector)) {
+                Toast.makeText(
+                    requireContext(),
+                    if (lensFacing == CameraSelector.LENS_FACING_FRONT)
+                        "이 기기에는 전면 카메라가 없습니다."
+                    else
+                        "이 기기에는 후면 카메라가 없습니다.",
+                    Toast.LENGTH_SHORT
+                ).show()
+                return
+            }
+
             provider.unbindAll()
             provider.bindToLifecycle(this, selector, preview, imageCapture)
         } catch (exc: Exception) {
@@ -248,7 +264,7 @@ class PoseFragment : Fragment() {
         countdownTimer?.cancel()
         countdownTimer = object : CountDownTimer(10_000, 1000) {
             override fun onTick(ms: Long) {
-                tvCountdown.text = seconds.toString()
+                binding.tvCountdown.text = seconds.toString()
                 seconds--
             }
 
@@ -256,6 +272,39 @@ class PoseFragment : Fragment() {
                 binding.tvCountdown.visibility = View.GONE
                 capturePhoto()
                 binding.btnCapture.isEnabled = true
+            }
+        }.start()
+    }
+
+    private fun startLoadingProgress() {
+        // progress bar 초기 설정
+        binding.progressLoading.visibility = View.VISIBLE
+        binding.tvProgressPercent.visibility = View.VISIBLE
+
+        binding.progressLoading.isIndeterminate = false
+        binding.progressLoading.max = 100
+        binding.progressLoading.progress = 0
+        binding.tvProgressPercent.text = "0%"
+
+        // 기존 타이머 있으면 정리
+        loadingTimer?.cancel()
+
+        val totalDuration = 60_000L      // 60초
+        val targetProgress = 90          // 90%까지 채우기
+
+        loadingTimer = object : CountDownTimer(totalDuration, 1000L) {
+            override fun onTick(millisUntilFinished: Long) {
+                val elapsed = totalDuration - millisUntilFinished
+                val fraction = elapsed.toFloat() / totalDuration.toFloat()
+                val progress = (fraction * targetProgress).toInt()
+                binding.progressLoading.setProgressCompat(progress, true)
+                binding.tvProgressPercent.text = "$progress%"
+            }
+
+            override fun onFinish() {
+                // 60초가 다 지나도 아직 응답 안 왔으면 90%까지만 채워둠
+                binding.progressLoading.setProgressCompat(targetProgress, true)
+                binding.tvProgressPercent.text = "$targetProgress%"
             }
         }.start()
     }
@@ -320,20 +369,25 @@ class PoseFragment : Fragment() {
 
     // ================= PROCESS + UPLOAD =================
     private fun processAndUpload(photoFile: File) {
-        btnUpload.isEnabled = false
+        binding.btnUpload.isEnabled = false
 
         val bitmap = decodeBitmapWithExifCorrected(photoFile)
         if (bitmap == null) {
             Toast.makeText(requireContext(), "Failed to decode image.", Toast.LENGTH_SHORT).show()
-            btnUpload.isEnabled = true
+            binding.btnUpload.isEnabled = true
             return
         }
 
+        // 🔹 회전/보정이 적용된 비트맵을 파일로 저장해서,
+        //    이후에는 이 파일을 기준으로 사용
+        val processedFile = saveBitmapToFile(bitmap)
+        lastPhotoFile = processedFile   // <-- 여기서 덮어쓰기
+
         // 카메라 대신 정지 이미지 표시
-        tvGuideText.visibility = View.GONE
-        previewView.visibility = View.GONE
-        imgAnalysisResult.visibility = View.VISIBLE
-        imgAnalysisResult.setImageBitmap(bitmap)
+        binding.tvGuideText.visibility = View.GONE
+        binding.cameraPreview.visibility = View.GONE
+        binding.imgAnalysisResult.visibility = View.VISIBLE
+        binding.imgAnalysisResult.setImageBitmap(bitmap)
 
         // 카메라 해제 & 버튼 비활성화
         cameraProvider?.unbindAll()
@@ -342,9 +396,9 @@ class PoseFragment : Fragment() {
         binding.btnSwitchCamera.isEnabled = false
 
         val base64 = bitmapToBase64(bitmap)
-        val fullUrl = "http://147.46.78.29:8004/pose/evaluate_posture/"
+        val fullUrl = "http://147.46.78.29:8004/pose-analyses/evaluate_posture/"
 
-        progressLoading.visibility = View.VISIBLE
+        startLoadingProgress()
 
         viewLifecycleOwner.lifecycleScope.launch {
             var goodPointsResult = ""
@@ -355,7 +409,7 @@ class PoseFragment : Fragment() {
             withContext(Dispatchers.IO) {
                 try {
                     val body = EvaluatePostureRequest(
-                        category = selectedExercise,   // <-- AiCoach와 동일 key 사용
+                        category = selectedExercise,
                         image_base64 = base64
                     )
                     val resp = RetrofitClient.apiService.evaluatePosture(fullUrl, body)
@@ -381,8 +435,16 @@ class PoseFragment : Fragment() {
                 }
             }
 
-            progressLoading.visibility = View.GONE
-            btnUpload.isEnabled = true
+            // 🔹 여기서 응답이 온 시점
+            //    → 타이머 정지 + 100%로 채우고 숨기기
+            loadingTimer?.cancel()
+            binding.progressLoading.setProgressCompat(100, true)
+            binding.tvProgressPercent.text = "100%"
+
+
+            binding.progressLoading.visibility = View.GONE
+            binding.tvProgressPercent.visibility = View.GONE
+            binding.btnUpload.isEnabled = true
 
             if (errorMessage != null) {
                 Toast.makeText(
@@ -393,14 +455,15 @@ class PoseFragment : Fragment() {
                 return@launch
             }
 
-            // 🎯 결과 화면 갔다가 돌아오면 카메라/화면을 리셋하기 위해 플래그 켜두기
             shouldResetCameraOnResume = true
 
-            // 결과 액티비티로 이동
             val intent = Intent(requireContext(), PoseResultActivity::class.java).apply {
                 putExtra(PoseResultActivity.EXTRA_GOOD_POINTS, goodPointsResult)
                 putExtra(PoseResultActivity.EXTRA_IMPROVE_POINTS, improvePointsResult)
                 putExtra(PoseResultActivity.EXTRA_CUE, cueResult)
+                lastPhotoFile?.absolutePath?.let { path ->
+                    putExtra(PoseResultActivity.EXTRA_IMAGE_PATH, path)
+                }
             }
             startActivity(intent)
         }
@@ -409,20 +472,22 @@ class PoseFragment : Fragment() {
     // === 결과에서 돌아온 후 카메라/화면 리셋 ===
     private fun resetCameraUiAndRestart() {
         // 정지 이미지 제거
-        imgAnalysisResult.setImageDrawable(null)
-        imgAnalysisResult.visibility = View.GONE
+        binding.imgAnalysisResult.setImageDrawable(null)
+        binding.imgAnalysisResult.visibility = View.GONE
 
         // 가이드 텍스트 + 카메라 프리뷰 다시 표시
-        tvGuideText.visibility = View.VISIBLE
-        previewView.visibility = View.VISIBLE
+        binding.tvGuideText.visibility = View.VISIBLE
+        binding.cameraPreview.visibility = View.VISIBLE
 
         // 버튼 다시 활성화
-        btnCapture.isEnabled = true
-        btnUpload.isEnabled = true
-        btnSwitchCamera.isEnabled = true
+        binding.btnCapture.isEnabled = true
+        binding.btnUpload.isEnabled = true
+        binding.btnSwitchCamera.isEnabled = true
 
-        // 로딩/메시지 초기화
-        progressLoading.visibility = View.GONE
+        // 로딩 초기화
+        loadingTimer?.cancel()
+        binding.progressLoading.visibility = View.GONE
+        binding.progressLoading.progress = 0
 
         // 카메라 다시 시작
         if (allPermissionsGranted()) {
@@ -471,6 +536,19 @@ class PoseFragment : Fragment() {
         return Base64.encodeToString(bytes, Base64.NO_WRAP)
     }
 
+    private fun saveBitmapToFile(bitmap: Bitmap): File {
+        // cache 디렉토리에 새 파일 생성
+        val file = File(
+            requireContext().cacheDir,
+            "pose_processed_${System.currentTimeMillis()}.jpg"
+        )
+        file.outputStream().use { out ->
+            bitmap.compress(Bitmap.CompressFormat.JPEG, 90, out)
+        }
+        return file
+    }
+
+
     private fun downscale(src: Bitmap, maxSide: Int): Bitmap {
         val w = src.width
         val h = src.height
@@ -490,6 +568,7 @@ class PoseFragment : Fragment() {
     override fun onDestroyView() {
         super.onDestroyView()
         countdownTimer?.cancel()
+        loadingTimer?.cancel()
         orientationListener?.disable()
         cameraExecutor.shutdown()
         _binding = null

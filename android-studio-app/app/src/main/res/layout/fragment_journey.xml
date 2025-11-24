@@ -59,19 +59,19 @@
         <View
             android:id="@+id/timelineVerticalLine"
             android:layout_width="4dp"
-            android:layout_height="620dp"
+            android:layout_height="match_parent"
             android:layout_gravity="center_horizontal"
-            android:paddingBottom="5dp"
+            android:layout_marginBottom="20dp"
             android:background="@drawable/gradient_timeline_vertical"
             android:elevation="2dp" />
 
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/recyclerJourney"
             android:layout_width="match_parent"
-            android:layout_height="623dp"
+            android:layout_height="615dp"
             android:clipToPadding="false"
             android:overScrollMode="never"
-            android:paddingTop="24dp"
+            android:paddingTop="20dp"
             android:paddingBottom="24dp"
             tools:itemCount="5"
             tools:listitem="@layout/item_journey_daynode" />
@@ -107,7 +107,7 @@
                 android:layout_marginStart="4dp"
                 android:text="Workouts are automatically generated and optimized for individuals by GPT."
                 android:textColor="@color/text_secondary"
-                android:textSize="11sp" />
+                android:textSize="10sp" />
 
         </LinearLayout>
 

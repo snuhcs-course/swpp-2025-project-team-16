@@ -5,10 +5,10 @@
         android:icon="@drawable/ic_journey"
         android:title="Quest" />
 
-    <item
-        android:id="@+id/scheduleFragment"
-        android:icon="@drawable/ic_schedule"
-        android:title="Plan" />
+<!--    <item-->
+<!--        android:id="@+id/scheduleFragment"-->
+<!--        android:icon="@drawable/ic_schedule"-->
+<!--        android:title="Plan" />-->
 
     <item
         android:id="@+id/aiCoachFragment"

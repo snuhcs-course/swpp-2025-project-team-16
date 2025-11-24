@@ -22,6 +22,7 @@ import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.camera.core.*
 import androidx.camera.lifecycle.ProcessCameraProvider
+import androidx.camera.view.PreviewView
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.exifinterface.media.ExifInterface
@@ -32,9 +33,12 @@ import com.fitquest.app.R
 import com.fitquest.app.PoseResultActivity
 import com.fitquest.app.data.remote.EvaluatePostureRequest
 import com.fitquest.app.data.remote.RetrofitClient
+import com.fitquest.app.databinding.FragmentJourneyBinding
+import com.fitquest.app.databinding.FragmentPoseBinding
 import com.fitquest.app.util.ActivityUtils
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.io.ByteArrayOutputStream
 import java.io.File
 import java.util.concurrent.ExecutorService
@@ -72,6 +76,9 @@ class PoseFragment : Fragment() {
 
     // 결과 화면 다녀온 뒤 카메라/화면을 리셋할지 여부
     private var shouldResetCameraOnResume: Boolean = false
+
+    private var _binding: FragmentPoseBinding? = null
+    private val binding get() = _binding!!
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?

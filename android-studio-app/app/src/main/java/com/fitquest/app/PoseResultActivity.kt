@@ -1,12 +1,15 @@
 package com.fitquest.app
 
+import android.graphics.BitmapFactory
 import android.os.Bundle
+import android.view.View
 import android.widget.Button
 import android.widget.ImageButton
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.fitquest.app.R
+import android.widget.ImageView
 
 class PoseResultActivity : AppCompatActivity() {
 
@@ -23,10 +26,26 @@ class PoseResultActivity : AppCompatActivity() {
         val good = intent.getStringExtra(EXTRA_GOOD_POINTS) ?: "None"
         val improve = intent.getStringExtra(EXTRA_IMPROVE_POINTS) ?: "None"
         val cue = intent.getStringExtra(EXTRA_CUE) ?: "None"
+        val ivPose  = findViewById<ImageView>(R.id.ivPoseImage)
+
 
         tvGood.text = good
         tvImprove.text = improve
         tvCue.text = cue
+
+        val imagePath = intent.getStringExtra(EXTRA_IMAGE_PATH)
+        if (!imagePath.isNullOrBlank()) {
+            val bitmap = BitmapFactory.decodeFile(imagePath)
+            if (bitmap != null) {
+                ivPose.setImageBitmap(bitmap)
+                ivPose.visibility = View.VISIBLE
+            } else {
+                ivPose.visibility = View.GONE
+            }
+        } else {
+            ivPose.visibility = View.GONE
+        }
+
 
         btnClose.setOnClickListener {
             finish()
@@ -43,5 +62,6 @@ class PoseResultActivity : AppCompatActivity() {
         const val EXTRA_GOOD_POINTS = "extra_good_points"
         const val EXTRA_IMPROVE_POINTS = "extra_improve_points"
         const val EXTRA_CUE = "extra_cue"
+        const val EXTRA_IMAGE_PATH = "extra_image_path"   // ✅ 새로 추가
     }
 }

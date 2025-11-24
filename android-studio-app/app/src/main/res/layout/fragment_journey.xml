@@ -95,8 +95,8 @@
 
             <ImageView
                 android:id="@+id/imgGptLogo"
-                android:layout_width="15dp"
-                android:layout_height="15dp"
+                android:layout_width="13dp"
+                android:layout_height="13dp"
                 android:src="@drawable/ic_gpt_logo"
                 android:contentDescription="@string/app_name" />
 

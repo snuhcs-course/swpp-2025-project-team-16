@@ -22,6 +22,7 @@ import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.camera.core.*
 import androidx.camera.lifecycle.ProcessCameraProvider
+import androidx.camera.view.PreviewView
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.exifinterface.media.ExifInterface
@@ -32,15 +33,20 @@ import com.fitquest.app.R
 import com.fitquest.app.PoseResultActivity
 import com.fitquest.app.data.remote.EvaluatePostureRequest
 import com.fitquest.app.data.remote.RetrofitClient
+import com.fitquest.app.databinding.FragmentPoseBinding
 import com.fitquest.app.util.ActivityUtils
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.io.ByteArrayOutputStream
 import java.io.File
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 
 class PoseFragment : Fragment() {
+
+    private var _binding: FragmentPoseBinding? = null
+    private val binding get() = _binding!!
 
     // ==== Exercise Spinner ====
     private lateinit var spinnerExercisePose: Spinner

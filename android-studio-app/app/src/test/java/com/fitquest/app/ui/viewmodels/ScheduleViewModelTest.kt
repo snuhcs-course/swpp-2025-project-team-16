@@ -2,8 +2,10 @@ package com.fitquest.app.ui.viewmodels
 
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import com.fitquest.app.MainDispatcherRule
+import com.fitquest.app.data.remote.ScheduleApiService
 import com.fitquest.app.model.Schedule
 import com.fitquest.app.repository.ScheduleRepository
+import com.fitquest.app.util.DateUtils.formatTime
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
@@ -15,6 +17,8 @@ import org.junit.runner.RunWith
 import org.mockito.Mock
 import org.mockito.Mockito
 import org.mockito.junit.MockitoJUnitRunner
+import org.threeten.bp.LocalDate
+import org.threeten.bp.LocalTime
 
 @RunWith(MockitoJUnitRunner::class)
 class ScheduleViewModelTest {
@@ -26,7 +30,7 @@ class ScheduleViewModelTest {
     private lateinit var viewModel: ScheduleViewModel
 
     @Mock
-    private lateinit var repository: ScheduleRepository
+    private lateinit var repository: ScheduleApiService
 
     private lateinit var viewModelFactory: ScheduleViewModelFactory
 
@@ -39,7 +43,7 @@ class ScheduleViewModelTest {
     @OptIn(ExperimentalCoroutinesApi::class)
     @Test
     fun getSchedules()=runTest {
-        val scheduleList= listOf(Schedule(scheduledDate = "2025-11-06", activity = "squat", startTime = "07:00", endTime = "09:00"))
+        val scheduleList= listOf(Schedule(scheduledDate = LocalDate.now(), activity = "squat", startTime = LocalTime.now(), endTime = LocalTime.now()))
         Mockito.`when`(repository.getSchedules("planned")).thenReturn(scheduleList)
         viewModel.getSchedules()
         advanceUntilIdle()
@@ -72,9 +76,9 @@ class ScheduleViewModelTest {
     @OptIn(ExperimentalCoroutinesApi::class)
     @Test
     fun autoGenerateSchedules()=runTest {
-        val scheduleList= listOf(Schedule(scheduledDate = "2025-11-06", activity = "squat", startTime = "07:00", endTime = "09:00"))
+        val scheduleList= listOf(Schedule(scheduledDate = LocalDate.ofYearDay(2025,1), activity = "squat", startTime = LocalTime.now(), endTime = LocalTime.now()))
         Mockito.`when`(repository.getSchedules("planned")).thenReturn(scheduleList)
-        val scheduleList2= listOf(Schedule(id=0,scheduledDate = "2025-11-07", activity = "squat", startTime = "07:00", endTime = "09:00"))
+        val scheduleList2= listOf(Schedule(id=0,scheduledDate = LocalDate.ofYearDay(2025,2), activity = "squat", startTime = LocalTime.now(), endTime = LocalTime.now()))
         Mockito.`when`(repository.autoGenerateSchedules()).thenReturn(scheduleList2)
         viewModel.getSchedules()
         advanceUntilIdle()

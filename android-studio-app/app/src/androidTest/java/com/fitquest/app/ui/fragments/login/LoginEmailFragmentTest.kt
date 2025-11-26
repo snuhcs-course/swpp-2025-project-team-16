@@ -25,26 +25,26 @@ class LoginEmailFragmentTest {
     @Test
     fun test_all_fields_are_displayed() {
         onView(withId(R.id.etEmail)).check(matches(isDisplayed()))
-        onView(withId(R.id.btnBeginQuest)).check(matches(isDisplayed()))
+        onView(withId(R.id.btnEmailCheckQuest)).check(matches(isDisplayed()))
     }
 
     @Test
     fun test_fill_form_and_click_continue() {
         onView(withId(R.id.etEmail)).perform(typeText("test@example.com"))
-        onView(withId(R.id.btnBeginQuest)).perform(click())
+        onView(withId(R.id.btnEmailCheckQuest)).perform(click())
         // Add assertion to check navigation
     }
 
     @Test
     fun test_empty_email_shows_error() {
-        onView(withId(R.id.btnBeginQuest)).perform(click())
+        onView(withId(R.id.btnEmailCheckQuest)).perform(click())
         onView(withId(R.id.etEmail)).check(matches(isDisplayed()))
     }
 
     @Test
     fun test_email_format_is_validated() {
         onView(withId(R.id.etEmail)).perform(typeText("invalid-email"))
-        onView(withId(R.id.btnBeginQuest)).perform(click())
+        onView(withId(R.id.btnEmailCheckQuest)).perform(click())
         // Add assertion to check for email format validation
     }
 }

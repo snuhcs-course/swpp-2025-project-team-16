@@ -2,6 +2,7 @@ package com.fitquest.app.ui.viewmodels
 
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import com.fitquest.app.MainDispatcherRule
+import com.fitquest.app.data.remote.SessionApiService
 import com.fitquest.app.model.Session
 import com.fitquest.app.model.WorkoutResult
 import com.fitquest.app.repository.SessionRepository
@@ -34,7 +35,7 @@ class AiCoachViewModelTest {
     private lateinit var viewModel: AiCoachViewModel
 
     @Mock
-    private lateinit var repository: SessionRepository
+    private lateinit var repository: SessionApiService
 
     private lateinit var viewModelFactory: AiCoachViewModelFactory
 

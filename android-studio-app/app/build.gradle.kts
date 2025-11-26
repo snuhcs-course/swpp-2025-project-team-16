@@ -48,6 +48,25 @@ android {
             isIncludeAndroidResources = true
         }
     }
+
+    tasks.register<JacocoReport>("jacocoTestReport") {
+        dependsOn("testDebugUnitTest", "connectedAndroidTest")
+
+        reports {
+            xml.required.set(true)
+            html.required.set(true)
+        }
+
+        sourceDirectories.setFrom(files("src/main/java"))
+        classDirectories.setFrom(files("build/intermediates/javac/debug/classes"))
+        executionData.setFrom(
+            fileTree("build") {
+                include("jacoco/testDebugUnitTest.exec")
+                include("outputs/code_coverage/**/*.ec")
+            }
+        )
+
+    }
 }
 
 dependencies {

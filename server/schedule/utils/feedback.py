@@ -87,7 +87,8 @@ def generate_daily_summary(user, date):
 
         sessions = Session.objects.filter(
             user=user,
-            created_at__date=date
+            created_at__date=date,
+            schedule__isnull=True
         )
 
         schedules = Schedule.objects.filter(

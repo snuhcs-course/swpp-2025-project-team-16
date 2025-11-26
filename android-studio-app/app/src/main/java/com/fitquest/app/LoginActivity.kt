@@ -23,10 +23,6 @@ import kotlinx.coroutines.launch
  */
 class LoginActivity : AppCompatActivity() {
 
-    private val loginViewModel: LoginViewModel by viewModels {
-        LoginViewModelFactory(RetrofitClient.scheduleApiService, RetrofitClient.dailySummaryApiService)
-    }
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_login)

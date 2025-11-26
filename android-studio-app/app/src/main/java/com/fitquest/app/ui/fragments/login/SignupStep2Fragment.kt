@@ -9,31 +9,28 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.TextView
 import android.widget.Toast
 import androidx.camera.core.*
 import androidx.camera.lifecycle.ProcessCameraProvider
-import androidx.camera.view.PreviewView
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.lifecycleScope
-import com.fitquest.app.R
-import com.google.android.material.button.MaterialButton
+import androidx.fragment.app.viewModels
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
-import com.fitquest.app.LoginActivity
 import com.fitquest.app.MainActivity
-import com.fitquest.app.data.remote.InitialCountRequest
 import com.fitquest.app.data.remote.RetrofitClient
-import com.fitquest.app.data.remote.TokenManager
-import kotlinx.coroutines.launch
-import com.fitquest.app.ui.coachutils.OverlayView
+import com.fitquest.app.databinding.FragmentSignupStep2Binding
+import com.fitquest.app.model.NetworkResult
+import com.fitquest.app.model.login.InitialCountRequest
 import com.fitquest.app.ui.coachutils.PoseLandmarkerHelper
 import com.fitquest.app.ui.coachutils.counter.BaseCounter
 import com.fitquest.app.ui.coachutils.counter.SquatCounter
+import com.fitquest.app.ui.viewmodels.AuthViewModel
+import com.fitquest.app.ui.viewmodels.AuthViewModelFactory
 import com.google.mediapipe.tasks.vision.core.RunningMode
 import com.google.mediapipe.tasks.components.containers.NormalizedLandmark
+import kotlin.getValue
 import kotlin.math.exp
 
 /**
@@ -47,13 +44,12 @@ import kotlin.math.exp
  */
 class SignupStep2Fragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener {
 
-    private lateinit var cameraPreview: PreviewView
-    private lateinit var overlayView: OverlayView
-    private lateinit var tvCountdown: TextView
+    private var _binding: FragmentSignupStep2Binding? = null
+    private val binding get() = _binding!!
 
-    private lateinit var tvCountNumber: TextView
-    private lateinit var tvCountLabel: TextView
-    private lateinit var btnStop: MaterialButton
+    private val authViewModel: AuthViewModel by viewModels {
+        AuthViewModelFactory(RetrofitClient.authApiService, requireContext())
+    }
 
     private var cameraExecutor: ExecutorService? = null
     private var cameraProvider: ProcessCameraProvider? = null
@@ -105,18 +101,13 @@ class SignupStep2Fragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener 
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? = inflater.inflate(R.layout.fragment_signup_step2, container, false)
+    ): View {
+        _binding = FragmentSignupStep2Binding.inflate(inflater, container, false)
+        return binding.root
+    }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-
-        cameraPreview = view.findViewById(R.id.cameraPreview)
-        overlayView = view.findViewById(R.id.overlay)
-        tvCountdown = view.findViewById(R.id.tvCountdown)
-
-        tvCountNumber = view.findViewById(R.id.tvCountNumber)
-        tvCountLabel = view.findViewById(R.id.tvCountLabel)
-        btnStop = view.findViewById(R.id.btnStop)
 
         cameraExecutor = Executors.newSingleThreadExecutor()
 
@@ -142,10 +133,12 @@ class SignupStep2Fragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener 
         // 화면 진입 시 자동 10초 카운트다운 → 시작
         startCountdownThenBegin(10)
 
-        btnStop.setOnClickListener {
+        binding.btnStop.setOnClickListener {
             pauseAnalysis()
             stopSession()
         }
+
+        observeUpdateInitialReps()
     }
 
     // --- CameraX setup ---
@@ -164,12 +157,12 @@ class SignupStep2Fragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener 
 
         val preview = Preview.Builder()
             .build()
-            .also { it.setSurfaceProvider(cameraPreview.surfaceProvider) }
+            .also { it.setSurfaceProvider(binding.cameraPreview.surfaceProvider) }
 
         imageAnalyzer = if (includeAnalyzer) {
             ImageAnalysis.Builder()
                 .setTargetAspectRatio(AspectRatio.RATIO_4_3)
-                .setTargetRotation(cameraPreview.display.rotation)
+                .setTargetRotation(binding.cameraPreview.display.rotation)
                 .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
                 .setOutputImageFormat(ImageAnalysis.OUTPUT_IMAGE_FORMAT_RGBA_8888)
                 .build()
@@ -213,14 +206,14 @@ class SignupStep2Fragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener 
             val result = resultBundle.results.firstOrNull() ?: return@runOnUiThread
 
             // 1) 오버레이 갱신 (잠금 여부와 상관없이 그림)
-            overlayView.setResults(
+            binding.overlay.setResults(
                 result,
                 resultBundle.inputImageHeight,
                 resultBundle.inputImageWidth,
                 RunningMode.LIVE_STREAM
             )
-            overlayView.visibility = View.VISIBLE
-            overlayView.invalidate()
+            binding.overlay.visibility = View.VISIBLE
+            binding.overlay.invalidate()
 
             val lm = result.landmarks().firstOrNull() ?: return@runOnUiThread
             if (lm.size < 33) return@runOnUiThread
@@ -245,7 +238,7 @@ class SignupStep2Fragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener 
                         goodVisFrames = 0
                         badVisFrames = 0
                         disarmUntilMs = now + DISARM_MS_AFTER_UNLOCK
-                        tvCountdown.visibility = View.GONE
+                        binding.tvCountdown.visibility = View.GONE
                     }
                 } else {
                     goodVisFrames = 0
@@ -259,8 +252,8 @@ class SignupStep2Fragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener 
                         trackingLocked = true
                         badVisFrames = 0
                         goodVisFrames = 0
-                        tvCountdown.text = "STEP BACK"
-                        tvCountdown.visibility = View.VISIBLE
+                        binding.tvCountdown.text = "STEP BACK"
+                        binding.tvCountdown.visibility = View.VISIBLE
                         return@runOnUiThread
                     }
                 } else {
@@ -283,7 +276,7 @@ class SignupStep2Fragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener 
             counter?.update(pts, now)
 
             // 5) UI 반영
-            tvCountNumber.text = (counter?.count ?: 0).toString()
+            binding.tvCountNumber.text = (counter?.count ?: 0).toString()
         }
     }
 
@@ -299,21 +292,21 @@ class SignupStep2Fragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener 
         isAnalyzing = true
         // 분석 시작 시 카운터 시작
         counter = SquatCounter().also { it.reset(System.currentTimeMillis()) }
-        tvCountNumber.text = "0"
+        binding.tvCountNumber.text = "0"
         // 잠금 관련 상태 초기화
         trackingLocked = false
         badVisFrames = 0
         goodVisFrames = 0
         disarmUntilMs = 0L
-        tvCountdown.visibility = View.GONE
+        binding.tvCountdown.visibility = View.GONE
 
         bindCameraUseCases(includeAnalyzer = true)
     }
 
     private fun pauseAnalysis() {
         isAnalyzing = false
-        overlayView.clear()
-        overlayView.visibility = View.GONE
+        binding.overlay.clear()
+        binding.overlay.visibility = View.GONE
         counter = null
 
         // 잠금 상태 클리어
@@ -321,7 +314,7 @@ class SignupStep2Fragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener 
         badVisFrames = 0
         goodVisFrames = 0
         disarmUntilMs = 0L
-        tvCountdown.visibility = View.GONE
+        binding.tvCountdown.visibility = View.GONE
 
         bindCameraUseCases(includeAnalyzer = false)
     }
@@ -330,17 +323,17 @@ class SignupStep2Fragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener 
         if (isCountingDown) return
         isCountingDown = true
 
-        tvCountdown.visibility = View.VISIBLE
-        tvCountdown.text = seconds.toString()
+        binding.tvCountdown.visibility = View.VISIBLE
+        binding.tvCountdown.text = seconds.toString()
 
         countdownTimer?.cancel()
         countdownTimer = object : CountDownTimer(seconds * 1000L, 1000L) {
             override fun onTick(ms: Long) {
                 val remain = ((ms + 999) / 1000L).toInt()
-                tvCountdown.text = remain.toString()
+                binding.tvCountdown.text = remain.toString()
             }
             override fun onFinish() {
-                tvCountdown.visibility = View.GONE
+                binding.tvCountdown.visibility = View.GONE
                 isCountingDown = false
                 beginAnalysis() // ← 카운트다운 끝나면 분석 & 카운터 시작
             }
@@ -349,32 +342,60 @@ class SignupStep2Fragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener 
 
     // --- 기존 저장 로직 유지 ---
     private fun stopSession() {
-        val initialCount = tvCountNumber.text.toString().toIntOrNull() ?: 0
-        val token = TokenManager.getToken(requireContext()) ?: return
+        val initialCount = binding.tvCountNumber.text.toString().toIntOrNull() ?: 0
 
-        lifecycleScope.launch {
-            try {
-                val response = RetrofitClient.apiService.updateInitialReps(
-                    token = "Bearer $token",
-                    body = InitialCountRequest(initial_reps = initialCount)
-                )
+        authViewModel.updateInitialReps(
+            InitialCountRequest(initial_reps = initialCount)
+        )
+    }
 
-                if (response.isSuccessful) {
-                    Toast.makeText(requireContext(), "Saved: ${response.body()?.initial_reps}", Toast.LENGTH_SHORT).show()
-                } else {
-                    Toast.makeText(requireContext(), "Failed: ${response.code()}", Toast.LENGTH_SHORT).show()
+    private fun observeUpdateInitialReps() {
+        authViewModel.updateInitialRepsResult.observe(viewLifecycleOwner) { result ->
+            when (result) {
+                is NetworkResult.Success -> {
+                    Toast.makeText(
+                        requireContext(),
+                        "Saved: ${result.data.initial_reps}",
+                        Toast.LENGTH_SHORT
+                    ).show()
+
+                    navigateToMainActivity()
                 }
-            } catch (e: Exception) {
-                e.printStackTrace()
-                Toast.makeText(requireContext(), "Network error: ${e.localizedMessage}", Toast.LENGTH_SHORT).show()
+                is NetworkResult.ServerError -> {
+                    Toast.makeText(
+                        requireContext(),
+                        "Failed: ${result.code}",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
+                is NetworkResult.NetworkError -> {
+                    Toast.makeText(
+                        requireContext(),
+                        "Network error: ${result.exception.localizedMessage}",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
             }
         }
+    }
 
-        activity?.let {
-            it.startActivity(Intent(it, MainActivity::class.java))
-            it.finish()
+    private fun navigateToMainActivity() {
+        try {
+            if (::poseLandmarkerHelper.isInitialized) {
+                poseLandmarkerHelper.clearPoseLandmarker()
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "Error clearing poseLandmarker", e)
+        } finally {
+            cameraExecutor?.shutdown()
+            countdownTimer?.cancel()
+            countdownTimer = null
+
+            activity?.let {
+                it.startActivity(Intent(it, MainActivity::class.java))
+                it.finish()
+            }
         }
-        // (activity as? LoginActivity)?.completeLogin()
     }
 
     // --- Permissions & lifecycle ---
@@ -400,9 +421,11 @@ class SignupStep2Fragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener 
         countdownTimer?.cancel()
         countdownTimer = null
         cameraExecutor?.shutdown()
+        cameraExecutor = null
         if (::poseLandmarkerHelper.isInitialized) {
             poseLandmarkerHelper.clearPoseLandmarker()
         }
+        _binding = null
     }
 
     // ---- 하체 visibility/로그 도우미 ----

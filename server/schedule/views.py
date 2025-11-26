@@ -16,10 +16,10 @@ from openai import OpenAI, OpenAIError
 from rest_framework.request import Request
 from rest_framework.test import APIRequestFactory, force_authenticate
 
-from .models import Schedule, Session, Feedback, ActivityType, ACTIVITY_TYPE_MAP
-from .serializers import ScheduleSerializer, SessionSerializer, FeedbackSerializer
+from .models import Schedule, Session, Feedback, DailySummary, ActivityType, ACTIVITY_TYPE_MAP
+from .serializers import ScheduleSerializer, SessionSerializer, FeedbackSerializer, DailySummarySerializer
 from .utils.feedback import generate_feedback_from_schedule
-from .tasks import mark_missed_schedules
+from .tasks import mark_missed_schedules, generate_daily_summaries_for_user
 
 from django.utils.dateparse import parse_date, parse_time
 
@@ -129,10 +129,9 @@ def end_session(request, session_id):
 def sessions_view(request):
     user = request.user
 
-    if request.method == 'GET':
-        sessions = Session.objects.filter(user=user).order_by('-created_at')
-        serializer = SessionSerializer(sessions, many=True)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+    sessions = Session.objects.filter(user=user).order_by('-created_at')
+    serializer = SessionSerializer(sessions, many=True)
+    return Response(serializer.data, status=status.HTTP_200_OK)
 
 # -----------------------------------
 # 🟢 Schedule CRUD
@@ -457,3 +456,18 @@ def auto_generate_schedules_view(request):
         },
         status=status.HTTP_201_CREATED
     )
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def daily_summaries_view(request):
+    user = request.user
+    daily_summaries = DailySummary.objects.filter(user=user).order_by('-date')
+    serializer = DailySummarySerializer(daily_summaries, many=True)
+    return Response(serializer.data, status=status.HTTP_200_OK)
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def daily_summaries_auto_generate(request):
+    user = request.user
+    generate_daily_summaries_for_user(user)
+    return Response({"message": "Daily summaries generated successfully."}, status=status.HTTP_200_OK)

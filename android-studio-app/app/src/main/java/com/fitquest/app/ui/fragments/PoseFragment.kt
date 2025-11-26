@@ -33,6 +33,7 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import com.fitquest.app.PoseResultActivity
 import com.fitquest.app.data.remote.EvaluatePostureRequest
+import com.fitquest.app.data.remote.PoseUploadRequest
 import com.fitquest.app.data.remote.RetrofitClient
 import com.fitquest.app.databinding.FragmentPoseBinding
 import com.fitquest.app.util.ActivityUtils
@@ -298,13 +299,13 @@ class PoseFragment : Fragment() {
                 val elapsed = totalDuration - millisUntilFinished
                 val fraction = elapsed.toFloat() / totalDuration.toFloat()
                 val progress = (fraction * targetProgress).toInt()
-                binding.progressLoading.setProgressCompat(progress, true)
+                binding.progressLoading.progress = progress
                 binding.tvProgressPercent.text = "$progress%"
             }
 
             override fun onFinish() {
                 // 60초가 다 지나도 아직 응답 안 왔으면 90%까지만 채워둠
-                binding.progressLoading.setProgressCompat(targetProgress, true)
+                binding.progressLoading.progress = targetProgress
                 binding.tvProgressPercent.text = "$targetProgress%"
             }
         }.start()
@@ -409,29 +410,22 @@ class PoseFragment : Fragment() {
 
             withContext(Dispatchers.IO) {
                 try {
-                    val body = EvaluatePostureRequest(
+                    val body = PoseUploadRequest(
                         category = selectedExercise,
                         image_base64 = base64
                     )
-                    val resp = RetrofitClient.apiService.evaluatePosture(fullUrl, body)
 
-                    if (resp.isSuccessful) {
-                        val data = resp.body()
-                        if (data == null) {
-                            errorMessage = "Empty response."
-                        } else if (data.status == "success") {
-                            goodPointsResult = data.good_points.ifBlank { "None" }
-                            improvePointsResult = data.improvement_points.ifBlank { "None" }
-                            cueResult = data.improvement_methods?.ifBlank { "None" } ?: "None"
-                        } else {
-                            errorMessage = "Server status: ${data.status}"
-                        }
-                    } else {
-                        errorMessage =
-                            "HTTP ${resp.code()} - ${resp.errorBody()?.string().orEmpty()}"
-                    }
+                    // PoseAnalysis 객체를 그대로 받음
+                    val pa = RetrofitClient.poseAnalysisApiService.uploadPose(body)
+
+                    // ✅ PoseAnalysis 모델의 필드명에 맞춰서 수정
+                    //    (여기서는 good_points / improvement_points / improvement_methods 라고 가정)
+                    goodPointsResult = pa.good_points.ifBlank { "None" }
+                    improvePointsResult = pa.improvement_points.ifBlank { "None" }
+                    cueResult = pa.improvement_methods?.ifBlank { "None" } ?: "None"
+
                 } catch (e: Exception) {
-                    Log.e("PoseFragment", "evaluatePosture failed", e)
+                    Log.e("PoseFragment", "uploadPose failed", e)
                     errorMessage = "Network error: ${e.message}"
                 }
             }
@@ -439,9 +433,8 @@ class PoseFragment : Fragment() {
             // 🔹 여기서 응답이 온 시점
             //    → 타이머 정지 + 100%로 채우고 숨기기
             loadingTimer?.cancel()
-            binding.progressLoading.setProgressCompat(100, true)
+            binding.progressLoading.progress = 100
             binding.tvProgressPercent.text = "100%"
-
 
             binding.progressLoading.visibility = View.GONE
             binding.tvProgressPercent.visibility = View.GONE
@@ -469,6 +462,7 @@ class PoseFragment : Fragment() {
             startActivity(intent)
         }
     }
+
 
     // === 결과에서 돌아온 후 카메라/화면 리셋 ===
     private fun resetCameraUiAndRestart() {

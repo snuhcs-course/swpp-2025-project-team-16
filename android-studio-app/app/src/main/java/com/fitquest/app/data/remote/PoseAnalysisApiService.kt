@@ -8,10 +8,15 @@ import retrofit2.http.Path
 
 interface PoseAnalysisApiService {
 
-    @POST("pose-analyses/upload/")
+    @POST("pose-analyses/evaluate_posture/")
     suspend fun uploadPose(
         @Body request: PoseUploadRequest
     ): PoseAnalysis
+
+    @POST("pose-analyses/save/")
+    suspend fun savePoseResult(
+        @Body request: PoseResultSaveRequest
+    ): retrofit2.Response<Void>
 
     @GET("pose-analyses/")
     suspend fun getPoseAnalyses(): List<PoseAnalysis>

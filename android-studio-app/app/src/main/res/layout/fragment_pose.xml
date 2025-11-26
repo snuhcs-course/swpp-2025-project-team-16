@@ -217,16 +217,19 @@
                     app:layout_constraintEnd_toEndOf="parent"/>
 
 
-                <com.google.android.material.progressindicator.LinearProgressIndicator
+                <ProgressBar
                     android:id="@+id/progressLoading"
+                    style="?android:attr/progressBarStyleHorizontal"
                     android:layout_width="0dp"
                     android:layout_height="24dp"
                     android:layout_marginStart="32dp"
                     android:layout_marginEnd="32dp"
                     app:indicatorColor="@color/cyan"
-                    app:trackColor="@color/surface_dark"
                     app:trackThickness="24dp"
                     android:visibility="gone"
+                    android:progressDrawable="@drawable/level_progress_drawable"
+                    android:max="100"
+                    android:progress="0"
                     app:layout_constraintTop_toTopOf="parent"
                     app:layout_constraintBottom_toBottomOf="parent"
                     app:layout_constraintStart_toStartOf="parent"

@@ -9,15 +9,21 @@ import androidx.test.espresso.matcher.ViewMatchers.withId
 import androidx.test.espresso.matcher.ViewMatchers.withText
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.fitquest.app.R
+import com.fitquest.app.data.remote.ApiService
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
+import org.mockito.Mock
+import org.mockito.MockitoAnnotations
 
 @RunWith(AndroidJUnit4::class)
 class SignupStep2FragmentTest {
+    @Mock
+    private lateinit var mockApiService: ApiService
 
     @Before
     fun setup() {
+        MockitoAnnotations.openMocks(this)
         val fragmentArgs = SignupStep2Fragment.newInstance("test@example.com", "password", "TestUser").arguments
         launchFragmentInContainer<SignupStep2Fragment>(fragmentArgs, R.style.Theme_FitQuest)
     }

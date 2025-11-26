@@ -15,6 +15,7 @@ import com.fitquest.app.R
 import com.fitquest.app.data.remote.ApiService
 import com.fitquest.app.data.remote.RetrofitClient
 import com.fitquest.app.data.remote.EmailCheckResponse
+import com.fitquest.app.data.remote.ServiceLocator
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.textfield.TextInputEditText
 import kotlinx.coroutines.Dispatchers
@@ -28,7 +29,7 @@ import kotlinx.coroutines.withContext
  * - If email exists in DB -> navigate to LoginPasswordFragment
  * - If email is new -> navigate to SignupStep1Fragment
  */
-class LoginEmailFragment(private val apiService: ApiService) : Fragment() {
+class LoginEmailFragment() : Fragment() {
 
     private lateinit var emailInput: TextInputEditText
     private lateinit var continueButton: MaterialButton
@@ -70,7 +71,7 @@ class LoginEmailFragment(private val apiService: ApiService) : Fragment() {
         lifecycleScope.launch {
             try {
                 val response = withContext(Dispatchers.IO) {
-                    apiService.checkEmail(mapOf("email" to email))
+                    ServiceLocator.authApiService.checkEmail(mapOf("email" to email))
                 }
 
                 if (response.isSuccessful) {

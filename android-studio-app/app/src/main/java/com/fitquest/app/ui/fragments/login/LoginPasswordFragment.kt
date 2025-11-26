@@ -15,6 +15,7 @@ import com.fitquest.app.data.remote.ApiService
 import com.fitquest.app.data.remote.LoginRequest
 import com.fitquest.app.data.remote.LoginResponse
 import com.fitquest.app.data.remote.RetrofitClient
+import com.fitquest.app.data.remote.ServiceLocator
 import com.fitquest.app.data.remote.TokenManager
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.textfield.TextInputEditText
@@ -27,7 +28,7 @@ import kotlinx.coroutines.withContext
  *
  * User enters password to login
  */
-class LoginPasswordFragment(private val apiService: ApiService) : Fragment() {
+class LoginPasswordFragment() : Fragment() {
 
     private lateinit var emailText: TextView
     private lateinit var passwordInput: TextInputEditText
@@ -39,7 +40,7 @@ class LoginPasswordFragment(private val apiService: ApiService) : Fragment() {
     companion object {
         private const val ARG_EMAIL = "email"
         fun newInstance(email: String): LoginPasswordFragment {
-            val fragment = LoginPasswordFragment(RetrofitClient.apiService)
+            val fragment = LoginPasswordFragment()
             val args = Bundle()
             args.putString(ARG_EMAIL, email)
             fragment.arguments = args
@@ -94,7 +95,7 @@ class LoginPasswordFragment(private val apiService: ApiService) : Fragment() {
         lifecycleScope.launch {
             try {
                 val response = withContext(Dispatchers.IO) {
-                    apiService.login(LoginRequest(email, password))
+                    ServiceLocator.authApiService.login(LoginRequest(email, password))
                 }
 
                 if (response.isSuccessful) {

@@ -7,7 +7,10 @@ import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
+import com.fitquest.app.data.remote.ApiService
 import com.fitquest.app.data.remote.RetrofitClient
+import com.fitquest.app.data.remote.ScheduleApiService
+import com.fitquest.app.data.remote.ServiceLocator
 import com.fitquest.app.ui.fragments.login.*
 import com.fitquest.app.ui.viewmodels.LoginViewModel
 import com.fitquest.app.ui.viewmodels.LoginViewModelFactory
@@ -21,10 +24,10 @@ import kotlinx.coroutines.launch
  * 2a. If exists -> LoginPasswordFragment
  * 2b. If new -> SignupStep1Fragment -> SignupStep2Fragment
  */
-class LoginActivity : AppCompatActivity() {
-
+class LoginActivity() : AppCompatActivity() {
+    private val apiService: ScheduleApiService= ServiceLocator.apiService
     private val loginViewModel: LoginViewModel by viewModels {
-        LoginViewModelFactory(RetrofitClient.scheduleApiService)
+        LoginViewModelFactory(apiService)
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -33,7 +36,7 @@ class LoginActivity : AppCompatActivity() {
         
         // Start with email fragment
         if (savedInstanceState == null) {
-            navigateToFragment(LoginEmailFragment(RetrofitClient.apiService))
+            navigateToFragment(LoginEmailFragment())
         }
     }
 

@@ -10,17 +10,24 @@ import androidx.test.espresso.matcher.ViewMatchers.withId
 import androidx.test.espresso.matcher.ViewMatchers.withText
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.fitquest.app.R
+import com.fitquest.app.data.remote.ApiService
+import com.fitquest.app.data.remote.ServiceLocator
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
+import org.mockito.Mock
+import org.mockito.MockitoAnnotations
 
 @RunWith(AndroidJUnit4::class)
 class LoginPasswordFragmentTest {
 
     private val testEmail = "test@example.com"
+    @Mock
+    private lateinit var mockApiService: ApiService
 
     @Before
     fun setup() {
+        MockitoAnnotations.openMocks(this)
         val fragmentArgs = LoginPasswordFragment.newInstance(testEmail).arguments
         launchFragmentInContainer<LoginPasswordFragment>(fragmentArgs, R.style.Theme_FitQuest)
     }

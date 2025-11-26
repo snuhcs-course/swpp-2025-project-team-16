@@ -10,6 +10,7 @@ import androidx.navigation.NavController
 import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.ui.setupWithNavController
 import com.fitquest.app.data.remote.RetrofitClient
+import com.fitquest.app.data.remote.ServiceLocator
 import com.fitquest.app.ui.viewmodels.AiCoachViewModel
 import com.fitquest.app.ui.viewmodels.AiCoachViewModelFactory
 import com.google.android.material.bottomnavigation.BottomNavigationView
@@ -19,9 +20,9 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var bottomNav: BottomNavigationView
     private lateinit var navController: NavController
-
+    private val sessionApiService= ServiceLocator.sessionApiService
     private val coachVm: AiCoachViewModel by viewModels {
-        AiCoachViewModelFactory(RetrofitClient.sessionApiService)
+        AiCoachViewModelFactory(sessionApiService)
     }
 
     @SuppressLint("MissingInflatedId")

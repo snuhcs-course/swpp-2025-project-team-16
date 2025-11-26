@@ -10,6 +10,7 @@ import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.fitquest.app.R
 import com.fitquest.app.data.remote.RetrofitClient
+import com.fitquest.app.data.remote.ServiceLocator
 import com.fitquest.app.data.remote.UserApiService
 import com.fitquest.app.databinding.FragmentProfileBinding
 import com.fitquest.app.databinding.ItemExercisedoneBinding
@@ -36,17 +37,16 @@ import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import org.threeten.bp.LocalTime
 
-class ProfileFragment(private val apiService: UserApiService) : Fragment() {
+class ProfileFragment() : Fragment() {
 
     private var _binding: FragmentProfileBinding? = null
     private val binding get() = _binding!!
-
     private val historyViewModel: HistoryViewModel by viewModels {
         HistoryViewModelFactory(RetrofitClient.scheduleApiService, RetrofitClient.sessionApiService)
     }
 
     private val userViewModel: UserViewModel by viewModels {
-        UserViewModelFactory(apiService)
+        UserViewModelFactory(ServiceLocator.userApiService)
     }
 
     private lateinit var historyAdapter: HistoryAdapter

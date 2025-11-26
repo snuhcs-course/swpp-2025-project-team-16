@@ -11,6 +11,7 @@ import com.fitquest.app.LoginActivity
 import com.fitquest.app.R
 import com.fitquest.app.data.remote.ApiService
 import com.fitquest.app.data.remote.RetrofitClient
+import com.fitquest.app.data.remote.ServiceLocator
 import com.fitquest.app.data.remote.SignupRequest
 import com.fitquest.app.data.remote.SignupResponse
 import com.fitquest.app.data.remote.TokenManager
@@ -25,7 +26,7 @@ import kotlinx.coroutines.withContext
  *
  * Collects: email, username/nickname, password, confirm password
  */
-class SignupStep1Fragment(private val apiService: ApiService) : Fragment() {
+class SignupStep1Fragment() : Fragment() {
 
     private lateinit var emailInput: TextInputEditText
     private lateinit var usernameInput: TextInputEditText
@@ -39,7 +40,7 @@ class SignupStep1Fragment(private val apiService: ApiService) : Fragment() {
     companion object {
         private const val ARG_EMAIL = "email"
         fun newInstance(email: String): SignupStep1Fragment {
-            val fragment = SignupStep1Fragment(RetrofitClient.apiService)
+            val fragment = SignupStep1Fragment()
             val args = Bundle()
             args.putString(ARG_EMAIL, email)
             fragment.arguments = args
@@ -103,7 +104,7 @@ class SignupStep1Fragment(private val apiService: ApiService) : Fragment() {
         lifecycleScope.launch {
             try {
                 val response = withContext(Dispatchers.IO) {
-                    apiService.signup(SignupRequest(name = username, email = email, password = password))
+                    ServiceLocator.authApiService.signup(SignupRequest(name = username, email = email, password = password))
                 }
 
                 if (response.isSuccessful) {

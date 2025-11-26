@@ -9,7 +9,7 @@ import android.view.ViewGroup
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
-import com.fitquest.app.LoginActivity
+import androidx.navigation.fragment.findNavController
 import com.fitquest.app.data.remote.RetrofitClient
 import com.fitquest.app.databinding.FragmentLoginEmailBinding
 import com.fitquest.app.model.NetworkResult
@@ -63,7 +63,10 @@ class LoginEmailFragment : Fragment() {
 
     private fun checkEmailExists(email: String) {
         if (email == "test@test.com") {
-            (activity as? LoginActivity)?.navigateToPasswordStep(email)
+            val navController = findNavController()
+            val action = LoginEmailFragmentDirections
+                .actionLoginEmailFragmentToLoginPasswordFragment(emailInput.text.toString())
+            navController.navigate(action)
             return
         }
 
@@ -73,16 +76,23 @@ class LoginEmailFragment : Fragment() {
     private fun observeViewModel() {
         viewModel.checkEmailResult.observe(viewLifecycleOwner) { result ->
             when (result) {
+                is NetworkResult.Idle -> {}
                 is NetworkResult.Success -> {
+                    viewModel.resetCheckEmailResult()
                     val exists = result.data.exists
-                    val activity = activity as? LoginActivity
+                    val navController = findNavController()
                     if (exists) {
-                        activity?.navigateToPasswordStep(emailInput.text.toString())
+                        val action = LoginEmailFragmentDirections
+                            .actionLoginEmailFragmentToLoginPasswordFragment(emailInput.text.toString())
+                        navController.navigate(action)
                     } else {
-                        activity?.navigateToSignupStep1(emailInput.text.toString())
+                        val action = LoginEmailFragmentDirections
+                            .actionLoginEmailFragmentToSignupStep1Fragment(emailInput.text.toString())
+                        navController.navigate(action)
                     }
                 }
                 is NetworkResult.ServerError -> {
+                    viewModel.resetCheckEmailResult()
                     Toast.makeText(
                         requireContext(),
                         "Server error: ${result.code}",
@@ -90,6 +100,7 @@ class LoginEmailFragment : Fragment() {
                     ).show()
                 }
                 is NetworkResult.NetworkError -> {
+                    viewModel.resetCheckEmailResult()
                     Toast.makeText(
                         requireContext(),
                         "Network error: ${result.exception.localizedMessage}",

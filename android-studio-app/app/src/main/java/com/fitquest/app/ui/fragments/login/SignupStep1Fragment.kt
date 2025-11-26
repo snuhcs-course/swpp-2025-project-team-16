@@ -7,7 +7,6 @@ import android.view.ViewGroup
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
-import com.fitquest.app.LoginActivity
 import com.fitquest.app.data.remote.RetrofitClient
 import com.fitquest.app.data.remote.TokenManager
 import com.fitquest.app.databinding.FragmentSignupStep1Binding
@@ -17,6 +16,8 @@ import com.fitquest.app.ui.viewmodels.AuthViewModel
 import com.fitquest.app.ui.viewmodels.AuthViewModelFactory
 import kotlin.getValue
 import android.util.Log
+import androidx.navigation.fragment.findNavController
+import androidx.navigation.fragment.navArgs
 
 class SignupStep1Fragment : Fragment() {
 
@@ -27,26 +28,15 @@ class SignupStep1Fragment : Fragment() {
         AuthViewModelFactory(RetrofitClient.authApiService, requireContext())
     }
 
+    private val args: SignupStep1FragmentArgs by navArgs()
     private var email: String = ""
-
     private var inputEmail: String = ""
     private var inputName: String = ""
     private var inputPassword: String = ""
 
-    companion object {
-        private const val ARG_EMAIL = "email"
-        fun newInstance(email: String): SignupStep1Fragment {
-            val fragment = SignupStep1Fragment()
-            val args = Bundle()
-            args.putString(ARG_EMAIL, email)
-            fragment.arguments = args
-            return fragment
-        }
-    }
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        email = arguments?.getString(ARG_EMAIL) ?: ""
+        email = args.email
     }
 
     override fun onCreateView(
@@ -68,7 +58,7 @@ class SignupStep1Fragment : Fragment() {
         }
 
         binding.btnBack.setOnClickListener {
-            activity?.onBackPressedDispatcher?.onBackPressed()
+            findNavController().navigateUp()
         }
 
         observeSignupResult()
@@ -103,16 +93,26 @@ class SignupStep1Fragment : Fragment() {
     private fun observeSignupResult() {
         authViewModel.signupResult.observe(viewLifecycleOwner) { result ->
             when (result) {
+                is NetworkResult.Idle -> {}
                 is NetworkResult.Success -> {
+                    authViewModel.resetSignupResult()
                     val body = result.data
                     TokenManager.saveToken(requireContext(), body.token ?: "", inputEmail, inputName)
                     Toast.makeText(requireContext(), body.message ?: "Signup success!", Toast.LENGTH_SHORT).show()
-                    (activity as? LoginActivity)?.navigateToSignupStep2(inputEmail, inputPassword, inputName)
+                    val action = SignupStep1FragmentDirections
+                        .actionSignupStep1FragmentToSignupStep2Fragment(
+                            email = inputEmail,
+                            password = inputPassword,
+                            username = inputName
+                        )
+                    findNavController().navigate(action)
                 }
                 is NetworkResult.ServerError -> {
+                    authViewModel.resetSignupResult()
                     Toast.makeText(requireContext(), "Signup failed: ${result.code}", Toast.LENGTH_SHORT).show()
                 }
                 is NetworkResult.NetworkError -> {
+                    authViewModel.resetSignupResult()
                     Toast.makeText(requireContext(), "Network error: ${result.exception.localizedMessage}", Toast.LENGTH_SHORT).show()
                 }
             }

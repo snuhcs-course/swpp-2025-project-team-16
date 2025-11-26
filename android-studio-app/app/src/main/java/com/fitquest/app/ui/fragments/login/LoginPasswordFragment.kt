@@ -9,6 +9,8 @@ import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
+import androidx.navigation.fragment.findNavController
+import androidx.navigation.fragment.navArgs
 import com.fitquest.app.MainActivity
 import com.fitquest.app.data.remote.RetrofitClient
 import com.fitquest.app.data.remote.TokenManager
@@ -38,22 +40,13 @@ class LoginPasswordFragment : Fragment() {
         )
     }
 
+    private val args: LoginPasswordFragmentArgs by navArgs()
     private var email: String = ""
 
-    companion object {
-        private const val ARG_EMAIL = "email"
-        fun newInstance(email: String): LoginPasswordFragment {
-            val fragment = LoginPasswordFragment()
-            val args = Bundle()
-            args.putString(ARG_EMAIL, email)
-            fragment.arguments = args
-            return fragment
-        }
-    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        email = arguments?.getString(ARG_EMAIL) ?: ""
+        email = args.email
     }
 
     override fun onCreateView(
@@ -67,7 +60,6 @@ class LoginPasswordFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-
         binding.tvEmail.text = email
 
         binding.btnPasswordLogin.setOnClickListener {
@@ -81,7 +73,7 @@ class LoginPasswordFragment : Fragment() {
         }
 
         binding.btnBack.setOnClickListener {
-            activity?.onBackPressedDispatcher?.onBackPressed()
+            findNavController().navigateUp()
         }
 
         observeLoginResult()
@@ -106,6 +98,7 @@ class LoginPasswordFragment : Fragment() {
     private fun observeLoginResult() {
         authViewModel.loginResult.observe(viewLifecycleOwner) { result ->
             when (result) {
+                is NetworkResult.Idle -> {}
                 is NetworkResult.Success -> {
                     val body = result.data
                     TokenManager.saveToken(requireContext(), body.token ?: "", email, body.name ?: "")

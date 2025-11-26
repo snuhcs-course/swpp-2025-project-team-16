@@ -16,6 +16,7 @@ import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
+import androidx.navigation.fragment.navArgs
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 import com.fitquest.app.MainActivity
@@ -83,18 +84,16 @@ class SignupStep2Fragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener 
     private val GOOD_VIS_LIMIT = 12                         // 연속 좋은 프레임(≈0.4s@30fps)
     private val DISARM_MS_AFTER_UNLOCK = 300L               // 해제 직후 카운팅 금지 시간
 
-    // 전달받을 값
-    private var email: String? = null
-    private var password: String? = null
-    private var username: String? = null
+    private val args: SignupStep2FragmentArgs by navArgs()
+    private var email: String = ""
+    private var password: String = ""
+    private var username: String = ""
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        arguments?.let {
-            email = it.getString(ARG_EMAIL)
-            password = it.getString(ARG_PASSWORD)
-            username = it.getString(ARG_USERNAME)
-        }
+        email = args.email
+        password = args.password
+        username = args.username
     }
 
     override fun onCreateView(
@@ -352,6 +351,7 @@ class SignupStep2Fragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener 
     private fun observeUpdateInitialReps() {
         authViewModel.updateInitialRepsResult.observe(viewLifecycleOwner) { result ->
             when (result) {
+                is NetworkResult.Idle -> {}
                 is NetworkResult.Success -> {
                     Toast.makeText(
                         requireContext(),

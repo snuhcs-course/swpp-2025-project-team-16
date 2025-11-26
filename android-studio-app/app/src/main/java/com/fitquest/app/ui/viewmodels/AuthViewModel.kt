@@ -119,4 +119,20 @@ class AuthViewModel(private val repository: AuthRepository) : ViewModel() {
             }
         }
     }
+
+    fun resetCheckEmailResult() {
+        _checkEmailResult.value = NetworkResult.Idle
+    }
+
+    fun resetSignupResult() {
+        _signupResult.value = NetworkResult.Idle
+    }
+
+    fun resetLoginResult() {
+        _loginResult.value = NetworkResult.Idle
+    }
+
+    fun resetUpdateInitialRepsResult() {
+        _updateInitialRepsResult.value = NetworkResult.Idle
+    }
 }

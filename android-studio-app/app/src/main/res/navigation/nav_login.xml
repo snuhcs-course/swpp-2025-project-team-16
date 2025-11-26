@@ -11,10 +11,17 @@
         <action
             android:id="@+id/action_loginEmailFragment_to_loginPasswordFragment"
             app:destination="@id/loginPasswordFragment"
-            app:popUpToInclusive="false"/>
+            app:enterAnim="@anim/slide_in_left"
+            app:exitAnim="@anim/slide_out_right"
+            app:popEnterAnim="@anim/slide_in_left"
+            app:popExitAnim="@anim/slide_out_right" />
         <action
             android:id="@+id/action_loginEmailFragment_to_signupStep1Fragment"
-            app:destination="@id/signupStep1Fragment" />
+            app:destination="@id/signupStep1Fragment"
+            app:enterAnim="@anim/slide_in_left"
+            app:exitAnim="@anim/slide_out_right"
+            app:popEnterAnim="@anim/slide_in_left"
+            app:popExitAnim="@anim/slide_out_right" />
     </fragment>
 
     <fragment
@@ -37,7 +44,11 @@
             app:argType="string" />
         <action
             android:id="@+id/action_signupStep1Fragment_to_signupStep2Fragment"
-            app:destination="@id/signupStep2Fragment" />
+            app:destination="@id/signupStep2Fragment"
+            app:enterAnim="@anim/slide_in_left"
+            app:exitAnim="@anim/slide_out_right"
+            app:popEnterAnim="@anim/slide_in_left"
+            app:popExitAnim="@anim/slide_out_right" />
     </fragment>
 
     <fragment

@@ -80,3 +80,15 @@ class Feedback(models.Model):
 
     class Meta:
         indexes = [models.Index(fields=['user'])]
+
+class DailySummary(models.Model):
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='daily_summaries')
+    date = models.DateField()
+    summary_text = models.TextField(blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('user', 'date')
+
+    def __str__(self):
+        return f"{self.user} - {self.date}"

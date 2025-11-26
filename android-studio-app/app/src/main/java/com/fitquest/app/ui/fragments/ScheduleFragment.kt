@@ -46,7 +46,7 @@ class ScheduleFragment : Fragment() {
         binding.recyclerViewSchedules.layoutManager = LinearLayoutManager(requireContext())
         binding.recyclerViewSchedules.adapter = adapter
 
-        binding.btnAutoGenerate.setOnClickListener { viewModel.autoGenerateSchedules() }
+//        binding.btnAutoGenerate.setOnClickListener { viewModel.autoGenerateSchedules() }
 
         viewModel.schedules.observe(viewLifecycleOwner) { list ->
             val oldListSize = adapter.itemCount // 이전 목록 크기

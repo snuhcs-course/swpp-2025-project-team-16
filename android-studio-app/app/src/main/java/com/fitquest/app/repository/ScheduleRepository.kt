@@ -1,6 +1,7 @@
 package com.fitquest.app.repository
 
 import com.fitquest.app.data.remote.ScheduleApiService
+import com.fitquest.app.model.AutoGenerateSchedulesResponse
 import com.fitquest.app.model.Schedule
 
 class ScheduleRepository(private val service: ScheduleApiService) {
@@ -11,7 +12,7 @@ class ScheduleRepository(private val service: ScheduleApiService) {
     suspend fun createSchedule(schedule: Schedule): Schedule =
         service.createSchedule(schedule)
 
-    suspend fun autoGenerateSchedules(): List<Schedule> =
+    suspend fun autoGenerateSchedules(): AutoGenerateSchedulesResponse =
         service.autoGenerateSchedules()
 
     suspend fun markMissedSchedules() =

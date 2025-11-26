@@ -116,6 +116,7 @@ class AiCoachViewModel(
         val sessionId = _currentSessionId.value ?: run {
             _isTraining.value = false
             _sessionPreparing.value = false
+            _currentSessionId.value = null
             updateSessionActiveState()
             _feedback.value = "Workout paused (No active session ID) 💪"
             return

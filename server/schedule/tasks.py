@@ -1,9 +1,11 @@
 from datetime import datetime, timedelta
 from django.utils import timezone
 from django.db import transaction
-from schedule.models import Schedule, Feedback
-from schedule.utils.feedback import generate_feedback_from_schedule
+from accounts.models import Account
+from schedule.models import Schedule, Session, Feedback, DailySummary
+from schedule.utils.feedback import generate_feedback_from_schedule, generate_daily_summary
 from django.utils.timezone import make_aware
+from django.utils.timezone import localdate
 
 
 def get_schedule_datetime(schedule):
@@ -44,3 +46,34 @@ def mark_missed_schedules():
             #         schedule=s,
             #         summary_text=feedback_text
             #     )
+
+def generate_daily_summaries_for_user(user):
+    today = localdate()
+
+    session_dates = Session.objects.filter(user=user).dates("created_at", "day")
+    schedule_dates = Schedule.objects.filter(user=user).dates("scheduled_date", "day")
+
+    dates = sorted(d for d in set(list(session_dates) + list(schedule_dates)) if d is not None)
+
+    dates = [d for d in dates if d < today]
+
+    if not dates:
+        return
+
+    for date in dates:
+        if DailySummary.objects.filter(user=user, date=date).exists():
+            continue
+
+        text = generate_daily_summary(user, date)
+        DailySummary.objects.update_or_create(
+            user=user,
+            date=date,
+            defaults={"summary_text": text},
+        )
+
+
+def generate_all_daily_summaries():
+    users = Account.objects.all()
+    for user in users:
+        generate_all_daily_summaries_for_user(user=user)
+        

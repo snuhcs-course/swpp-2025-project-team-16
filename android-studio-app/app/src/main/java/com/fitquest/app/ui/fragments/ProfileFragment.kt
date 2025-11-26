@@ -41,7 +41,7 @@ class ProfileFragment : Fragment() {
     private val binding get() = _binding!!
 
     private val historyViewModel: HistoryViewModel by viewModels {
-        HistoryViewModelFactory(RetrofitClient.scheduleApiService, RetrofitClient.sessionApiService)
+        HistoryViewModelFactory(RetrofitClient.dailySummaryApiService, RetrofitClient.scheduleApiService, RetrofitClient.sessionApiService)
     }
 
     private val userViewModel: UserViewModel by viewModels {
@@ -155,6 +155,7 @@ class ProfileFragment : Fragment() {
         dialog.setContentView(detailBinding.root)
 
         detailBinding.tvDayTitle.text = formatDate(dailyItem.date)
+        detailBinding.tvDailySummary.text = dailyItem.summaryText
         detailBinding.tvTotalXp.text = "+${calculateTotalEarnedXp(dailyItem.schedules, dailyItem.sessions)}"
         detailBinding.tvCompletion.text = "+${calculateAverageCompletionPercent(dailyItem.schedules)}"
         detailBinding.exercisedoneListContainer.removeAllViews()

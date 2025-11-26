@@ -39,28 +39,28 @@ class ScheduleViewModel(private val repository: ScheduleRepository) : ViewModel(
         }
     }
 
-    fun autoGenerateSchedules(onComplete: (() -> Unit)? = null) {
-        viewModelScope.launch {
-            try {
-                val generated = repository.autoGenerateSchedules()
-
-                val newIds = generated.mapNotNull { it.id }.toSet()
-                newlyGeneratedIds.postValue(newIds) // 어댑터에 하이라이트 요청
-
-                val currentList = schedules.value.orEmpty()
-                val updatedList = sortSchedules(currentList + generated)
-                schedules.postValue(updatedList)
-
-                onComplete?.invoke()
-
-                delay(5000)
-                if (newlyGeneratedIds.value == newIds) {
-                    newlyGeneratedIds.postValue(emptySet())
-                }
-
-            } catch (e: Exception) {
-                error.postValue(e.message)
-            }
-        }
-    }
+//    fun autoGenerateSchedules(onComplete: (() -> Unit)? = null) {
+//        viewModelScope.launch {
+//            try {
+//                val generated = repository.autoGenerateSchedules()
+//
+//                val newIds = generated.mapNotNull { it.id }.toSet()
+//                newlyGeneratedIds.postValue(newIds) // 어댑터에 하이라이트 요청
+//
+//                val currentList = schedules.value.orEmpty()
+//                val updatedList = sortSchedules(currentList + generated)
+//                schedules.postValue(updatedList)
+//
+//                onComplete?.invoke()
+//
+//                delay(5000)
+//                if (newlyGeneratedIds.value == newIds) {
+//                    newlyGeneratedIds.postValue(emptySet())
+//                }
+//
+//            } catch (e: Exception) {
+//                error.postValue(e.message)
+//            }
+//        }
+//    }
 }

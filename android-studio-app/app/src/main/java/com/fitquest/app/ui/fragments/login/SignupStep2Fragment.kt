@@ -1,6 +1,7 @@
 package com.fitquest.app.ui.fragments.login
 
 import android.Manifest
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Bundle
 import android.os.CountDownTimer
@@ -22,6 +23,7 @@ import com.google.android.material.button.MaterialButton
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 import com.fitquest.app.LoginActivity
+import com.fitquest.app.MainActivity
 import com.fitquest.app.data.remote.InitialCountRequest
 import com.fitquest.app.data.remote.RetrofitClient
 import com.fitquest.app.data.remote.TokenManager
@@ -368,7 +370,11 @@ class SignupStep2Fragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener 
             }
         }
 
-        (activity as? LoginActivity)?.completeLogin()
+        activity?.let {
+            it.startActivity(Intent(it, MainActivity::class.java))
+            it.finish()
+        }
+        // (activity as? LoginActivity)?.completeLogin()
     }
 
     // --- Permissions & lifecycle ---

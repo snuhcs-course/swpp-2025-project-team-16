@@ -24,7 +24,7 @@ import kotlinx.coroutines.launch
 class LoginActivity : AppCompatActivity() {
 
     private val loginViewModel: LoginViewModel by viewModels {
-        LoginViewModelFactory(RetrofitClient.scheduleApiService)
+        LoginViewModelFactory(RetrofitClient.scheduleApiService, RetrofitClient.dailySummaryApiService)
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -59,24 +59,6 @@ class LoginActivity : AppCompatActivity() {
     fun navigateToSignupStep2(email: String, password: String, username: String) {
         val fragment = SignupStep2Fragment.newInstance(email, password, username)
         navigateToFragment(fragment)
-    }
-
-    /**
-     * Complete login and navigate to MainActivity
-     */
-    fun completeLogin() {
-        lifecycleScope.launch {
-            try {
-                loginViewModel.markMissedSchedules()
-                loginViewModel.autoGenerateSchedules()
-            } catch (e: Exception) {
-                Log.e("LoginActivity", "Failed to mark missed schedules: ${e.localizedMessage}")
-            } finally {
-                val intent = Intent(this@LoginActivity, MainActivity::class.java)
-                startActivity(intent)
-                finish()
-            }
-        }
     }
 
     private fun navigateToFragment(fragment: Fragment) {

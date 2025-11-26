@@ -12,6 +12,7 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import com.fitquest.app.LoginActivity
 import com.fitquest.app.R
+import com.fitquest.app.data.remote.ApiService
 import com.fitquest.app.data.remote.RetrofitClient
 import com.fitquest.app.data.remote.EmailCheckResponse
 import com.google.android.material.button.MaterialButton
@@ -27,10 +28,11 @@ import kotlinx.coroutines.withContext
  * - If email exists in DB -> navigate to LoginPasswordFragment
  * - If email is new -> navigate to SignupStep1Fragment
  */
-class LoginEmailFragment : Fragment() {
+class LoginEmailFragment(private val apiService: ApiService) : Fragment() {
 
     private lateinit var emailInput: TextInputEditText
     private lateinit var continueButton: MaterialButton
+
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -68,7 +70,7 @@ class LoginEmailFragment : Fragment() {
         lifecycleScope.launch {
             try {
                 val response = withContext(Dispatchers.IO) {
-                    RetrofitClient.apiService.checkEmail(mapOf("email" to email))
+                    apiService.checkEmail(mapOf("email" to email))
                 }
 
                 if (response.isSuccessful) {

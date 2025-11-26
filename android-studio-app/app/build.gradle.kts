@@ -121,6 +121,10 @@ dependencies {
     androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")
     androidTestImplementation ("androidx.test.espresso:espresso-intents:3.5.1")
     androidTestImplementation ("androidx.test.espresso:espresso-contrib:3.5.1")
+    androidTestImplementation ("androidx.test.espresso:espresso-idling-resource:3.5.1")
+    androidTestImplementation ("androidx.test.espresso:espresso-idling-concurrent:3.5.1")
+
+
     androidTestImplementation ("androidx.fragment:fragment-testing:1.6.2")
 
 

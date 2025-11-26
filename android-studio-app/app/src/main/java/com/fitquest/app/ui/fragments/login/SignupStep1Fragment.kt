@@ -9,6 +9,7 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import com.fitquest.app.LoginActivity
 import com.fitquest.app.R
+import com.fitquest.app.data.remote.ApiService
 import com.fitquest.app.data.remote.RetrofitClient
 import com.fitquest.app.data.remote.SignupRequest
 import com.fitquest.app.data.remote.SignupResponse
@@ -24,7 +25,7 @@ import kotlinx.coroutines.withContext
  *
  * Collects: email, username/nickname, password, confirm password
  */
-class SignupStep1Fragment : Fragment() {
+class SignupStep1Fragment(private val apiService: ApiService) : Fragment() {
 
     private lateinit var emailInput: TextInputEditText
     private lateinit var usernameInput: TextInputEditText
@@ -38,7 +39,7 @@ class SignupStep1Fragment : Fragment() {
     companion object {
         private const val ARG_EMAIL = "email"
         fun newInstance(email: String): SignupStep1Fragment {
-            val fragment = SignupStep1Fragment()
+            val fragment = SignupStep1Fragment(RetrofitClient.apiService)
             val args = Bundle()
             args.putString(ARG_EMAIL, email)
             fragment.arguments = args
@@ -102,7 +103,7 @@ class SignupStep1Fragment : Fragment() {
         lifecycleScope.launch {
             try {
                 val response = withContext(Dispatchers.IO) {
-                    RetrofitClient.apiService.signup(SignupRequest(name = username, email = email, password = password))
+                    apiService.signup(SignupRequest(name = username, email = email, password = password))
                 }
 
                 if (response.isSuccessful) {

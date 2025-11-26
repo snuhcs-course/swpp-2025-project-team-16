@@ -22,6 +22,7 @@ import com.google.android.material.button.MaterialButton
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 import com.fitquest.app.LoginActivity
+import com.fitquest.app.data.remote.ApiService
 import com.fitquest.app.data.remote.InitialCountRequest
 import com.fitquest.app.data.remote.RetrofitClient
 import com.fitquest.app.data.remote.TokenManager
@@ -43,7 +44,7 @@ import kotlin.math.exp
  * - 하체 keypoint visibility만으로 잠금(lock)/해제(unlock) 판단
  * - Logcat에 하체 keypoint visibility 실시간 출력
  */
-class SignupStep2Fragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener {
+class SignupStep2Fragment(private val apiService: ApiService) : Fragment(), PoseLandmarkerHelper.LandmarkerListener {
 
     private lateinit var cameraPreview: PreviewView
     private lateinit var overlayView: OverlayView
@@ -352,7 +353,7 @@ class SignupStep2Fragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener 
 
         lifecycleScope.launch {
             try {
-                val response = RetrofitClient.apiService.updateInitialReps(
+                val response = apiService.updateInitialReps(
                     token = "Bearer $token",
                     body = InitialCountRequest(initial_reps = initialCount)
                 )
@@ -480,7 +481,7 @@ class SignupStep2Fragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener 
         private val REQUIRED_PERMISSIONS = arrayOf(Manifest.permission.CAMERA)
 
         fun newInstance(email: String, password: String, username: String): SignupStep2Fragment {
-            val fragment = SignupStep2Fragment()
+            val fragment = SignupStep2Fragment(RetrofitClient.apiService)
             val args = Bundle()
             args.putString(ARG_EMAIL, email)
             args.putString(ARG_PASSWORD, password)

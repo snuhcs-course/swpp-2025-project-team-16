@@ -14,7 +14,7 @@ class MainActivityTest {
 
     @Test
     fun test_activity_in_view() {
-        val activityScenario = ActivityScenario.launch(MainActivity::class.java)
+        ActivityScenario.launch(MainActivity::class.java)
         onView(withId(R.id.mainFragmentContainer)).check(matches(isDisplayed()))
     }
 }

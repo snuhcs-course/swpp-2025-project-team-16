@@ -33,7 +33,7 @@ class LoginActivity : AppCompatActivity() {
         
         // Start with email fragment
         if (savedInstanceState == null) {
-            navigateToFragment(LoginEmailFragment())
+            navigateToFragment(LoginEmailFragment(RetrofitClient.apiService))
         }
     }
 

@@ -20,7 +20,7 @@ class JourneyFragmentTest {
         launchFragmentInContainer<JourneyFragment>(themeResId = R.style.Theme_FitQuest)
 
         onView(withId(R.id.headerContainer)).check(matches(isDisplayed()))
-        onView(withId(R.id.scrollTimeline)).check(matches(isDisplayed()))
+        onView(withId(R.id.resultScroll)).check(matches(isDisplayed()))
         onView(withId(R.id.timelineVerticalLine)).check(matches(isDisplayed()))
     }
 

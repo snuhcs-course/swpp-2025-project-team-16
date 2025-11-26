@@ -9,6 +9,7 @@ import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.fitquest.app.data.remote.RetrofitClient
+import com.fitquest.app.data.remote.ScheduleApiService
 import com.fitquest.app.databinding.FragmentJourneyBinding
 import com.fitquest.app.databinding.ItemScheduleBinding
 import com.fitquest.app.databinding.LayoutJourneyDaydetailBinding
@@ -25,13 +26,13 @@ import com.google.android.material.bottomsheet.BottomSheetDialog
 import org.threeten.bp.LocalDateTime
 import org.threeten.bp.ZoneId
 
-class JourneyFragment() : Fragment() {
+class JourneyFragment(private val apiService: ScheduleApiService) : Fragment() {
 
     private var _binding: FragmentJourneyBinding? = null
     private val binding get() = _binding!!
 
     private val viewModel: JourneyViewModel by viewModels {
-        JourneyViewModelFactory(RetrofitClient.scheduleApiService)
+        JourneyViewModelFactory(apiService)
     }
 
     private lateinit var adapter: DailyWorkoutAdapter

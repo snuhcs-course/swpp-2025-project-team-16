@@ -9,18 +9,19 @@ import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.fitquest.app.data.remote.RetrofitClient
+import com.fitquest.app.data.remote.ScheduleApiService
 import com.fitquest.app.databinding.FragmentScheduleBinding
 import com.fitquest.app.ui.adapters.ScheduleAdapter
 import com.fitquest.app.ui.viewmodels.ScheduleViewModel
 import com.fitquest.app.ui.viewmodels.ScheduleViewModelFactory
 
-class ScheduleFragment : Fragment() {
+class ScheduleFragment(private val apiService: ScheduleApiService) : Fragment() {
 
     private var _binding: FragmentScheduleBinding? = null
     private val binding get() = _binding!!
 
     private val viewModel: ScheduleViewModel by viewModels {
-        ScheduleViewModelFactory(RetrofitClient.scheduleApiService)
+        ScheduleViewModelFactory(apiService)
     }
     private lateinit var adapter: ScheduleAdapter
 

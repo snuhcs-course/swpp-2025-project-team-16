@@ -413,7 +413,7 @@ class PoseFragment : Fragment() {
                         category = selectedExercise,
                         image_base64 = base64
                     )
-                    val resp = RetrofitClient.apiService.evaluatePosture(fullUrl, body)
+                    val resp = RetrofitClient.authApiService.evaluatePosture(fullUrl, body)
 
                     if (resp.isSuccessful) {
                         val data = resp.body()

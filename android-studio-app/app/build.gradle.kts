@@ -123,12 +123,22 @@ dependencies {
     implementation("androidx.camera:camera-video:1.3.1")
     implementation("androidx.camera:camera-view:1.3.1")
     implementation("androidx.camera:camera-extensions:1.3.1")
-    implementation("com.google.mediapipe:tasks-vision:0.10.29")
+    // ML Kit / MediaPipe 에서 protobuf 전부 제거
+    implementation("com.google.mediapipe:tasks-vision:0.10.29") {
+        exclude(group = "com.google.protobuf") // javalite + lite 모두
+    }
 
+    implementation("com.google.mlkit:pose-detection:18.0.0-beta3") {
+        exclude(group = "com.google.protobuf")
+    }
+    implementation("com.google.mlkit:pose-detection-accurate:18.0.0-beta3") {
+        exclude(group = "com.google.protobuf")
+    }
 
-    // ML Kit for pose detection
-    implementation("com.google.mlkit:pose-detection:18.0.0-beta3")
-    implementation("com.google.mlkit:pose-detection-accurate:18.0.0-beta3")
+    // 우리가 직접 넣는 protobuf 버전(앱 + 테스트 공통)
+    implementation("com.google.protobuf:protobuf-javalite:3.21.12")
+    testImplementation("com.google.protobuf:protobuf-javalite:3.21.12")
+    androidTestImplementation("com.google.protobuf:protobuf-javalite:3.21.12")
 
     // Permissions
     implementation("androidx.activity:activity-ktx:1.8.2")
@@ -139,7 +149,9 @@ dependencies {
     androidTestImplementation("androidx.test.ext:junit:1.1.5")
     androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")
     androidTestImplementation ("androidx.test.espresso:espresso-intents:3.5.1")
-    androidTestImplementation ("androidx.test.espresso:espresso-contrib:3.5.1")
+    androidTestImplementation("androidx.test.espresso:espresso-contrib:3.5.1") {
+        exclude(group = "com.google.protobuf", module = "protobuf-lite")
+    }
     androidTestImplementation ("androidx.test.espresso:espresso-idling-resource:3.5.1")
 
 
@@ -183,7 +195,12 @@ dependencies {
     implementation("nl.dionsegijn:konfetti-xml:2.0.2")
 }
 configurations.all {
-    resolutionStrategy {
-        force("com.google.protobuf:protobuf-javalite:3.21.12")
+    resolutionStrategy.eachDependency {
+        // ✅ javalite 에만 3.21.12 강제 적용
+        if (requested.group == "com.google.protobuf" &&
+            requested.name == "protobuf-javalite"
+        ) {
+            useVersion("3.21.12")
+        }
     }
 }

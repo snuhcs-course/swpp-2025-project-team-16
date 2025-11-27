@@ -3,6 +3,7 @@ package com.fitquest.app
 import androidx.test.core.app.ActivityScenario
 import androidx.test.espresso.Espresso.onView
 import androidx.test.espresso.action.ViewActions.click
+import androidx.test.espresso.action.ViewActions.closeSoftKeyboard
 import androidx.test.espresso.action.ViewActions.typeText
 import androidx.test.espresso.assertion.ViewAssertions.matches
 import androidx.test.espresso.matcher.ViewMatchers.isDisplayed
@@ -19,15 +20,15 @@ import com.fitquest.app.data.remote.ScheduleApiService
 import com.fitquest.app.data.remote.ServiceLocator
 import com.fitquest.app.model.Schedule
 import com.fitquest.app.ui.fragments.login.LoginEmailFragment
-import kotlinx.coroutines.test.runTest
+//import kotlinx.coroutines.test.runTest
 import org.junit.After
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
-import org.mockito.Mock
-import org.mockito.Mockito
-import org.mockito.MockitoAnnotations
+//import org.mockito.Mock
+//import org.mockito.Mockito
+//import org.mockito.MockitoAnnotations
 import okhttp3.ResponseBody.Companion.toResponseBody
 import retrofit2.Response
 import org.threeten.bp.LocalDate
@@ -59,7 +60,7 @@ class LoginActivityTest {
 
         //이메일 입력
         onView(withId(R.id.btnEmailCheckQuest)).perform(click())
-        onView(withId(R.id.etEmail)).perform(typeText("test@test.com"))
+        onView(withId(R.id.etEmail)).perform(typeText("test@test.com"), closeSoftKeyboard())
         onView(withId(R.id.btnEmailCheckQuest)).perform(click())
         //뒤로가기
         onView(withId(R.id.btnBack)).perform(click())
@@ -68,10 +69,10 @@ class LoginActivityTest {
         onView(withId(R.id.btnPasswordLogin)).perform(click())
 
         // 비밀번호 입력 실패
-        onView(withId(R.id.etPassword)).perform(typeText("0001"))
+        onView(withId(R.id.etPassword)).perform(typeText("0001") , closeSoftKeyboard())
         onView(withId(R.id.btnPasswordLogin)).perform(click())
         //비밀번호 입력 성공
-        onView(withId(R.id.etPassword)).perform(typeText("0000"))
+        onView(withId(R.id.etPassword)).perform(typeText("0000"), closeSoftKeyboard())
         onView(withId(R.id.btnPasswordLogin)).perform(click())
 
 
@@ -106,33 +107,32 @@ class LoginActivityTest {
         onView(withId(R.id.btnEmailCheckQuest)).perform(click())
 
     }
-    /*
     @Test
     fun test_navigateToSignUpStep_when_email_does_not_exist()  {
 
-        onView(withId(R.id.etEmail)).perform(typeText("signup@signup.com"))
+        onView(withId(R.id.etEmail)).perform(typeText("signup@signup.com"), closeSoftKeyboard())
         onView(withId(R.id.btnEmailCheckQuest)).perform(click())
         onView(withId(R.id.btnBack)).perform(click())
         onView(withId(R.id.btnEmailCheckQuest)).perform(click())
 
         // username 입력
         onView(withId(R.id.btnContinue)).perform(click())
-        onView(withId(R.id.etHeroName)).perform(typeText("test"))
+        onView(withId(R.id.etHeroName)).perform(typeText("test"), closeSoftKeyboard())
         // password 입력
         onView(withId(R.id.btnContinue)).perform(click())
-        onView(withId(R.id.etPassword)).perform(typeText("0000"))
-        onView(withId(R.id.etConfirmPassword)).perform(typeText("0000"))
+        onView(withId(R.id.etPassword)).perform(typeText("0000"), closeSoftKeyboard())
+        onView(withId(R.id.etConfirmPassword)).perform(typeText("0000"), closeSoftKeyboard())
         // password의 길이가 너무 짧습니다
         onView(withId(R.id.btnContinue)).perform(click())
-        onView(withId(R.id.etPassword)).perform(typeText("123456"))
+        onView(withId(R.id.etPassword)).perform(typeText("123456"), closeSoftKeyboard())
         // password가 일치하지 않습니다
         onView(withId(R.id.btnContinue)).perform(click())
-        onView(withId(R.id.etConfirmPassword)).perform(typeText("123456"))
+        onView(withId(R.id.etConfirmPassword)).perform(typeText("123456"), closeSoftKeyboard())
         //정상
         onView(withId(R.id.btnContinue)).perform(click())
         onView(withId(R.id.btnStop)).perform(click())
     }
-    */
+
     @Test
     fun test_navigateToSignUpStep_when_error()  {
 

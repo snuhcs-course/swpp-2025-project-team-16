@@ -6,6 +6,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.fitquest.app.data.remote.RetrofitClient
@@ -17,11 +18,13 @@ import com.fitquest.app.model.Schedule
 import com.fitquest.app.ui.adapters.DailyWorkoutAdapter
 import com.fitquest.app.ui.viewmodels.JourneyViewModel
 import com.fitquest.app.ui.viewmodels.JourneyViewModelFactory
+import com.fitquest.app.ui.viewmodels.ScheduleProgress
 import com.fitquest.app.util.ActivityUtils.getEmoji
 import com.fitquest.app.util.ActivityUtils.getLabel
 import com.fitquest.app.util.DateUtils.formatDate
 import com.fitquest.app.util.DateUtils.formatTime
 import com.google.android.material.bottomsheet.BottomSheetDialog
+import kotlinx.coroutines.launch
 import org.threeten.bp.LocalDateTime
 import org.threeten.bp.ZoneId
 
@@ -31,7 +34,7 @@ class JourneyFragment() : Fragment() {
     private val binding get() = _binding!!
 
     private val viewModel: JourneyViewModel by viewModels {
-        JourneyViewModelFactory(RetrofitClient.scheduleApiService)
+        JourneyViewModelFactory(RetrofitClient.scheduleApiService, RetrofitClient.dailySummaryApiService)
     }
 
     private lateinit var adapter: DailyWorkoutAdapter
@@ -43,6 +46,12 @@ class JourneyFragment() : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
+        if (!viewModel.isInitialized){
+            showProcessingOverlay()
+            lifecycleScope.launch {viewModel.completeScheduleInitFlow()}
+            observeLoginProgress()
+        }
 
         adapter = DailyWorkoutAdapter { dailyItem -> showScheduleDetails(dailyItem) }
         val layoutManager = LinearLayoutManager(context).apply {
@@ -110,6 +119,33 @@ class JourneyFragment() : Fragment() {
             repsTarget = repsTarget,
             durationTarget = durationTarget)
         findNavController().navigate(action)
+    }
+
+    private fun showProcessingOverlay() {
+        binding.progressOverlay.visibility = View.VISIBLE
+        binding.tvProgressStatus.text = "Processing..."
+    }
+
+    private fun hideProcessingOverlay() {
+        binding.progressOverlay.visibility = View.GONE
+    }
+
+    private fun observeLoginProgress() {
+        viewModel.progressState.observe(viewLifecycleOwner) { state ->
+            when (state) {
+                is ScheduleProgress.Step -> {
+                    binding.tvProgressStatus.text = state.message
+                    binding.progressBar.progress = state.step * 33
+                }
+                ScheduleProgress.Completed -> {
+                    hideProcessingOverlay()
+                }
+                is ScheduleProgress.Error -> {
+                    hideProcessingOverlay()
+                    binding.tvProgressStatus.text = "Error: ${state.error}"
+                }
+            }
+        }
     }
 
 

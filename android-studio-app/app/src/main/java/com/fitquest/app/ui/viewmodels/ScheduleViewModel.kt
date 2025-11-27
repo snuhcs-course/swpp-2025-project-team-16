@@ -5,7 +5,6 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.fitquest.app.model.Schedule
 import com.fitquest.app.repository.ScheduleRepository
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 class ScheduleViewModel(private val repository: ScheduleRepository) : ViewModel() {

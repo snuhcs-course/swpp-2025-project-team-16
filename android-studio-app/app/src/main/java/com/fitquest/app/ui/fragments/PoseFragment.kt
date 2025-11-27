@@ -424,6 +424,7 @@ class PoseFragment : Fragment() {
                     improvePointsResult = pa.improvement_points.ifBlank { "None" }
                     cueResult = pa.improvement_methods?.ifBlank { "None" } ?: "None"
 
+
                 } catch (e: Exception) {
                     Log.e("PoseFragment", "uploadPose failed", e)
                     errorMessage = "Network error: ${e.message}"

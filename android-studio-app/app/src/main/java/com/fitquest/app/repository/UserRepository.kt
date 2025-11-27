@@ -1,7 +1,7 @@
 package com.fitquest.app.repository
 
 import com.fitquest.app.data.remote.UserApiService
-import com.fitquest.app.data.remote.RankResponse
+import com.fitquest.app.model.RankResponse
 import com.fitquest.app.model.User
 import retrofit2.Response
 

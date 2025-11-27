@@ -4,7 +4,6 @@
     android:id="@+id/nav_graph"
     app:startDestination="@id/journeyFragment">
 
-    <!-- Journey Fragment -->
     <fragment
         android:id="@+id/journeyFragment"
         android:name="com.fitquest.app.ui.fragments.JourneyFragment"
@@ -18,21 +17,6 @@
             app:popExitAnim="@android:anim/slide_out_right" />
     </fragment>
 
-    <!-- Schedule Fragment -->
-    <fragment
-        android:id="@+id/scheduleFragment"
-        android:name="com.fitquest.app.ui.fragments.ScheduleFragment"
-        android:label="Schedule">
-        <action
-            android:id="@+id/action_scheduleFragment_to_aiCoachFragment"
-            app:destination="@id/aiCoachFragment"
-            app:enterAnim="@android:anim/slide_in_left"
-            app:exitAnim="@android:anim/slide_out_right"
-            app:popEnterAnim="@android:anim/slide_in_left"
-            app:popExitAnim="@android:anim/slide_out_right" />
-    </fragment>
-
-    <!-- AI Coach Fragment -->
     <fragment
         android:id="@+id/aiCoachFragment"
         android:name="com.fitquest.app.ui.fragments.AiCoachFragment"
@@ -55,13 +39,11 @@
             android:defaultValue="-1"/>
     </fragment>
 
-    <!-- Pose Fragment -->
     <fragment
         android:id="@+id/poseFragment"
         android:name="com.fitquest.app.ui.fragments.PoseFragment"
         android:label="Pose" />
 
-    <!-- Profile Fragment -->
     <fragment
         android:id="@+id/profileFragment"
         android:name="com.fitquest.app.ui.fragments.ProfileFragment"

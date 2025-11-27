@@ -34,13 +34,13 @@ class ScheduleFragment : Fragment() {
             val repsTarget = schedule.repsTarget ?: -1
             val durationTarget = schedule.durationTarget ?: -1
 
-            val action = ScheduleFragmentDirections.actionScheduleFragmentToAiCoachFragment(
-                scheduleId = schedule.id!!,
-                activityKey = schedule.activity.lowercase(),
-                repsTarget = repsTarget,
-                durationTarget = durationTarget
-            )
-            findNavController().navigate(action)
+//            val action = ScheduleFragmentDirections.actionScheduleFragmentToAiCoachFragment(
+//                scheduleId = schedule.id!!,
+//                activityKey = schedule.activity.lowercase(),
+//                repsTarget = repsTarget,
+//                durationTarget = durationTarget
+//            )
+//            findNavController().navigate(action)
         }
 
         binding.recyclerViewSchedules.layoutManager = LinearLayoutManager(requireContext())

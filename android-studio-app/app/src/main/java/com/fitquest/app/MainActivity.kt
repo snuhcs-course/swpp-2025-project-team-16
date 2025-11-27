@@ -29,18 +29,28 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        // ✅ NavHostFragment에서 NavController 가져오기
+        val fromLogin = intent.getBooleanExtra("fromLogin", false)
+        val fromSignup = intent.getBooleanExtra("fromSignup", false)
+
+        if (fromLogin || fromSignup) {
+            markJourneyInitNeeded()
+        }
+
         val navHostFragment = supportFragmentManager
             .findFragmentById(R.id.mainFragmentContainer) as NavHostFragment
         navController = navHostFragment.navController
 
         bottomNav = findViewById(R.id.bottomNavigation)
 
-        // ✅ Bottom Navigation과 NavController 자동 연결
         bottomNav.setupWithNavController(navController)
 
         setupSessionLock()
         setupBackPress()
+    }
+
+    private fun markJourneyInitNeeded() {
+        val prefs = getSharedPreferences("init", MODE_PRIVATE)
+        prefs.edit().putBoolean("journeyInitNeeded", true).apply()
     }
 
     private fun setupSessionLock() {

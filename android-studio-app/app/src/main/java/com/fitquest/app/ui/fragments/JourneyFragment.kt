@@ -47,11 +47,7 @@ class JourneyFragment() : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        if (!viewModel.isInitialized){
-            showProcessingOverlay()
-            lifecycleScope.launch {viewModel.completeScheduleInitFlow()}
-            observeLoginProgress()
-        }
+        runInitializationIfNeeded()
 
         adapter = DailyWorkoutAdapter { dailyItem -> showScheduleDetails(dailyItem) }
         val layoutManager = LinearLayoutManager(context).apply {
@@ -130,7 +126,18 @@ class JourneyFragment() : Fragment() {
         binding.progressOverlay.visibility = View.GONE
     }
 
-    private fun observeLoginProgress() {
+    private fun needInitialization(): Boolean {
+        val prefs = requireContext().getSharedPreferences("init", 0)
+        return prefs.getBoolean("journeyInitNeeded", false)
+    }
+
+    private fun markInitializationDone() {
+        val prefs = requireContext().getSharedPreferences("init", 0)
+        prefs.edit().putBoolean("journeyInitNeeded", false).apply()
+    }
+
+
+    private fun observeScheduleInitProgress() {
         viewModel.progressState.observe(viewLifecycleOwner) { state ->
             when (state) {
                 is ScheduleProgress.Step -> {
@@ -139,12 +146,26 @@ class JourneyFragment() : Fragment() {
                 }
                 ScheduleProgress.Completed -> {
                     hideProcessingOverlay()
+                    markInitializationDone()
+                    viewModel.loadUpcomingSchedules()
                 }
                 is ScheduleProgress.Error -> {
                     hideProcessingOverlay()
                     binding.tvProgressStatus.text = "Error: ${state.error}"
                 }
             }
+        }
+    }
+
+    private fun runInitializationIfNeeded() {
+        if (needInitialization()) {
+            showProcessingOverlay()
+
+            lifecycleScope.launch {
+                viewModel.completeScheduleInitFlow()
+            }
+
+            observeScheduleInitProgress()
         }
     }
 

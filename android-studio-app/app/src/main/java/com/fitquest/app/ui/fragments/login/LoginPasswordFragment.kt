@@ -106,7 +106,9 @@ class LoginPasswordFragment : Fragment() {
 
     private fun navigateToMainActivity() {
         activity?.let {
-            it.startActivity(Intent(it, MainActivity::class.java))
+            val intent = Intent(it, MainActivity::class.java)
+            intent.putExtra("fromLogin", true)
+            it.startActivity(intent)
             it.finish()
         }
     }

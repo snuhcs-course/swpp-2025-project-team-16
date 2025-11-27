@@ -19,10 +19,6 @@ import com.fitquest.app.model.NetworkResult
 import com.fitquest.app.model.login.LoginRequest
 import com.fitquest.app.ui.viewmodels.AuthViewModel
 import com.fitquest.app.ui.viewmodels.AuthViewModelFactory
-import com.fitquest.app.ui.viewmodels.LoginProgress
-import com.fitquest.app.ui.viewmodels.LoginViewModel
-import com.fitquest.app.ui.viewmodels.LoginViewModelFactory
-import kotlinx.coroutines.launch
 
 class LoginPasswordFragment : Fragment() {
 
@@ -31,13 +27,6 @@ class LoginPasswordFragment : Fragment() {
 
     private val authViewModel: AuthViewModel by viewModels {
         AuthViewModelFactory(RetrofitClient.authApiService, requireContext())
-    }
-
-    private val loginViewModel: LoginViewModel by viewModels {
-        LoginViewModelFactory(
-            RetrofitClient.scheduleApiService,
-            RetrofitClient.dailySummaryApiService
-        )
     }
 
     private val args: LoginPasswordFragmentArgs by navArgs()
@@ -65,7 +54,6 @@ class LoginPasswordFragment : Fragment() {
         binding.btnPasswordLogin.setOnClickListener {
             val password = binding.etPassword.text.toString().trim()
             if (password.isNotEmpty()) {
-                showProcessingOverlay()
                 verifyPassword(email, password)
             } else {
                 binding.etPassword.error = "Please enter your password"
@@ -77,8 +65,6 @@ class LoginPasswordFragment : Fragment() {
         }
 
         observeLoginResult()
-
-        observeLoginProgress()
     }
 
 
@@ -88,7 +74,6 @@ class LoginPasswordFragment : Fragment() {
             val fakeName = "Test User"
             TokenManager.saveToken(requireContext(), fakeToken, email, fakeName)
             Toast.makeText(requireContext(), "Welcome back, $fakeName", Toast.LENGTH_SHORT).show()
-            lifecycleScope.launch { loginViewModel.completeLoginFlow() }
             return
         }
 
@@ -103,14 +88,10 @@ class LoginPasswordFragment : Fragment() {
                     val body = result.data
                     TokenManager.saveToken(requireContext(), body.token ?: "", email, body.name ?: "")
                     Toast.makeText(requireContext(), "Welcome back, ${body.name}", Toast.LENGTH_SHORT).show()
-
-                    lifecycleScope.launch {
-                        loginViewModel.completeLoginFlow()
-                    }
+                    navigateToMainActivity()
                 }
                 is NetworkResult.ServerError -> {
                     binding.etPassword.error = result.message
-                    hideProcessingOverlay()
                 }
                 is NetworkResult.NetworkError -> {
                     Toast.makeText(
@@ -118,37 +99,6 @@ class LoginPasswordFragment : Fragment() {
                         "Network error: ${result.exception.localizedMessage}",
                         Toast.LENGTH_SHORT
                     ).show()
-                    hideProcessingOverlay()
-                }
-            }
-        }
-    }
-
-    private fun showProcessingOverlay() {
-        binding.progressOverlay.visibility = View.VISIBLE
-        binding.tvProgressStatus.text = "Processing..."
-        binding.btnPasswordLogin.isEnabled = false
-    }
-
-    private fun hideProcessingOverlay() {
-        binding.progressOverlay.visibility = View.GONE
-        binding.btnPasswordLogin.isEnabled = true
-    }
-
-    private fun observeLoginProgress() {
-        loginViewModel.progressState.observe(viewLifecycleOwner) { state ->
-            when (state) {
-                is LoginProgress.Step -> {
-                    binding.tvProgressStatus.text = state.message
-                    binding.progressBar.progress = state.step * 33
-                }
-                LoginProgress.Completed -> {
-                    hideProcessingOverlay()
-                    navigateToMainActivity()
-                }
-                is LoginProgress.Error -> {
-                    hideProcessingOverlay()
-                    binding.tvProgressStatus.text = "Error: ${state.error}"
                 }
             }
         }

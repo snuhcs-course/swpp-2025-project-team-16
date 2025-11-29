@@ -156,7 +156,7 @@ class ProfileFragment : Fragment() {
         detailBinding.tvDayTitle.text = formatDate(dailyItem.date)
         detailBinding.tvDailySummary.text = dailyItem.summaryText
         detailBinding.tvTotalXp.text = "+${calculateTotalEarnedXp(dailyItem.schedules, dailyItem.sessions)}"
-        detailBinding.tvCompletion.text = "+${calculateAverageCompletionPercent(dailyItem.schedules)}"
+//        detailBinding.tvCompletion.text = "+${calculateAverageCompletionPercent(dailyItem.schedules)}"
         detailBinding.exercisedoneListContainer.removeAllViews()
 
         val combinedItems = (dailyItem.schedules.map { it as Any } + dailyItem.sessions.map { it as Any })

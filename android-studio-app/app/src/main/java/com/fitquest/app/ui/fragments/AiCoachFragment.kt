@@ -108,6 +108,7 @@ class AiCoachFragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener {
 
     private var lastCaptureTimeMs: Long = 0L
     private val MIN_CAPTURE_INTERVAL_MS: Long = 3000L
+    private val PLANK_CAPTURE_INTERVAL_MS: Long = 15000L
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         _binding = FragmentAiCoachBinding.inflate(inflater, container, false)
@@ -759,17 +760,30 @@ class AiCoachFragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener {
     private fun captureBottomRepPhotoIfNeeded(currentRep: Int, phase: String?) {
         if (!isTraining) return
 
-        // BOTTOM 또는 DOWN_REACHED 가 아닐 때는 무시
-        if (phase != "BOTTOM" && phase != "DOWN_REACHED") return
-
-        // ✅ 시간 간격 체크: 마지막 캡처에서 3초 안 지났으면 캡처하지 않음
         val nowMs = System.currentTimeMillis()
-        if (nowMs - lastCaptureTimeMs < MIN_CAPTURE_INTERVAL_MS) {
-            return
+        val lowerName = selectedExercise.lowercase(Locale.getDefault())
+
+        // ---- 1) 운동별 촬영 조건 설정 ----
+        val phaseOk = when (lowerName) {
+            // ✅ 플랭크: HOLDING 상태일 때만 촬영
+            "plank" -> phase == PlankTimer.Phase.HOLDING.name
+
+            // ✅ 스쿼트/런지(기존 로직 유지): BOTTOM or DOWN_REACHED에서만 촬영
+            else -> (phase == "BOTTOM" || phase == "DOWN_REACHED")
+        }
+        if (!phaseOk) return
+
+        // ---- 2) 운동별 간격 설정 ----
+        val intervalMs = when (lowerName) {
+            "plank" -> PLANK_CAPTURE_INTERVAL_MS   // 15초
+            else -> MIN_CAPTURE_INTERVAL_MS        // 3초 (기존 스쿼트/런지)
         }
 
-        // 같은 rep에서 여러 번 찍히지 않게 방지 (여전히 유지)
-        if (currentRep <= lastCapturedRepIndex) return
+        // 시간 간격 체크
+        if (nowMs - lastCaptureTimeMs < intervalMs) return
+
+        // ✅ 스쿼트/런지에서는 같은 rep에서 여러 번 찍히지 않도록 기존 로직 유지
+        if (lowerName != "plank" && currentRep <= lastCapturedRepIndex) return
 
         val imageCapture = imageCapture ?: return
 
@@ -780,8 +794,7 @@ class AiCoachFragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener {
 
         val outputOptions = ImageCapture.OutputFileOptions.Builder(file).build()
 
-        // ✅ 캡처를 예약한 시점에 바로 lastCaptureTimeMs 업데이트
-        //    (콜백이 늦게 오더라도 3초 제한이 제대로 걸리도록)
+        // ✅ 캡처 예약 시점에 바로 lastCaptureTimeMs를 업데이트
         lastCaptureTimeMs = nowMs
 
         imageCapture.takePicture(
@@ -823,14 +836,17 @@ class AiCoachFragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener {
                         e.printStackTrace()
                     }
 
-                    // ✅ 리스트에 추가 + 마지막 캡처된 rep 갱신
+                    // ✅ 리스트에 추가
                     bottomRepPhotoFiles.add(file)
-                    lastCapturedRepIndex = currentRep
+
+                    // ✅ 스쿼트/런지는 rep 기반 중복 방지를 위해 계속 사용
+                    if (lowerName != "plank") {
+                        lastCapturedRepIndex = currentRep
+                    }
                 }
             }
         )
     }
-
 
 
 

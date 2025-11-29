@@ -14,11 +14,6 @@ interface ScheduleApiService {
         @Query("status") status: String? = null
     ): List<Schedule>
 
-    @POST("schedules/")
-    suspend fun createSchedule(
-        @Body schedule: Schedule
-    ): Schedule
-
     @POST("schedules/auto-generate/")
     suspend fun autoGenerateSchedules(): AutoGenerateSchedulesResponse
 

@@ -9,9 +9,6 @@ class ScheduleRepository(private val service: ScheduleApiService) {
     suspend fun getSchedules(status: String? = null): List<Schedule> =
         service.getSchedules(status)
 
-    suspend fun createSchedule(schedule: Schedule): Schedule =
-        service.createSchedule(schedule)
-
     suspend fun autoGenerateSchedules(): AutoGenerateSchedulesResponse =
         service.autoGenerateSchedules()
 

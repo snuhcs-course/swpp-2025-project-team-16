@@ -1,9 +1,7 @@
 from datetime import datetime, timedelta
 from django.utils import timezone
 from django.db import transaction
-from accounts.models import Account
-from schedule.models import Schedule, Session, Feedback, DailySummary
-from schedule.utils.feedback import generate_feedback_from_schedule, generate_daily_summary
+from schedule.models import Schedule
 from django.utils.timezone import make_aware
 from django.utils.timezone import localdate
 
@@ -17,11 +15,6 @@ def get_schedule_datetime(schedule):
 
 @transaction.atomic
 def mark_missed_schedules():
-    """
-    완료되지 않은 지난 스케줄을 'missed' 상태로 업데이트하고
-    reps_done/duration_done은 0으로 설정.
-    이후 Feedback을 자동 생성.
-    """
     now = timezone.now()
     planned_schedules = Schedule.objects.filter(status='planned')
 
@@ -37,43 +30,3 @@ def mark_missed_schedules():
                 s.duration_done = timedelta(seconds=0)
 
             s.save()
-
-            # feedback_exists = Feedback.objects.filter(user=s.user, schedule=s).exists()
-            # if not feedback_exists:
-            #     feedback_text = generate_feedback_from_schedule(s.user, s)
-            #     Feedback.objects.create(
-            #         user=s.user,
-            #         schedule=s,
-            #         summary_text=feedback_text
-            #     )
-
-def generate_daily_summaries_for_user(user):
-    today = localdate()
-
-    session_dates = Session.objects.filter(user=user).dates("created_at", "day")
-    schedule_dates = Schedule.objects.filter(user=user).dates("scheduled_date", "day")
-
-    dates = sorted(d for d in set(list(session_dates) + list(schedule_dates)) if d is not None)
-
-    dates = [d for d in dates if d < today]
-
-    if not dates:
-        return
-
-    for date in dates:
-        if DailySummary.objects.filter(user=user, date=date).exists():
-            continue
-
-        text = generate_daily_summary(user, date)
-        DailySummary.objects.update_or_create(
-            user=user,
-            date=date,
-            defaults={"summary_text": text},
-        )
-
-
-def generate_all_daily_summaries():
-    users = Account.objects.all()
-    for user in users:
-        generate_all_daily_summaries_for_user(user=user)
-        

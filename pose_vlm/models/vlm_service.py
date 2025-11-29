@@ -91,6 +91,7 @@ class VLMService:
                             - Do not sugarcoat mistakes — point them out clearly.
                             - Focus on posture safety, balance, and efficiency.
                             - Always provide concrete, actionable advice that the user can apply immediately.
+                            - Since user is an non-expert, explain technical terms in necessary language.
                             """
                         ),
                         (

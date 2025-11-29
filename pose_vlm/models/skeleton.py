@@ -31,8 +31,8 @@ def pose_model_inference(image, save_img = False):
 
     if len(results['keypoints_2d'] > 0):
         # Access results
-        keypoints_2d = results['keypoints_2d'].squeeze() # [N, 133, 2] - pixel coords
-        keypoints_3d = results['keypoints_3d'].squeeze() # [N, 133, 3] - 3D coords in meters
+        keypoints_2d = results['keypoints_2d'][0] # [N, 133, 2] - pixel coords
+        keypoints_3d = results['keypoints_3d'][0] # [N, 133, 3] - 3D coords in meters
         # scores = results['scores']          
 
         # compute joint angles

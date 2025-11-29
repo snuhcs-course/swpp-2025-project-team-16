@@ -31,8 +31,8 @@ server/recommendation/migrations/__pycache__
 server/.env
 server/sportify/__pycache__
 pose_vlm/models/.env
-
-
+pose_vlm/.env
+pose_vlm/models/__pycache__/*
 
 __pycache__/
 *.pyc

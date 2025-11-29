@@ -15,7 +15,7 @@ import cv2
 class EvalRequest(BaseModel):
     image_base64: Optional[str] = None      # 기본: base64
     image_path: Optional[str] = None        # 테스트 대체 입력(선택)
-    category: str = Field(..., description="e.xg., 'squat'")
+    category: str = Field(..., description="e.xg., 'squat', 'lunge', 'plank'")
 
 
 # ======== 출력 도우미 ========

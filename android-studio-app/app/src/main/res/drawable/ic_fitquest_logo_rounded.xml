@@ -1,20 +1,44 @@
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
-    android:width="96dp"
-    android:height="96dp"
-    android:viewportWidth="24"
-    android:viewportHeight="24">
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
 
-    <!-- 둥근 사각형 파란 배경 -->
+    <!-- Outer rounded frame -->
     <path
-        android:fillColor="#0072ff"
-        android:pathData="M4,2h16a2,2 0 0 1 2,2v16a2,2 0 0 1 -2,2h-16a2,2 0 0 1 -2,-2v-16a2,2 0 0 1 2,-2z" />
-    <path
-        android:fillColor="#00c6ff"
-        android:fillAlpha="0.4"
-        android:pathData="M4,2h16a2,2 0 0 1 2,2v16a2,2 0 0 1 -2,2h-16a2,2 0 0 1 -2,-2v-16a2,2 0 0 1 2,-2z" />
+        android:fillColor="@android:color/transparent"
+        android:strokeColor="#00E5FF"
+        android:strokeWidth="6"
+        android:pathData="M18,18
+                          h72
+                          a6,6 0 0 1 6,6
+                          v60
+                          a6,6 0 0 1 -6,6
+                          h-72
+                          a6,6 0 0 1 -6,-6
+                          v-60
+                          a6,6 0 0 1 6,-6z" />
 
-    <!-- 번개 -->
+    <!-- Flag pole -->
     <path
-        android:fillColor="@android:color/white"
-        android:pathData="M13,3l-5,9h3l-2,9l6-9h-3z" />
+        android:strokeColor="#00E5FF"
+        android:strokeWidth="6"
+        android:fillColor="@android:color/transparent"
+        android:pathData="M40,32 v44" />
+
+    <!-- Flag (gold) -->
+    <path
+        android:fillColor="#FFD700"
+        android:pathData="M40,32
+                          h32
+                          c6,0 6,10 0,10
+                          h-32z" />
+
+    <!-- Bottom base line -->
+    <path
+        android:strokeColor="#00E5FF"
+        android:strokeWidth="6"
+        android:fillColor="@android:color/transparent"
+        android:pathData="M32,82 h44" />
+
 </vector>

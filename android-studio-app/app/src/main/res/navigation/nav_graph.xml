@@ -16,6 +16,7 @@
             app:popEnterAnim="@android:anim/slide_in_left"
             app:popExitAnim="@android:anim/slide_out_right" />
     </fragment>
+    <!-- AI Coach Fragment -->
 
     <fragment
         android:id="@+id/aiCoachFragment"

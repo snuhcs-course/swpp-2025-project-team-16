@@ -60,7 +60,7 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Good Points"
+                android:text="👍🏻 Good Points"
                 android:textColor="@color/gold"
                 android:textStyle="bold"
                 android:textSize="14sp" />
@@ -78,8 +78,8 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="16dp"
-                android:text="Needs Improvement"
-                android:textColor="@color/gold"
+                android:text="👎🏻 Needs Improvement"
+                android:textColor="@color/error_red"
                 android:textStyle="bold"
                 android:textSize="14sp" />
 
@@ -96,7 +96,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="16dp"
-                android:text="Cue"
+                android:text="💡 Cue"
                 android:textColor="@color/cyan_bright"
                 android:textStyle="bold"
                 android:textSize="14sp" />

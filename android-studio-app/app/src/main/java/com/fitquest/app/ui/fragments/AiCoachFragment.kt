@@ -604,7 +604,7 @@ class AiCoachFragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener {
 
     private fun applyTrainingButtonStyle() {
         if (isTraining) {
-            binding.btnStartWorkout.text = "Pause Training"
+            binding.btnStartWorkout.text = "Stop Training"
             binding.btnStartWorkout.icon = ContextCompat.getDrawable(requireContext(), R.drawable.ic_pause_square)
             binding.btnStartWorkout.backgroundTintList = ContextCompat.getColorStateList(requireContext(), R.color.error_red)
             binding.btnStartWorkout.setTextColor(Color.WHITE)

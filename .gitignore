@@ -19,6 +19,8 @@ android-studio-app/.cxx/
 android-studio-app/Thumbs.db
 android-studio-app/gradle-wrapper.jar
 
+.idea/
+
 #backend
 server/accounts/__pycache__
 server/accounts/migrations/__pycache__

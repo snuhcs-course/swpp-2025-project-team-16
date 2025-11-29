@@ -4,7 +4,6 @@
     android:id="@+id/nav_graph"
     app:startDestination="@id/journeyFragment">
 
-    <!-- Journey Fragment -->
     <fragment
         android:id="@+id/journeyFragment"
         android:name="com.fitquest.app.ui.fragments.JourneyFragment"
@@ -18,6 +17,7 @@
             app:popExitAnim="@android:anim/slide_out_right" />
     </fragment>
     <!-- AI Coach Fragment -->
+
     <fragment
         android:id="@+id/aiCoachFragment"
         android:name="com.fitquest.app.ui.fragments.AiCoachFragment"
@@ -40,13 +40,11 @@
             android:defaultValue="-1"/>
     </fragment>
 
-    <!-- Pose Fragment -->
     <fragment
         android:id="@+id/poseFragment"
         android:name="com.fitquest.app.ui.fragments.PoseFragment"
         android:label="Pose" />
 
-    <!-- Profile Fragment -->
     <fragment
         android:id="@+id/profileFragment"
         android:name="com.fitquest.app.ui.fragments.ProfileFragment"

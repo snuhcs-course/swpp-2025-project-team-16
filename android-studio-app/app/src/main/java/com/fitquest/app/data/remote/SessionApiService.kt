@@ -12,15 +12,15 @@ import retrofit2.http.Path
 
 interface SessionApiService {
 
-    @GET("/sessions/")
+    @GET("sessions/")
     suspend fun getSessions(): List<Session>
 
-    @POST("/sessions/start/")
+    @POST("sessions/start/")
     suspend fun startSession(
         @Body request: StartSessionRequest
     ): Response<Session>
 
-    @PATCH("/sessions/{session_id}/end/")
+    @PATCH("sessions/{session_id}/end/")
     suspend fun endSession(
         @Path("session_id") sessionId: Int,
         @Body request: EndSessionRequest

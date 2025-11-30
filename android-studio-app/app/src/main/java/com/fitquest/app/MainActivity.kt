@@ -2,55 +2,70 @@ package com.fitquest.app
 
 import android.annotation.SuppressLint
 import android.os.Bundle
+import android.view.View
 import android.widget.Toast
 import androidx.activity.addCallback
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
-import androidx.navigation.NavController
+import androidx.core.view.forEach
 import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.ui.setupWithNavController
 import com.fitquest.app.data.remote.RetrofitClient
+import com.fitquest.app.databinding.ActivityMainBinding
+import com.fitquest.app.model.InitProgress
 import com.fitquest.app.ui.viewmodels.AiCoachViewModel
 import com.fitquest.app.ui.viewmodels.AiCoachViewModelFactory
-import com.google.android.material.bottomnavigation.BottomNavigationView
+import com.fitquest.app.ui.viewmodels.MainActivityViewModel
+import com.fitquest.app.ui.viewmodels.MainActivityViewModelFactory
 import kotlin.getValue
 
 class MainActivity : AppCompatActivity() {
 
-    private lateinit var bottomNav: BottomNavigationView
-    private lateinit var navController: NavController
+    private lateinit var binding: ActivityMainBinding
+    private val mainActivityViewModel: MainActivityViewModel by viewModels {
+        MainActivityViewModelFactory(
+            RetrofitClient.scheduleApiService,
+            RetrofitClient.dailySummaryApiService
+        )
+    }
 
     private val coachVm: AiCoachViewModel by viewModels {
         AiCoachViewModelFactory(RetrofitClient.sessionApiService)
     }
 
+    private val navController by lazy {
+        (binding.mainFragmentContainer.getFragment<NavHostFragment>()).navController
+    }
+
     @SuppressLint("MissingInflatedId")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
+        binding = ActivityMainBinding.inflate(layoutInflater)
+        setContentView(binding.root)
 
-        val fromLogin = intent.getBooleanExtra("fromLogin", false)
-        val fromSignup = intent.getBooleanExtra("fromSignup", false)
-
-        if (fromLogin || fromSignup) {
-            markJourneyInitNeeded()
+        mainActivityViewModel.progressState.observe(this) { state ->
+            when (state) {
+                is InitProgress.Step -> {
+                    binding.progressOverlay.visibility = View.VISIBLE
+                    binding.tvProgressStatus.text = state.message
+                    binding.progressBar.progress = state.step * 33
+                }
+                InitProgress.Completed -> {
+                    binding.progressOverlay.visibility = View.GONE
+                }
+                is InitProgress.Error -> {
+                    binding.progressOverlay.visibility = View.GONE
+                    Toast.makeText(this, state.error, Toast.LENGTH_SHORT).show()
+                }
+            }
         }
 
-        val navHostFragment = supportFragmentManager
-            .findFragmentById(R.id.mainFragmentContainer) as NavHostFragment
-        navController = navHostFragment.navController
+        mainActivityViewModel.completeInitFlow()
 
-        bottomNav = findViewById(R.id.bottomNavigation)
-
-        bottomNav.setupWithNavController(navController)
+        binding.bottomNavigation.setupWithNavController(navController)
 
         setupSessionLock()
         setupBackPress()
-    }
-
-    private fun markJourneyInitNeeded() {
-        val prefs = getSharedPreferences("init", MODE_PRIVATE)
-        prefs.edit().putBoolean("journeyInitNeeded", true).apply()
     }
 
     private fun setupSessionLock() {
@@ -58,20 +73,18 @@ class MainActivity : AppCompatActivity() {
             setBottomNavEnabled(!locked)
         }
 
-        // ✅ 세션 활성화 시 네비게이션 이벤트 차단
-        bottomNav.setOnItemSelectedListener { item ->
+        binding.bottomNavigation.setOnItemSelectedListener { item ->
             if (coachVm.sessionActive.value == true) {
                 Toast.makeText(
                     this,
-                    "세션 진행 중에는 이동할 수 없습니다. 먼저 일시정지/종료하세요.",
+                    "You cannot move during the session. Please pause/terminate first.",
                     Toast.LENGTH_SHORT
                 ).show()
-                return@setOnItemSelectedListener false
+                false
+            } else {
+                navController.navigate(item.itemId)
+                true
             }
-
-            // NavController가 자동으로 처리하도록
-            navController.navigate(item.itemId)
-            true
         }
     }
 
@@ -80,7 +93,7 @@ class MainActivity : AppCompatActivity() {
             if (coachVm.sessionActive.value == true) {
                 Toast.makeText(
                     this@MainActivity,
-                    "세션 진행 중에는 뒤로가기를 사용할 수 없습니다.",
+                    "Backward is not available during the session.",
                     Toast.LENGTH_SHORT
                 ).show()
             } else {
@@ -94,9 +107,8 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun setBottomNavEnabled(enabled: Boolean) {
-        val menu = bottomNav.menu
-        for (i in 0 until menu.size()) {
-            menu.getItem(i).isEnabled = enabled
+        binding.bottomNavigation.menu.forEach { item ->
+            item.isEnabled = enabled
         }
     }
 }

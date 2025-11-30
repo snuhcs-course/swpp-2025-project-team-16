@@ -2,7 +2,9 @@ package com.fitquest.app.ui.viewmodels
 
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import com.fitquest.app.MainDispatcherRule
+import com.fitquest.app.data.remote.EndSessionRequest
 import com.fitquest.app.data.remote.SessionApiService
+import com.fitquest.app.data.remote.StartSessionRequest
 import com.fitquest.app.model.Session
 import com.fitquest.app.model.WorkoutResult
 import com.fitquest.app.repository.SessionRepository
@@ -13,6 +15,7 @@ import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
+import okhttp3.ResponseBody.Companion.toResponseBody
 import org.junit.After
 import org.junit.Assert.*
 import org.junit.Before
@@ -22,6 +25,7 @@ import org.junit.runner.RunWith
 import org.mockito.Mock
 import org.mockito.Mockito
 import org.mockito.junit.MockitoJUnitRunner
+import retrofit2.Response
 
 @RunWith(MockitoJUnitRunner::class)
 class AiCoachViewModelTest {
@@ -57,7 +61,7 @@ class AiCoachViewModelTest {
     @OptIn(ExperimentalCoroutinesApi::class)
     @Test
     fun `beginTraining updates LiveData correctly`() =runTest{
-        Mockito.`when`(repository.startSession("squat",0)).thenReturn(Result.success(Session(activity="squat")))
+        Mockito.`when`(repository.startSession(StartSessionRequest("squat"))).thenReturn(Response.success(Session(activity="squat")))
         viewModel.beginTraining("squat",0)
         advanceUntilIdle()
         assertTrue(viewModel.isTraining.value ?: false)
@@ -67,7 +71,7 @@ class AiCoachViewModelTest {
     }
     @Test
     fun `beginTraining updates LiveData correct`() =runTest{
-        Mockito.`when`(repository.startSession("squat",0)).thenReturn(Result.failure(Exception("Error")))
+        Mockito.`when`(repository.startSession(StartSessionRequest("squat"))).thenReturn(Response.error(0,"error".toResponseBody()))
         viewModel.beginTraining("squat",0)
         assertFalse(viewModel.isTraining.value ?: false)
         assertEquals(0, viewModel.repCount.value)
@@ -79,12 +83,12 @@ class AiCoachViewModelTest {
     @Test
     fun `pauseTraining updates LiveData correctly`() =runTest{
         // Start training first
-        Mockito.`when`(repository.startSession("squat",0)).thenReturn(Result.success(Session(activity="squat",id=0)))
-        Mockito.`when`(repository.endSession(0,5,50)).thenReturn(Result.success(Session(activity="squat",id=0)))
+        Mockito.`when`(repository.startSession(StartSessionRequest("squat"))).thenReturn(Response.success(Session(activity="squat")))
+        Mockito.`when`(repository.endSession(0, EndSessionRequest(0,0,0))).thenReturn(Response.success(Session(activity="squat")))
         viewModel.beginTraining("squat",0)
         // Then pause
         advanceUntilIdle()
-        viewModel.pauseTraining(WorkoutResult(5, 50))
+        viewModel.pauseTraining(WorkoutResult(0,0,0))
         advanceUntilIdle()
         assertFalse(viewModel.isTraining.value ?: true)
         assertEquals("squat",viewModel.selectedExercise.value)
@@ -93,7 +97,7 @@ class AiCoachViewModelTest {
 
     @Test
     fun `updateRepCount updates reps and points`() =runTest{
-        Mockito.`when`(repository.startSession("squat",0)).thenReturn(Result.success(Session(activity="squat")))
+        Mockito.`when`(repository.startSession(StartSessionRequest("squat"))).thenReturn(Response.success(Session(activity="squat")))
         viewModel.beginTraining("squat",0)
         viewModel.updateRepCount(5)
         assertEquals(5, viewModel.repCount.value)

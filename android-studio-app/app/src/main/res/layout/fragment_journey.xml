@@ -111,47 +111,6 @@
 
         </LinearLayout>
 
-
-    </FrameLayout>
-
-    <!-- Progress Overlay -->
-    <FrameLayout
-        android:id="@+id/progressOverlay"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:background="#80000000"
-        android:visibility="gone"
-        android:clickable="true"
-        android:focusable="true"
-        android:elevation="1000dp">
-
-        <LinearLayout
-            android:orientation="vertical"
-            android:layout_gravity="center"
-            android:gravity="center"
-            android:padding="32dp"
-            android:background="@android:color/black"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:elevation="1001dp">
-
-            <ProgressBar
-                android:id="@+id/progressBar"
-                style="@android:style/Widget.DeviceDefault.Light.ProgressBar.Horizontal"
-                android:layout_width="200dp"
-                android:layout_height="wrap_content"
-                android:max="3"
-                android:progress="0"
-                android:progressTint="@color/cyan_bright"/>
-
-            <TextView
-                android:id="@+id/tvProgressStatus"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Initializing..."
-                android:textColor="@android:color/white"
-                android:layout_marginTop="16dp"/>
-        </LinearLayout>
     </FrameLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

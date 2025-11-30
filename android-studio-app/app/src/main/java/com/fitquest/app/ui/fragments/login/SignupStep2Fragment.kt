@@ -392,9 +392,7 @@ class SignupStep2Fragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener 
             countdownTimer = null
 
             activity?.let {
-                val intent = Intent(it, MainActivity::class.java)
-                intent.putExtra("fromSignup", true)
-                it.startActivity(intent)
+                it.startActivity(Intent(it, MainActivity::class.java))
                 it.finish()
             }
         }

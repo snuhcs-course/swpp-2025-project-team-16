@@ -6,7 +6,6 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
-import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.fitquest.app.data.remote.RetrofitClient
@@ -18,13 +17,11 @@ import com.fitquest.app.model.Schedule
 import com.fitquest.app.ui.adapters.DailyWorkoutAdapter
 import com.fitquest.app.ui.viewmodels.JourneyViewModel
 import com.fitquest.app.ui.viewmodels.JourneyViewModelFactory
-import com.fitquest.app.ui.viewmodels.ScheduleProgress
 import com.fitquest.app.util.ActivityUtils.getEmoji
 import com.fitquest.app.util.ActivityUtils.getLabel
 import com.fitquest.app.util.DateUtils.formatDate
 import com.fitquest.app.util.DateUtils.formatTime
 import com.google.android.material.bottomsheet.BottomSheetDialog
-import kotlinx.coroutines.launch
 import org.threeten.bp.LocalDateTime
 import org.threeten.bp.ZoneId
 
@@ -34,7 +31,7 @@ class JourneyFragment() : Fragment() {
     private val binding get() = _binding!!
 
     private val viewModel: JourneyViewModel by viewModels {
-        JourneyViewModelFactory(RetrofitClient.scheduleApiService, RetrofitClient.dailySummaryApiService)
+        JourneyViewModelFactory(RetrofitClient.scheduleApiService)
     }
 
     private lateinit var adapter: DailyWorkoutAdapter
@@ -47,8 +44,6 @@ class JourneyFragment() : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        runInitializationIfNeeded()
-
         adapter = DailyWorkoutAdapter { dailyItem -> showScheduleDetails(dailyItem) }
         val layoutManager = LinearLayoutManager(context).apply {
             orientation = LinearLayoutManager.VERTICAL
@@ -60,7 +55,6 @@ class JourneyFragment() : Fragment() {
 
         viewModel.dailyWorkouts.observe(viewLifecycleOwner) { dailyItems ->
             adapter.submitList(dailyItems)
-            // RecyclerView가 비었을 때 TextView 보여주기
             binding.tvEmpty.visibility = if (dailyItems.isEmpty()) View.VISIBLE else View.GONE
         }
 
@@ -116,59 +110,6 @@ class JourneyFragment() : Fragment() {
             durationTarget = durationTarget)
         findNavController().navigate(action)
     }
-
-    private fun showProcessingOverlay() {
-        binding.progressOverlay.visibility = View.VISIBLE
-        binding.tvProgressStatus.text = "Processing..."
-    }
-
-    private fun hideProcessingOverlay() {
-        binding.progressOverlay.visibility = View.GONE
-    }
-
-    private fun needInitialization(): Boolean {
-        val prefs = requireContext().getSharedPreferences("init", 0)
-        return prefs.getBoolean("journeyInitNeeded", false)
-    }
-
-    private fun markInitializationDone() {
-        val prefs = requireContext().getSharedPreferences("init", 0)
-        prefs.edit().putBoolean("journeyInitNeeded", false).apply()
-    }
-
-
-    private fun observeScheduleInitProgress() {
-        viewModel.progressState.observe(viewLifecycleOwner) { state ->
-            when (state) {
-                is ScheduleProgress.Step -> {
-                    binding.tvProgressStatus.text = state.message
-                    binding.progressBar.progress = state.step * 33
-                }
-                ScheduleProgress.Completed -> {
-                    hideProcessingOverlay()
-                    markInitializationDone()
-                    viewModel.loadUpcomingSchedules()
-                }
-                is ScheduleProgress.Error -> {
-                    hideProcessingOverlay()
-                    binding.tvProgressStatus.text = "Error: ${state.error}"
-                }
-            }
-        }
-    }
-
-    private fun runInitializationIfNeeded() {
-        if (needInitialization()) {
-            showProcessingOverlay()
-
-            lifecycleScope.launch {
-                viewModel.completeScheduleInitFlow()
-            }
-
-            observeScheduleInitProgress()
-        }
-    }
-
 
     override fun onDestroyView() {
         super.onDestroyView()

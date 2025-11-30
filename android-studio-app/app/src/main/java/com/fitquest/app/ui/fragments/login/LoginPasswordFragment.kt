@@ -8,7 +8,6 @@ import android.view.ViewGroup
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
-import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import com.fitquest.app.MainActivity
@@ -106,9 +105,7 @@ class LoginPasswordFragment : Fragment() {
 
     private fun navigateToMainActivity() {
         activity?.let {
-            val intent = Intent(it, MainActivity::class.java)
-            intent.putExtra("fromLogin", true)
-            it.startActivity(intent)
+            it.startActivity(Intent(it, MainActivity::class.java))
             it.finish()
         }
     }

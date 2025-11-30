@@ -18,6 +18,7 @@ import kotlin.getValue
 import android.util.Log
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
+import com.fitquest.app.util.animateLogo
 
 class SignupStep1Fragment : Fragment() {
 
@@ -62,6 +63,8 @@ class SignupStep1Fragment : Fragment() {
         }
 
         observeSignupResult()
+
+        animateLogo(binding.ivLogo)
     }
 
     private fun validateInputs(): Boolean {

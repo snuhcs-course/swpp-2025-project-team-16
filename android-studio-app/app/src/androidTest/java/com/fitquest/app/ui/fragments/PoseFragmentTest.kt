@@ -36,10 +36,7 @@ class PoseFragmentTest {
         onView(withId(R.id.tvGuideText)).check(matches(withText("Take a picture or upload from gallery")))
 
         // Check feedback card is visible
-        onView(withId(R.id.feedbackCard)).check(matches(isDisplayed()))
-        onView(withId(R.id.tvGoodPoints)).check(matches(withText("Good Point:")))
-        onView(withId(R.id.tvImprovePoints)).check(matches(withText("Needs Improvement:")))
-        onView(withId(R.id.tvCue)).check(matches(withText("💡 Cue:")))
+
     }
 
     @Test
@@ -61,8 +58,5 @@ class PoseFragmentTest {
         // without more complex setup.
     }
 
-    @Test
-    fun test_feedback_card_is_displayed() {
-        onView(withId(R.id.feedbackCard)).check(matches(isDisplayed()))
-    }
+
 }

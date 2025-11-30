@@ -63,8 +63,8 @@ class SessionViewModelTest {
         Mockito.`when`(repository.startSession("squat",0)).thenReturn(Result.success(Session(activity = "squat",id=0)))
         viewModel.startSession("squat",0)
         advanceUntilIdle()
-        Mockito.`when`(repository.endSession(0,5,50)).thenReturn(Result.success(Session(activity = "squat",id=0)))
-        viewModel.endSession(5,50)
+        Mockito.`when`(repository.endSession(0,5,50,0)).thenReturn(Result.success(Session(activity = "squat",id=0)))
+        viewModel.endSession(5,50,0)
         advanceUntilIdle()
         assertEquals(Session(activity = "squat",id=0),viewModel.currentSession.value)
     }
@@ -74,8 +74,8 @@ class SessionViewModelTest {
         Mockito.`when`(repository.startSession("squat",0)).thenReturn(Result.success(Session(activity = "squat",id=0)))
         viewModel.startSession("squat",0)
         advanceUntilIdle()
-        Mockito.`when`(repository.endSession(0,5,50)).thenReturn(Result.failure(RuntimeException("Error")))
-        viewModel.endSession(5,50)
+        Mockito.`when`(repository.endSession(0,5,50,0)).thenReturn(Result.failure(RuntimeException("Error")))
+        viewModel.endSession(5,50,0)
         advanceUntilIdle()
         assertEquals("Session completion failed: Error",viewModel.errorMessage.value)
     }

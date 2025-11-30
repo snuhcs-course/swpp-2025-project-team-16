@@ -20,6 +20,9 @@ android {
     }
 
     buildTypes {
+        debug{
+            isMinifyEnabled=false
+        }
         release {
             isMinifyEnabled = false
             proguardFiles(
@@ -48,6 +51,41 @@ android {
             isIncludeAndroidResources = true
         }
     }
+
+    tasks.register<JacocoReport>("jacocoAndroidTestReport") {
+        // 기기/에뮬레이터 테스트 실행 후 리포트 생성
+        dependsOn("connectedDebugAndroidTest")
+
+        reports {
+            xml.required.set(true)
+            html.required.set(true)
+        }
+
+        // 소스 디렉터리 (Java + Kotlin)
+        sourceDirectories.setFrom(
+            files("src/main/java", "src/main/kotlin")
+        )
+
+        // 클래스 디렉터리 (AGP 버전에 따라 경로 달라질 수 있음)
+        classDirectories.setFrom(
+            fileTree("$buildDir/intermediates/classes/debug") {
+                exclude(
+                    "**/R.class", "**/R$*.class",
+                    "**/BuildConfig.*", "**/Manifest*.*",
+                    "android/**/*.*"
+                )
+            },
+            fileTree("$buildDir/tmp/kotlin-classes/debug") // Kotlin 클래스
+        )
+
+        // 실행 데이터 (.ec 파일)
+        executionData.setFrom(
+            fileTree("$buildDir/outputs/code_coverage/debugAndroidTest/connected") {
+                include("*.ec")
+            }
+        )
+    }
+
 }
 
 dependencies {
@@ -85,23 +123,38 @@ dependencies {
     implementation("androidx.camera:camera-video:1.3.1")
     implementation("androidx.camera:camera-view:1.3.1")
     implementation("androidx.camera:camera-extensions:1.3.1")
-    implementation("com.google.mediapipe:tasks-vision:0.10.29")
+    // ML Kit / MediaPipe 에서 protobuf 전부 제거
+    implementation("com.google.mediapipe:tasks-vision:0.10.29") {
+        exclude(group = "com.google.protobuf") // javalite + lite 모두
+    }
 
+    implementation("com.google.mlkit:pose-detection:18.0.0-beta3") {
+        exclude(group = "com.google.protobuf")
+    }
+    implementation("com.google.mlkit:pose-detection-accurate:18.0.0-beta3") {
+        exclude(group = "com.google.protobuf")
+    }
 
-    // ML Kit for pose detection
-    implementation("com.google.mlkit:pose-detection:18.0.0-beta3")
-    implementation("com.google.mlkit:pose-detection-accurate:18.0.0-beta3")
+    // 우리가 직접 넣는 protobuf 버전(앱 + 테스트 공통)
+    implementation("com.google.protobuf:protobuf-javalite:3.21.12")
+    testImplementation("com.google.protobuf:protobuf-javalite:3.21.12")
+    androidTestImplementation("com.google.protobuf:protobuf-javalite:3.21.12")
 
     // Permissions
     implementation("androidx.activity:activity-ktx:1.8.2")
     implementation("com.google.android.material:material:1.13.0")
-
+    androidTestImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.7.3")
     testImplementation("junit:junit:4.13.2")
     testImplementation("junit:junit:4.12")
     androidTestImplementation("androidx.test.ext:junit:1.1.5")
     androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")
     androidTestImplementation ("androidx.test.espresso:espresso-intents:3.5.1")
-    androidTestImplementation ("androidx.test.espresso:espresso-contrib:3.5.1")
+    androidTestImplementation("androidx.test.espresso:espresso-contrib:3.5.1") {
+        exclude(group = "com.google.protobuf", module = "protobuf-lite")
+    }
+    androidTestImplementation ("androidx.test.espresso:espresso-idling-resource:3.5.1")
+
+
     androidTestImplementation ("androidx.fragment:fragment-testing:1.6.2")
 
 
@@ -110,6 +163,8 @@ dependencies {
 
     implementation("com.squareup.okhttp3:okhttp:4.12.0")
     implementation("com.squareup.okhttp3:logging-interceptor:4.12.0")
+    androidTestImplementation("org.mockito:mockito-android:5.2.0")
+    androidTestImplementation("org.mockito.kotlin:mockito-kotlin:5.2.1")
     testImplementation("org.mockito:mockito-core:5.10.0")
     testImplementation("org.mockito.kotlin:mockito-kotlin:5.2.1")
     testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.8.1")
@@ -120,6 +175,7 @@ dependencies {
 
     // --- ✅ AndroidX Test Core ---
     testImplementation("androidx.test:core:1.5.0")
+    androidTestImplementation("androidx.test:core:1.5.0")
     testImplementation("androidx.arch.core:core-testing:2.2.0")
 
     // --- ✅ Robolectric ---
@@ -128,6 +184,7 @@ dependencies {
     // --- ✅ Fragment / Activity 테스트 지원 (optional but recommended) ---
     testImplementation("androidx.fragment:fragment-testing:1.8.2")
     testImplementation("androidx.test.ext:junit:1.2.1")
+    androidTestImplementation("androidx.test.ext:junit:1.2.1")
 
     // --- CalendarView 지원
     implementation("com.prolificinteractive:material-calendarview:1.4.3")
@@ -136,4 +193,14 @@ dependencies {
 
     // For confetti
     implementation("nl.dionsegijn:konfetti-xml:2.0.2")
+}
+configurations.all {
+    resolutionStrategy.eachDependency {
+        // ✅ javalite 에만 3.21.12 강제 적용
+        if (requested.group == "com.google.protobuf" &&
+            requested.name == "protobuf-javalite"
+        ) {
+            useVersion("3.21.12")
+        }
+    }
 }

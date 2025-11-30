@@ -9,6 +9,8 @@ import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.fitquest.app.data.remote.RetrofitClient
+import com.fitquest.app.data.remote.ScheduleApiService
+import com.fitquest.app.data.remote.ServiceLocator
 import com.fitquest.app.databinding.FragmentJourneyBinding
 import com.fitquest.app.databinding.ItemScheduleBinding
 import com.fitquest.app.databinding.LayoutJourneyDaydetailBinding
@@ -33,7 +35,7 @@ class JourneyFragment() : Fragment() {
     private val binding get() = _binding!!
 
     private val viewModel: JourneyViewModel by viewModels {
-        JourneyViewModelFactory(RetrofitClient.scheduleApiService)
+        JourneyViewModelFactory(ServiceLocator.apiService)
     }
 
     private lateinit var adapter: DailyWorkoutAdapter

@@ -87,13 +87,18 @@ def generate_daily_summary(user, date):
             max_tokens=300,
         )
 
+        if not getattr(response, "choices", None):
+            raise APIResponseError("Invalid API response: no choices returned")
+
         try:
             generated_text = response.choices[0].message.content.strip()
         except (AttributeError, IndexError) as e:
             raise APIResponseError(f"Invalid API response: {e}") from e
 
         return generated_text
-
+        
+    except APIResponseError:
+        raise
     except OpenAIError as e:
         raise DailySummaryError(f"OpenAI API error: {str(e)}") from e
     except Exception as e:

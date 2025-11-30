@@ -94,7 +94,7 @@ def _extract_last_json(text: str):
 # -----------------------------------
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
-def evalute_posture(request):
+def evaluate_posture(request):
     user = request.user
     try:
         payload = request.data

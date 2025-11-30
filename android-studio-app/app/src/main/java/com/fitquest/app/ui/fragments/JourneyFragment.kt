@@ -21,6 +21,8 @@ import com.fitquest.app.util.ActivityUtils.getEmoji
 import com.fitquest.app.util.ActivityUtils.getLabel
 import com.fitquest.app.util.DateUtils.formatDate
 import com.fitquest.app.util.DateUtils.formatTime
+import com.fitquest.app.util.animateLogo
+import com.fitquest.app.util.messages.HeroMessages
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import org.threeten.bp.LocalDateTime
 import org.threeten.bp.ZoneId
@@ -44,7 +46,12 @@ class JourneyFragment() : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        adapter = DailyWorkoutAdapter { dailyItem -> showScheduleDetails(dailyItem) }
+        setRandomHeroMessageAndEmoji()
+
+        adapter = DailyWorkoutAdapter { dailyItem ->
+            showScheduleDetails(dailyItem)
+            setRandomHeroMessageAndEmoji()
+        }
         val layoutManager = LinearLayoutManager(context).apply {
             orientation = LinearLayoutManager.VERTICAL
             stackFromEnd = false
@@ -66,6 +73,8 @@ class JourneyFragment() : Fragment() {
         val dialog = BottomSheetDialog(requireContext())
         val detailBinding = LayoutJourneyDaydetailBinding.inflate(layoutInflater)
         dialog.setContentView(detailBinding.root)
+
+        setRandomHeroMessageAndEmoji()
 
         detailBinding.tvDayTitle.text = formatDate(dailyItem.date)
         detailBinding.exerciseListContainer.removeAllViews()
@@ -109,6 +118,14 @@ class JourneyFragment() : Fragment() {
             repsTarget = repsTarget,
             durationTarget = durationTarget)
         findNavController().navigate(action)
+    }
+
+    private fun setRandomHeroMessageAndEmoji() {
+        val message: HeroMessages.Message = HeroMessages.random()
+        binding.tvSystemSubtitle.text = message.text
+        binding.tvHeroEmoji.text = message.emoji
+
+        animateLogo(binding.tvHeroEmoji)
     }
 
     override fun onDestroyView() {

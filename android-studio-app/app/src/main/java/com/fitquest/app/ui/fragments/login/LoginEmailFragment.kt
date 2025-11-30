@@ -15,6 +15,7 @@ import com.fitquest.app.databinding.FragmentLoginEmailBinding
 import com.fitquest.app.model.NetworkResult
 import com.fitquest.app.ui.viewmodels.AuthViewModel
 import com.fitquest.app.ui.viewmodels.AuthViewModelFactory
+import com.fitquest.app.util.animateLogo
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.textfield.TextInputEditText
 import kotlin.getValue
@@ -59,6 +60,8 @@ class LoginEmailFragment : Fragment() {
         }
 
         observeViewModel()
+
+        animateLogo(binding.ivLogo)
     }
 
     private fun checkEmailExists(email: String) {

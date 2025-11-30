@@ -1,11 +1,11 @@
-# Sportify
+# FitQuest
 
 An AI-powered virtual sports personal trainer (PT) application.  
 Sportify leverages smartphone cameras and AI models to provide real-time posture correction, personalized training plans, smart equipment recommendations, and a social sports-mate matching feature.  
 
-![Application Screenshot](./docs/images/Screenshot_20251101_195125.png)
+![Application Screenshot](./docs/images/wireframe1130.png)
 
-### Screen video for iteration is provided in this link [video](./docs/video/Screen_Recording_20251115_162304_FitQuest.mp4)
+### Screen video for iteration is provided in this link [video](./docs/video/Screen_Recording_20251127_151316_FitQuest.mp4)
 
 ## Features
 

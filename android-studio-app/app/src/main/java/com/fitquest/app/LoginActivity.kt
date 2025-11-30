@@ -5,91 +5,14 @@ import android.os.Bundle
 import android.util.Log
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
-import androidx.fragment.app.Fragment
-import androidx.lifecycle.lifecycleScope
-import com.fitquest.app.data.remote.ApiService
-import com.fitquest.app.data.remote.RetrofitClient
-import com.fitquest.app.data.remote.ScheduleApiService
-import com.fitquest.app.data.remote.ServiceLocator
-import com.fitquest.app.ui.fragments.login.*
-import com.fitquest.app.ui.viewmodels.LoginViewModel
-import com.fitquest.app.ui.viewmodels.LoginViewModelFactory
-import kotlinx.coroutines.launch
+import com.fitquest.app.databinding.ActivityLoginBinding
 
-/**
- * LoginActivity handles the multi-step login/signup flow
- * 
- * Flow:
- * 1. LoginEmailFragment - Check if user exists
- * 2a. If exists -> LoginPasswordFragment
- * 2b. If new -> SignupStep1Fragment -> SignupStep2Fragment
- */
-class LoginActivity() : AppCompatActivity() {
-    private val apiService: ScheduleApiService= ServiceLocator.apiService
-    private val loginViewModel: LoginViewModel by viewModels {
-        LoginViewModelFactory(apiService)
-    }
+class LoginActivity : AppCompatActivity() {
+    private lateinit var binding: ActivityLoginBinding
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_login)
-        
-        // Start with email fragment
-        if (savedInstanceState == null) {
-            navigateToFragment(LoginEmailFragment())
-        }
-    }
-
-    /**
-     * Navigate to login password step
-     */
-    fun navigateToPasswordStep(email: String) {
-        val fragment = LoginPasswordFragment.newInstance(email)
-        navigateToFragment(fragment)
-    }
-
-    /**
-     * Navigate to signup step 1
-     */
-    fun navigateToSignupStep1(email: String) {
-        val fragment = SignupStep1Fragment.newInstance(email)
-        navigateToFragment(fragment)
-    }
-
-    /**
-     * Navigate to signup step 2
-     */
-    fun navigateToSignupStep2(email: String, password: String, username: String) {
-        val fragment = SignupStep2Fragment.newInstance(email, password, username)
-        navigateToFragment(fragment)
-    }
-
-    /**
-     * Complete login and navigate to MainActivity
-     */
-    fun completeLogin() {
-        lifecycleScope.launch {
-            try {
-                loginViewModel.markMissedSchedules()
-                loginViewModel.autoGenerateSchedules()
-            } catch (e: Exception) {
-                Log.e("LoginActivity", "Failed to mark missed schedules: ${e.localizedMessage}")
-            } finally {
-                val intent = Intent(this@LoginActivity, MainActivity::class.java)
-                startActivity(intent)
-                finish()
-            }
-        }
-    }
-
-    private fun navigateToFragment(fragment: Fragment) {
-        supportFragmentManager.beginTransaction()
-            .setCustomAnimations(
-                android.R.anim.slide_in_left,   // 새 Fragment 왼쪽에서 등장
-                android.R.anim.slide_out_right  // 이전 Fragment 오른쪽으로 사라짐
-            )
-            .replace(R.id.loginFragmentContainer, fragment)
-            .addToBackStack(null)
-            .commit()
+        binding = ActivityLoginBinding.inflate(layoutInflater)
+        setContentView(binding.root)
     }
 }

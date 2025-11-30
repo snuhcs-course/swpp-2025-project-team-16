@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Schedule, Session, Feedback, validate_activity_fields
+from .models import Schedule, Session, Feedback, DailySummary, validate_activity_fields
 from datetime import timedelta
 
 class ScheduleSerializer(serializers.ModelSerializer):
@@ -68,3 +68,9 @@ class FeedbackSerializer(serializers.ModelSerializer):
         model = Feedback
         fields = ['id', 'user', 'schedule', 'summary_text', 'created_at']
         read_only_fields = ('user', 'schedule', 'summary_text', 'created_at')
+
+class DailySummarySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = DailySummary
+        fields = ['id', 'user', 'date', 'summary_text', 'created_at']
+        read_only_fields = ('user', 'date', 'summary_text', 'created_at')

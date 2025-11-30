@@ -1,7 +1,6 @@
 package com.fitquest.app.ui.fragments
 
 import android.os.Bundle
-import android.util.Log
 import android.view.*
 import android.widget.*
 import androidx.fragment.app.Fragment
@@ -42,7 +41,7 @@ class ProfileFragment() : Fragment() {
     private var _binding: FragmentProfileBinding? = null
     private val binding get() = _binding!!
     private val historyViewModel: HistoryViewModel by viewModels {
-        HistoryViewModelFactory(RetrofitClient.scheduleApiService, RetrofitClient.sessionApiService)
+        HistoryViewModelFactory(RetrofitClient.dailySummaryApiService, RetrofitClient.scheduleApiService, RetrofitClient.sessionApiService)
     }
 
     private val userViewModel: UserViewModel by viewModels {
@@ -99,9 +98,15 @@ class ProfileFragment() : Fragment() {
             userViewModel.userProfile.collectLatest { user ->
                 user?.let {
                     binding.statLevel.tvStatRank.text = it.rank.toString()
-                    binding.statLevel.tvStatLevel.text = it.level.toString()
+                    binding.statLevel.tvStatLevel.text = LevelUtils.calculateLevel(it.xp).toString()
                     binding.statLevel.tvStatTime.text = formatTotalTime(it.totalTime)
                     binding.statLevel.tvStatXP.text = it.xp.toString()
+
+                    val (current, max) = LevelUtils.levelProgress(it.xp)
+                    val percent = (current * 100 / max)
+
+                    binding.progressLevel.progress = percent
+                    binding.tvLevelProgress.text = "$percent%"
                 }
             }
         }
@@ -150,8 +155,9 @@ class ProfileFragment() : Fragment() {
         dialog.setContentView(detailBinding.root)
 
         detailBinding.tvDayTitle.text = formatDate(dailyItem.date)
+        detailBinding.tvDailySummary.text = dailyItem.summaryText
         detailBinding.tvTotalXp.text = "+${calculateTotalEarnedXp(dailyItem.schedules, dailyItem.sessions)}"
-        detailBinding.tvCompletion.text = "+${calculateAverageCompletionPercent(dailyItem.schedules)}"
+//        detailBinding.tvCompletion.text = "+${calculateAverageCompletionPercent(dailyItem.schedules)}"
         detailBinding.exercisedoneListContainer.removeAllViews()
 
         val combinedItems = (dailyItem.schedules.map { it as Any } + dailyItem.sessions.map { it as Any })
@@ -200,5 +206,57 @@ class ProfileFragment() : Fragment() {
         super.onDestroyView()
         _binding = null
     }
+
+    object LevelUtils {
+
+        // 1~10 레벨까지의 누적 XP 테이블
+        private val levelTable = listOf(
+            0,    // Lv1
+            100,  // Lv2
+            300,  // Lv3
+            600,  // Lv4
+            1000, // Lv5
+            1500, // Lv6
+            2100, // Lv7
+            2800, // Lv8
+            3600, // Lv9
+            4500  // Lv10
+        )
+
+        fun calculateLevel(xp: Int): Int {
+            for (i in levelTable.indices) {
+                if (xp < levelTable[i]) {
+                    return i   // index = level-1
+                }
+            }
+
+            var level = levelTable.size // 즉 10
+            var requiredXp = levelTable.last() // 4500부터 시작
+
+            while (true) {
+                val nextRequired = requiredXp + (level * 100)
+                if (xp < nextRequired) {
+                    return level
+                }
+                requiredXp = nextRequired
+                level++
+            }
+        }
+
+        fun levelProgress(xp: Int): Pair<Int, Int> {
+            var level = 1
+            var requiredXp = 0
+
+            while (true) {
+                val next = requiredXp + (level * 100)
+                if (xp < next) {
+                    return Pair(xp - requiredXp, next - requiredXp)
+                }
+                requiredXp = next
+                level++
+            }
+        }
+    }
+
 
 }

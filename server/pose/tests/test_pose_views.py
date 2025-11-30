@@ -7,7 +7,7 @@ from factories.user_factory import UserFactory
 from factories.schedule_factory import SessionFactory, ScheduleFactory
 
 @pytest.mark.django_db
-def test_evalute_posture_success(auth_client, user):
+def test_evaluate_posture_success(auth_client, user):
     session = SessionFactory(user=user)
     payload = {
         "session_id": session.id,
@@ -21,7 +21,7 @@ def test_evalute_posture_success(auth_client, user):
 
     with patch("pose.views.run_pose_analysis") as mock_run:
         mock_run.return_value = (mock_result, 200)
-        url = reverse("evalute_posture")
+        url = reverse("evaluate_posture")
         response = auth_client.post(url, payload, format="json")
 
     assert response.status_code == 201
@@ -30,11 +30,11 @@ def test_evalute_posture_success(auth_client, user):
     assert PoseAnalysis.objects.filter(user=user).exists()
 
 @pytest.mark.django_db
-def test_evalute_posture_failure(auth_client):
+def test_evaluate_posture_failure(auth_client):
     payload = {"session_id": 1}
     with patch("pose.views.run_pose_analysis") as mock_run:
         mock_run.return_value = ({"error": "Timeout"}, 504)
-        url = reverse("evalute_posture")
+        url = reverse("evaluate_posture")
         response = auth_client.post(url, payload, format="json")
 
     assert response.status_code == 504

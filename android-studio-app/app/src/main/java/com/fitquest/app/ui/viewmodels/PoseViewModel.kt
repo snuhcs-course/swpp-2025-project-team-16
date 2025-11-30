@@ -22,36 +22,71 @@ class PoseViewModel(
     private val _loading = MutableStateFlow(false)
     val loading: StateFlow<Boolean> = _loading
 
+    private val _error = MutableStateFlow<String?>(null)
+    val error: StateFlow<String?> = _error
+
+    fun clearSelectedAnalysis() {
+        _selectedAnalysis.value = null
+    }
+
+    fun clearError() {
+        _error.value = null
+    }
+
     fun getPoseAnalyses() {
         viewModelScope.launch {
             _loading.value = true
-            _analyses.value = repository.getPoseAnalyses()
-            _loading.value = false
+            try {
+                _analyses.value = repository.getPoseAnalyses()
+                _error.value = null
+            } catch (e: Exception) {
+                _error.value = e.message ?: "Unknown error"
+            } finally {
+                _loading.value = false
+            }
         }
     }
 
     fun getPoseAnalysesBySession(sessionId: Int) {
         viewModelScope.launch {
             _loading.value = true
-            _analyses.value = repository.getPoseAnalysesBySession(sessionId)
-            _loading.value = false
+            try {
+                _analyses.value = repository.getPoseAnalysesBySession(sessionId)
+                _error.value = null
+            } catch (e: Exception) {
+                _error.value = e.message ?: "Unknown error"
+            } finally {
+                _loading.value = false
+            }
         }
     }
 
     fun getPoseAnalysesBySchedule(scheduleId: Int) {
         viewModelScope.launch {
             _loading.value = true
-            _analyses.value = repository.getPoseAnalysesBySchedule(scheduleId)
-            _loading.value = false
+            try {
+                _analyses.value = repository.getPoseAnalysesBySchedule(scheduleId)
+                _error.value = null
+            } catch (e: Exception) {
+                _error.value = e.message ?: "Unknown error"
+            } finally {
+                _loading.value = false
+            }
         }
     }
 
     fun uploadPose(request: PoseUploadRequest) {
         viewModelScope.launch {
             _loading.value = true
-            val result = repository.uploadPose(request)
-            _selectedAnalysis.value = result
-            _loading.value = false
+            try {
+                val result = repository.uploadPose(request)
+                _selectedAnalysis.value = result
+                _error.value = null
+            } catch (e: Exception) {
+                _error.value = e.message ?: "Network error"
+            } finally {
+                _loading.value = false
+            }
         }
     }
 }

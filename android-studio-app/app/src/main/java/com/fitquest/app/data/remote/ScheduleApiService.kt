@@ -1,5 +1,6 @@
 package com.fitquest.app.data.remote
 
+import com.fitquest.app.model.AutoGenerateSchedulesResponse
 import com.fitquest.app.model.Schedule
 import retrofit2.http.Body
 import retrofit2.http.GET
@@ -13,13 +14,8 @@ interface ScheduleApiService {
         @Query("status") status: String? = null
     ): List<Schedule>
 
-    @POST("schedules/")
-    suspend fun createSchedule(
-        @Body schedule: Schedule
-    ): Schedule
-
     @POST("schedules/auto-generate/")
-    suspend fun autoGenerateSchedules(): List<Schedule>
+    suspend fun autoGenerateSchedules(): AutoGenerateSchedulesResponse
 
     @POST("schedules/mark-missed/")
     suspend fun markMissedSchedules()

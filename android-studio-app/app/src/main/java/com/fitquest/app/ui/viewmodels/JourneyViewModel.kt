@@ -7,12 +7,12 @@ import androidx.lifecycle.viewModelScope
 import com.fitquest.app.model.DailyWorkoutItem
 import com.fitquest.app.repository.ScheduleRepository
 import kotlinx.coroutines.launch
-import org.threeten.bp.LocalDate
 import org.threeten.bp.LocalDateTime
-import org.threeten.bp.LocalTime
 import org.threeten.bp.ZoneId
 
-class JourneyViewModel(private val repository: ScheduleRepository) : ViewModel() {
+class JourneyViewModel(
+    private val repository: ScheduleRepository
+) : ViewModel() {
 
     private val _dailyWorkouts = MutableLiveData<List<DailyWorkoutItem>>()
     val dailyWorkouts: LiveData<List<DailyWorkoutItem>> = _dailyWorkouts

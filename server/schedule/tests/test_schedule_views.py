@@ -1,9 +1,10 @@
 import pytest
 from unittest.mock import patch, MagicMock
 from django.urls import reverse
-from schedule.models import Schedule, Session
+from schedule.models import Schedule, Session, DailySummary
 from factories.user_factory import UserFactory
 from factories.schedule_factory import ScheduleFactory, SessionFactory
+from datetime import date
 
 @pytest.mark.django_db
 def test_schedules_view_get(auth_client, user):
@@ -14,19 +15,32 @@ def test_schedules_view_get(auth_client, user):
     assert len(response.data) == 1
 
 @pytest.mark.django_db
-def test_create_schedule(auth_client):
-    url = reverse("schedules_view")
-    data = {
-        "scheduled_date": "2025-01-01",
-        "start_time": "10:00",
-        "end_time": "11:00",
-        "activity": "squat",
-        "reps_target": 30
-    }
+def test_schedules_auto_generate(auth_client):
+    url = reverse("schedules_auto_generate")
+    
+    with patch("schedule.views.client.chat.completions.create") as mock_openai:
+        mock_openai.return_value = MagicMock(
+            choices=[MagicMock(message=MagicMock(content='{"schedules":[{"scheduled_date":"2025-01-01","start_time":"08:00","end_time":"09:00","activity":"squat","reps_target":20}]}'))]
+        )
+        response = auth_client.post(url, format="json")
+    
+    assert response.status_code == 201
+    assert "created_count" in response.data
 
-    res = auth_client.post(url, data, format="json")
-    assert res.status_code == 201
-    assert res.data["reps_target"] == 30
+@pytest.mark.django_db
+def test_mark_missed_schedules_view(auth_client):
+    url = reverse("mark_missed_schedules_view")
+    res = auth_client.post(url)
+    assert res.status_code == 200
+    assert res.data["detail"] == "Missed schedules processed"
+
+@pytest.mark.django_db
+def test_sessions_view(auth_client, user):
+    SessionFactory(user=user)
+    url = reverse("sessions_view")
+    res = auth_client.get(url)
+    assert res.status_code == 200
+    assert len(res.data) == 1
 
 @pytest.mark.django_db
 def test_start_session(auth_client):
@@ -38,11 +52,9 @@ def test_start_session(auth_client):
 
 @pytest.mark.django_db
 def test_end_session_increases_xp(auth_client, user):
-    # 먼저 세션 생성
     start_res = auth_client.post(reverse("start_session"), {"activity": "squat"}, format="json")
     session_id = start_res.data["id"]
 
-    # 종료 시 reps_count = 5 → XP = 5 * 10 = 50 증가
     end_res = auth_client.patch(
         reverse("end_session", args=[session_id]),
         {"reps_count": 5},
@@ -57,63 +69,50 @@ def test_end_session_with_reps(auth_client, user):
     session = SessionFactory(user=user, reps_count=None, duration=None)
     url = reverse("end_session", args=[session.id])
     data = {"reps_count": 15}
-    
-    with patch("schedule.utils.feedback.client.chat.completions.create") as mock_openai:
-        mock_openai.return_value = MagicMock(
-            choices=[MagicMock(message=MagicMock(content="🎉 Great job!"))]
-        )
-        response = auth_client.patch(url, data, format="json")
-    
+    response = auth_client.patch(url, data, format="json")
     assert response.status_code == 200
     assert response.data["reps_count"] == 15
 
 @pytest.mark.django_db
 def test_schedule_status_auto_complete(auth_client, user):
-    # 스케줄 생성
-    sched_res = auth_client.post(
-        reverse("schedules_view"),
-        {
-            "scheduled_date": "2025-01-01",
-            "start_time": "10:00",
-            "end_time": "11:00",
-            "activity": "squat",
-            "reps_target": 10
-        },
-        format="json"
+    schedule = ScheduleFactory(
+        user=user,
+        reps_target=10,
+        activity="squat"
     )
-
-    schedule_id = sched_res.data["id"]
-
-    # 세션 시작
+    
     start_res = auth_client.post(
-        reverse("start_session"), 
-        {"activity": "squat", "schedule_id": schedule_id},
+        reverse("start_session"),
+        {"activity": "squat", "schedule_id": schedule.id},
         format="json"
     )
     session_id = start_res.data["id"]
 
-    with patch("schedule.utils.feedback.generate_feedback_from_schedule") as mock_feedback:
-        mock_feedback.return_value = "Dummy feedback"
+    auth_client.patch(
+        reverse("end_session", args=[session_id]),
+        {"reps_count": 10},
+        format="json"
+    )
 
-        # 종료 시 reps_done = reps_target
-        auth_client.patch(
-            reverse("end_session", args=[session_id]),
-            {"reps_count": 10},
-            format="json"
-        )
-
-    sched = Schedule.objects.get(id=schedule_id)
-    assert sched.status == "completed"
+    schedule.refresh_from_db()
+    assert schedule.status == "completed"
 
 @pytest.mark.django_db
-def test_schedules_auto_generate_view(auth_client):
-    url = reverse("auto_generate_schedules_view")
-    
-    with patch("schedule.views.client.chat.completions.create") as mock_openai:
-        mock_openai.return_value = MagicMock(
-            choices=[MagicMock(message=MagicMock(content='{"schedules":[{"scheduled_date":"2025-01-01","start_time":"08:00","end_time":"09:00","activity":"squat","reps_target":20}]}'))]
-        )
-        response = auth_client.post(url, format="json")
-    
-    assert response.status_code == 201
-    assert "created_count" in response.data
+def test_daily_summaries_view(auth_client, user):
+    DailySummary.objects.create(user=user, date=date(2030,1,1), summary_text="test")
+    url = reverse("daily_summaries_view")
+    res = auth_client.get(url)
+    assert res.status_code == 200
+    assert len(res.data) == 1
+
+@pytest.mark.django_db
+def test_daily_summaries_auto_generate(auth_client, user):
+    url = reverse("daily_summaries_auto_generate")
+
+    with patch("schedule.views.generate_daily_summaries_for_user") as mock_service:
+        mock_service.return_value = [{"date": date(2030,1,1), "summary": "good"}]
+
+        res = auth_client.post(url)
+
+    assert res.status_code == 201
+    assert res.data["message"] == "Daily summaries generated successfully."

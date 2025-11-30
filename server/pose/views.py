@@ -8,6 +8,8 @@ from .serializers import PoseAnalysisSerializer
 import json, os, subprocess, tempfile
 from pathlib import Path
 from django.conf import settings
+from django.http import JsonResponse, HttpResponseBadRequest
+
 
 # -----------------------------------
 # Helper: 포즈 분석 subprocess 실행
@@ -17,8 +19,8 @@ def run_pose_analysis(payload: dict):
     env_name    = getattr(settings, "POSE_ENV", "")
     python_path = getattr(settings, "POSE_PYTHON_PATH", "")
     entry       = getattr(settings, "POSE_ENTRY", "")
-    timeout_s   = int(getattr(settings, "POSE_TIMEOUT", 180))
-
+    timeout_s   = int(getattr(settings, "POSE_TIMEOUT", 300))
+    # print(payload)
     env = os.environ.copy()
     env.setdefault("PYTHONUNBUFFERED", "1")
     env["PYTHONPATH"] = python_path
@@ -39,6 +41,19 @@ def run_pose_analysis(payload: dict):
             "--out", str(out_path),
         ]
 
+
+        # error_log_path = "/home/team16/error.log"
+
+        # with open(error_log_path, "w") as err_file:
+        #     proc = subprocess.run(
+        #         cmd,
+        #         stdout=subprocess.PIPE,   # stdout은 메모리로
+        #         stderr=err_file,          # stderr은 파일로! 🔥 핵심
+        #         timeout=timeout_s,
+        #         env=env,
+        #         text=True,
+        #     )
+
         try:
             proc = subprocess.run(
                 cmd,
@@ -49,32 +64,36 @@ def run_pose_analysis(payload: dict):
                 text=True,
             )
         except subprocess.TimeoutExpired:
-            return {"error": f"Evaluation timed out after {timeout_s}s."}, 504
+            return JsonResponse({"error": f"Evaluation timed out after {timeout_s}s."}, status=504)
 
         if proc.returncode != 0:
-            return {
+            # print("STDOUT:")
+            # print(proc.stdout)
+            # print("STDERR:")
+            # print(proc.stderr)
+            # print("================================")
+            return JsonResponse({
                 "error": "External evaluation failed.",
                 "stderr": proc.stderr[-4000:],
                 "stdout_tail": proc.stdout[-1000:],
-            }, 500
+            }, status=500)
 
         if out_path.exists():
             try:
                 data = json.loads(out_path.read_text(encoding="utf-8"))
-                return data, 200
+                return JsonResponse(data, status=200)
             except Exception:
                 raw = out_path.read_text(encoding="utf-8", errors="replace")
-                return {"error": "Result file is not valid JSON.", "raw_head": raw[:1000]}, 500
-
+                return JsonResponse({"error": "Result file is not valid JSON.", "raw_head": raw[:1000]}, status=500)
         # fallback: stdout 마지막 JSON 시도
         try:
             data = _extract_last_json(proc.stdout)
-            return data, 200
+            return JsonResponse(data, status=200)
         except Exception:
-            return {
+            return JsonResponse({
                 "error": "Result file not found and stdout has no valid JSON.",
-                "stdout_tail": proc.stdout[-1000:],
-            }, 500
+                "stdout_tail": raw_out[-1000:],
+            }, status=500)
 
 
 def _extract_last_json(text: str):
@@ -94,28 +113,54 @@ def _extract_last_json(text: str):
 # -----------------------------------
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
-def evalute_posture(request):
+def evaluate_posture(request):
     user = request.user
     try:
         payload = request.data
     except Exception as e:
         return Response({"error": f"Invalid JSON: {e}"}, status=status.HTTP_400_BAD_REQUEST)
 
-    result, code = run_pose_analysis(payload)
-    if code != 200:
-        return Response(result, status=code)
+    result = run_pose_analysis(payload)
+    # if code != 200:
+    #     return Response(result, status=code)
 
-    pose = PoseAnalysis.objects.create(
-        user=user,
-        session_id=payload.get("session_id"),
-        schedule_id=payload.get("schedule_id"),
-        image_url=payload.get("image_url"),
-        pose_data=result.get("pose_data"),
-        ai_comment=result.get("ai_comment"),
-    )
-    serializer = PoseAnalysisSerializer(pose)
-    return Response(serializer.data, status=status.HTTP_201_CREATED)
+    # pose = PoseAnalysis.objects.create(
+    #     user=user,
+    #     session_id=payload.get("session_id"),
+    #     schedule_id=payload.get("schedule_id"),
+    #     image_url=payload.get("image_url"),
+    #     pose_data=result.get("pose_data"),
+    #     ai_comment=result.get("ai_comment"),
+    # )
+    # serializer = PoseAnalysisSerializer(pose)
+    # return Response(serializer.data, status=status.HTTP_201_CREATED)
+    return result
 
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def save(request):
+    user = request.user
+    try:
+        payload = request.data
+    except Exception as e:
+        return Response({"error": f"Invalid JSON: {e}"}, status=status.HTTP_400_BAD_REQUEST)
+    print(payload)
+
+
+
+    # pose = PoseAnalysis.objects.create(
+    #     user=user,
+    #     good_points=payload.get("good_points"),
+    #     improvement_points=payload.get("improvement_points"),
+    #     improvement_methods=payload.get("improvement_methods"),
+    #     created_at=payload.get("createdAt"),
+    #     image_base64=payload.get("image_url"),
+    #     category=payload.get("category"),
+    # )
+    # serializer = PoseAnalysisSerializer(pose)
+    # return Response(serializer.data, status=status.HTTP_201_CREATED)
+    return Response({"status": "success"}, status=status.HTTP_201_CREATED)
 # -----------------------------------
 # PoseAnalysis 전체 조회
 # -----------------------------------

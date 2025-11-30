@@ -1,6 +1,5 @@
 package com.fitquest.app.ui.fragments.login
 
-import android.content.Context
 import android.graphics.Color
 import android.os.Bundle
 import android.util.Log
@@ -9,44 +8,43 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.lifecycleScope
-import com.fitquest.app.LoginActivity
-import com.fitquest.app.R
-import com.fitquest.app.data.remote.ApiService
+import androidx.fragment.app.viewModels
+import androidx.navigation.fragment.findNavController
 import com.fitquest.app.data.remote.RetrofitClient
-import com.fitquest.app.data.remote.EmailCheckResponse
-import com.fitquest.app.data.remote.ServiceLocator
+import com.fitquest.app.databinding.FragmentLoginEmailBinding
+import com.fitquest.app.model.NetworkResult
+import com.fitquest.app.ui.viewmodels.AuthViewModel
+import com.fitquest.app.ui.viewmodels.AuthViewModelFactory
+import com.fitquest.app.util.animateLogo
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.textfield.TextInputEditText
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
+import kotlin.getValue
 
-/**
- * LoginEmailFragment - Step 1 of login flow
- *
- * User enters email address
- * - If email exists in DB -> navigate to LoginPasswordFragment
- * - If email is new -> navigate to SignupStep1Fragment
- */
-class LoginEmailFragment() : Fragment() {
+class LoginEmailFragment : Fragment() {
+
+    private var _binding: FragmentLoginEmailBinding? = null
+    private val binding get() = _binding!!
+
+    private val viewModel: AuthViewModel by viewModels {
+        AuthViewModelFactory(RetrofitClient.authApiService, requireContext())
+    }
 
     private lateinit var emailInput: TextInputEditText
     private lateinit var continueButton: MaterialButton
-
 
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
-        return inflater.inflate(R.layout.fragment_login_email, container, false)
+    ): View {
+        _binding = FragmentLoginEmailBinding.inflate(inflater, container, false)
+        return binding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        emailInput = view.findViewById(R.id.etEmail)
-        continueButton = view.findViewById(R.id.btnEmailCheckQuest)
+        emailInput = binding.etEmail
+        continueButton = binding.btnEmailCheckQuest
         continueButton.bringToFront()
         continueButton.invalidate()
         continueButton.setBackgroundColor(Color.RED)
@@ -60,38 +58,64 @@ class LoginEmailFragment() : Fragment() {
                 emailInput.error = "Please enter your email!"
             }
         }
+
+        observeViewModel()
+
+        animateLogo(binding.ivLogo)
     }
 
     private fun checkEmailExists(email: String) {
         if (email == "test@test.com") {
-            val activity = activity as? LoginActivity
-            activity?.navigateToPasswordStep(email)
+            val navController = findNavController()
+            val action = LoginEmailFragmentDirections
+                .actionLoginEmailFragmentToLoginPasswordFragment(emailInput.text.toString())
+            navController.navigate(action)
             return
         }
-        lifecycleScope.launch {
-            try {
-                val response = withContext(Dispatchers.IO) {
-                    ServiceLocator.authApiService.checkEmail(mapOf("email" to email))
-                }
 
-                if (response.isSuccessful) {
-                    val body: EmailCheckResponse? = response.body()
-                    val exists = body?.exists == true
+        viewModel.checkEmail(mapOf("email" to email))
+    }
 
-                    val activity = activity as? LoginActivity
+    private fun observeViewModel() {
+        viewModel.checkEmailResult.observe(viewLifecycleOwner) { result ->
+            when (result) {
+                is NetworkResult.Idle -> {}
+                is NetworkResult.Success -> {
+                    viewModel.resetCheckEmailResult()
+                    val exists = result.data.exists
+                    val navController = findNavController()
                     if (exists) {
-                        activity?.navigateToPasswordStep(email)
+                        val action = LoginEmailFragmentDirections
+                            .actionLoginEmailFragmentToLoginPasswordFragment(emailInput.text.toString())
+                        navController.navigate(action)
                     } else {
-                        activity?.navigateToSignupStep1(email)
+                        val action = LoginEmailFragmentDirections
+                            .actionLoginEmailFragmentToSignupStep1Fragment(emailInput.text.toString())
+                        navController.navigate(action)
                     }
-                } else {
-                    Toast.makeText(requireContext(), "Server error: ${response.code()}", Toast.LENGTH_SHORT).show()
                 }
-            } catch (e: Exception) {
-                e.printStackTrace()
-                Toast.makeText(requireContext(), "Network error: ${e.localizedMessage}", Toast.LENGTH_SHORT).show()
+                is NetworkResult.ServerError -> {
+                    viewModel.resetCheckEmailResult()
+                    Toast.makeText(
+                        requireContext(),
+                        "Server error: ${result.code}",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
+                is NetworkResult.NetworkError -> {
+                    viewModel.resetCheckEmailResult()
+                    Toast.makeText(
+                        requireContext(),
+                        "Network error: ${result.exception.localizedMessage}",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
             }
         }
     }
 
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
+    }
 }

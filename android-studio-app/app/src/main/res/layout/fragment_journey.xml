@@ -45,6 +45,25 @@
                 android:textStyle="bold"
                 android:layout_marginTop="4dp" />
         </LinearLayout>
+
+        <FrameLayout
+            android:id="@+id/activityIconBox"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:clipToOutline="true"
+            android:background="@color/transparent"
+            android:layout_gravity="center">
+
+            <TextView
+                android:id="@+id/tvHeroEmoji"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="⚔️"
+                android:textSize="36sp"
+                android:layout_gravity="center"
+                android:gravity="center" />
+        </FrameLayout>
+
     </LinearLayout>
 
 
@@ -111,9 +130,6 @@
 
         </LinearLayout>
 
-
     </FrameLayout>
-
-
 
 </androidx.constraintlayout.widget.ConstraintLayout>

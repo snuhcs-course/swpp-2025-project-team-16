@@ -30,7 +30,7 @@ class PlankTimer : BaseCounter() {
     private var lastUpdateMs = 0L
 
     // ---- 폼 판정 임계값 ----
-    private val MAX_BODY_DEVIATION = 18.0   // 어깨–엉덩이–발목 180° 기준 허용 오차
+    private val MAX_BODY_DEVIATION = 15.0   // 어깨–엉덩이–발목 180° 기준 허용 오차
     private val MIN_ELBOW_ANGLE = 70.0      // 팔꿈치 최소 각도
 
     override fun reset(nowMs: Long) {
@@ -44,13 +44,24 @@ class PlankTimer : BaseCounter() {
     fun holdMs(): Long = totalHoldMs
     fun holdSeconds(): Double = totalHoldMs / 1000.0
 
+    // === Strategy 전용 override ===
+
+    // 플랭크는 "초.소수1자리"로 보여주고 싶음 (예: 12.3)
+    override fun getDisplayText(): String =
+        String.format("%.1f", holdSeconds())
+
+    // XP 정책은 기본(count * 10)을 그대로 사용 → getXpPoints() override 불필요
+
+    // 플랭크는 초당 팝업/콘페티가 너무 시끄러우니 아예 비활성화
+    override fun shouldShowRepPopup(previousCount: Int, isTraining: Boolean): Boolean = false
+
     override fun update(points: FloatArray, nowMs: Long) {
         if (points.size < 33 * 3) return
         if (lastUpdateMs == 0L) lastUpdateMs = nowMs
         val dt = (nowMs - lastUpdateMs).coerceAtLeast(0L)
         lastUpdateMs = nowMs
 
-        // ---- 유틸 ----
+        // ---- 유틸 ----'
         fun idx(i: Int) = 3 * i
         fun v(i: Int) = doubleArrayOf(
             points[idx(i)].toDouble(),
@@ -95,7 +106,7 @@ class PlankTimer : BaseCounter() {
         val ankle = mid(ankL, ankR)
 
         // ---- 폼 판정 ----
-        val bodyAngle = angle3D(shoulder, hip, ankle)      // 180° 근처면 OK
+        val bodyAngle = angle2D(shoulder, hip, ankle)      // 180° 근처면 OK
         val bodyOk = kotlin.math.abs(180.0 - bodyAngle) < MAX_BODY_DEVIATION
 
         val elbowLA = angle2D(shL, elL, wrL)
@@ -115,8 +126,6 @@ class PlankTimer : BaseCounter() {
                     phaseState = Phase.HOLDING
                     // 첫 진입 프레임부터 dt 가산
                     totalHoldMs += dt
-                } else {
-                    // 대기
                 }
             }
             Phase.HOLDING -> {
@@ -132,8 +141,6 @@ class PlankTimer : BaseCounter() {
                     phaseState = Phase.HOLDING
                     // 이어서 누적 계속
                     totalHoldMs += dt
-                } else {
-                    // 그대로 정지
                 }
             }
         }

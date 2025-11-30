@@ -25,19 +25,22 @@ import androidx.camera.core.ImageCapture
 import androidx.camera.core.ImageCaptureException
 import androidx.camera.core.Preview
 import androidx.camera.lifecycle.ProcessCameraProvider
+import androidx.camera.view.PreviewView
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.exifinterface.media.ExifInterface
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import com.fitquest.app.PoseResultActivity
-import com.fitquest.app.data.remote.EvaluatePostureRequest
+import com.fitquest.app.data.remote.PoseUploadRequest
 import com.fitquest.app.data.remote.RetrofitClient
 import com.fitquest.app.databinding.FragmentPoseBinding
+import com.fitquest.app.model.PoseAnalysis
+import com.fitquest.app.ui.viewmodels.PoseViewModel
+import com.fitquest.app.ui.viewmodels.PoseViewModelFactory
 import com.fitquest.app.util.ActivityUtils
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import java.io.ByteArrayOutputStream
 import java.io.File
 import java.util.concurrent.ExecutorService
@@ -47,6 +50,11 @@ class PoseFragment : Fragment() {
 
     private var _binding: FragmentPoseBinding? = null
     private val binding get() = _binding!!
+
+    // ==== ViewModel ====
+    private val poseViewModel: PoseViewModel by viewModels {
+        PoseViewModelFactory(RetrofitClient.poseAnalysisApiService)
+    }
 
     // ==== Exercise selection ====
     private var selectedExercise: String =
@@ -83,6 +91,44 @@ class PoseFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         cameraExecutor = Executors.newSingleThreadExecutor()
+
+        // ==== ViewModel State 구독 ====
+        // 1) 포즈 분석 성공 시
+        viewLifecycleOwner.lifecycleScope.launch {
+            poseViewModel.selectedAnalysis.collect { analysis ->
+                if (analysis != null) {
+                    onPoseAnalysisSuccess(analysis)
+                    poseViewModel.clearSelectedAnalysis()
+                }
+            }
+        }
+
+        // 2) 에러 발생 시
+        viewLifecycleOwner.lifecycleScope.launch {
+            poseViewModel.error.collect { error ->
+                if (error != null) {
+                    loadingTimer?.cancel()
+                    binding.progressLoading.visibility = View.GONE
+                    binding.tvProgressPercent.visibility = View.GONE
+                    binding.btnUpload.isEnabled = true
+
+                    Toast.makeText(
+                        requireContext(),
+                        "Failed to evaluate pose: $error",
+                        Toast.LENGTH_LONG
+                    ).show()
+
+                    poseViewModel.clearError()
+                }
+            }
+        }
+
+        // 3) 로딩 상태에 따라 업로드 버튼 활성/비활성
+        viewLifecycleOwner.lifecycleScope.launch {
+            poseViewModel.loading.collect { isLoading ->
+                binding.btnUpload.isEnabled = !isLoading
+            }
+        }
 
         // ==== Exercise Spinner Init (AiCoachFragment와 동일한 목록) ====
         val activityKeys = ActivityUtils.activityMetadataMap.keys.toList()
@@ -166,7 +212,6 @@ class PoseFragment : Fragment() {
                 )
             }
         }
-
 
         // ==== Orientation Listener ====
         orientationListener = object : OrientationEventListener(requireContext()) {
@@ -297,13 +342,13 @@ class PoseFragment : Fragment() {
                 val elapsed = totalDuration - millisUntilFinished
                 val fraction = elapsed.toFloat() / totalDuration.toFloat()
                 val progress = (fraction * targetProgress).toInt()
-                binding.progressLoading.setProgressCompat(progress, true)
+                binding.progressLoading.progress = progress
                 binding.tvProgressPercent.text = "$progress%"
             }
 
             override fun onFinish() {
                 // 60초가 다 지나도 아직 응답 안 왔으면 90%까지만 채워둠
-                binding.progressLoading.setProgressCompat(targetProgress, true)
+                binding.progressLoading.progress = targetProgress
                 binding.tvProgressPercent.text = "$targetProgress%"
             }
         }.start()
@@ -396,77 +441,43 @@ class PoseFragment : Fragment() {
         binding.btnSwitchCamera.isEnabled = false
 
         val base64 = bitmapToBase64(bitmap)
-        val fullUrl = "http://147.46.78.29:8004/pose-analyses/evaluate_posture/"
 
         startLoadingProgress()
 
-        viewLifecycleOwner.lifecycleScope.launch {
-            var goodPointsResult = ""
-            var improvePointsResult = ""
-            var cueResult = ""
-            var errorMessage: String? = null
+        val body = PoseUploadRequest(
+            category = selectedExercise,
+            image_base64 = base64
+        )
 
-            withContext(Dispatchers.IO) {
-                try {
-                    val body = EvaluatePostureRequest(
-                        category = selectedExercise,
-                        image_base64 = base64
-                    )
-                    val resp = RetrofitClient.apiService.evaluatePosture(fullUrl, body)
+        // ✅ 네트워크 호출은 ViewModel이 담당
+        poseViewModel.uploadPose(body)
+    }
 
-                    if (resp.isSuccessful) {
-                        val data = resp.body()
-                        if (data == null) {
-                            errorMessage = "Empty response."
-                        } else if (data.status == "success") {
-                            goodPointsResult = data.good_points.ifBlank { "None" }
-                            improvePointsResult = data.improvement_points.ifBlank { "None" }
-                            cueResult = data.improvement_methods?.ifBlank { "None" } ?: "None"
-                        } else {
-                            errorMessage = "Server status: ${data.status}"
-                        }
-                    } else {
-                        errorMessage =
-                            "HTTP ${resp.code()} - ${resp.errorBody()?.string().orEmpty()}"
-                    }
-                } catch (e: Exception) {
-                    Log.e("PoseFragment", "evaluatePosture failed", e)
-                    errorMessage = "Network error: ${e.message}"
-                }
+    // ViewModel에서 PoseAnalysis가 도착했을 때 호출
+    private fun onPoseAnalysisSuccess(pa: PoseAnalysis) {
+        val goodPointsResult = pa.good_points.ifBlank { "None" }
+        val improvePointsResult = pa.improvement_points.ifBlank { "None" }
+        val cueResult = pa.improvement_methods?.ifBlank { "None" } ?: "None"
+
+        // 로딩 UI 정리
+        loadingTimer?.cancel()
+        binding.progressLoading.progress = 100
+        binding.tvProgressPercent.text = "100%"
+        binding.progressLoading.visibility = View.GONE
+        binding.tvProgressPercent.visibility = View.GONE
+        binding.btnUpload.isEnabled = true
+
+        shouldResetCameraOnResume = true
+
+        val intent = Intent(requireContext(), PoseResultActivity::class.java).apply {
+            putExtra(PoseResultActivity.EXTRA_GOOD_POINTS, goodPointsResult)
+            putExtra(PoseResultActivity.EXTRA_IMPROVE_POINTS, improvePointsResult)
+            putExtra(PoseResultActivity.EXTRA_CUE, cueResult)
+            lastPhotoFile?.absolutePath?.let { path ->
+                putExtra(PoseResultActivity.EXTRA_IMAGE_PATH, path)
             }
-
-            // 🔹 여기서 응답이 온 시점
-            //    → 타이머 정지 + 100%로 채우고 숨기기
-            loadingTimer?.cancel()
-            binding.progressLoading.setProgressCompat(100, true)
-            binding.tvProgressPercent.text = "100%"
-
-
-            binding.progressLoading.visibility = View.GONE
-            binding.tvProgressPercent.visibility = View.GONE
-            binding.btnUpload.isEnabled = true
-
-            if (errorMessage != null) {
-                Toast.makeText(
-                    requireContext(),
-                    "Failed to evaluate pose: $errorMessage",
-                    Toast.LENGTH_LONG
-                ).show()
-                return@launch
-            }
-
-            shouldResetCameraOnResume = true
-
-            val intent = Intent(requireContext(), PoseResultActivity::class.java).apply {
-                putExtra(PoseResultActivity.EXTRA_GOOD_POINTS, goodPointsResult)
-                putExtra(PoseResultActivity.EXTRA_IMPROVE_POINTS, improvePointsResult)
-                putExtra(PoseResultActivity.EXTRA_CUE, cueResult)
-                lastPhotoFile?.absolutePath?.let { path ->
-                    putExtra(PoseResultActivity.EXTRA_IMAGE_PATH, path)
-                }
-            }
-            startActivity(intent)
         }
+        startActivity(intent)
     }
 
     // === 결과에서 돌아온 후 카메라/화면 리셋 ===
@@ -547,7 +558,6 @@ class PoseFragment : Fragment() {
         }
         return file
     }
-
 
     private fun downscale(src: Bitmap, maxSide: Int): Bitmap {
         val w = src.width

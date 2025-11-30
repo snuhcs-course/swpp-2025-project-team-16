@@ -368,16 +368,8 @@ class AiCoachFragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener {
             val currentPhase = counter?.phase
             captureBottomRepPhotoIfNeeded(currentCount, currentPhase)
 
-            // ---- UI 반영 ----
-            val lowerName = selectedExercise.lowercase(Locale.getDefault())
-            if (lowerName == "plank" && counter is PlankTimer) {
-                val pt = counter as PlankTimer
-                val seconds = pt.holdSeconds()
-                binding.tvRepCount.text = String.format(Locale.getDefault(), "%.1f", seconds)
-                updateRepCount(counter?.count ?: 0)
-            } else {
-                updateRepCount(counter?.count ?: 0)
-            }
+            // ---- UI 반영 (Strategy 기반) ----
+            updateRepCount(currentCount)
             binding.tvFeedback.text = "Phase: ${counter?.phase ?: "-"}"
 
         }
@@ -641,34 +633,40 @@ class AiCoachFragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener {
     private fun updateRepCount(count: Int) {
         val prev = repCount
         repCount = count
-        points = count * 10
-        coachViewModel.updateRepCount(count)
 
-        val lowerName = selectedExercise.lowercase(Locale.getDefault())
+        val strategy = counter
 
-        if (lowerName == "plank") {
-            // 플랭크: 시간은 onResults에서 세팅, 여기서는 포인트만
-            binding.tvXpPoints.text = "+$points"
-        } else {
-            // squat / lunge
+        if (strategy == null) {
+            // 혹시 모를 null 방어용 (fallback)
+            points = count * 10
+            coachViewModel.updateRepCount(count)
             binding.tvRepCount.text = count.toString()
             binding.tvXpPoints.text = "+$points"
+            return
+        }
 
-            // 이전 값보다 커졌을 때만 팝업 (rep 올라간 순간)
-            if (isTraining && count > prev) {
-                showRepPopup(count)
-                if (isTraining && scheduleRepsTarget != null && count == scheduleRepsTarget) {
-                    confettiGoalAchieved()
-                }
-                else if (count % 10 == 0) {
-                    confettiMilestone2()
-                }
-                else if (count % 5 == 0) {
-                    confettiMilestone()
-                }
+        // 전략이 정의한 XP 정책 사용
+        points = strategy.getXpPoints()
+        coachViewModel.updateRepCount(count)
+
+        // 전략이 정의한 표시 텍스트 사용
+        binding.tvRepCount.text = strategy.getDisplayText()
+        binding.tvXpPoints.text = "+$points"
+
+        // 전략이 “이번에 팝업/축하를 띄울지”를 결정
+        if (strategy.shouldShowRepPopup(prev, isTraining)) {
+            showRepPopup(count)
+
+            if (isTraining && scheduleRepsTarget != null && count == scheduleRepsTarget) {
+                confettiGoalAchieved()
+            } else if (count % 10 == 0) {
+                confettiMilestone2()
+            } else if (count % 5 == 0) {
+                confettiMilestone()
             }
         }
     }
+
 
     // ✅ 중앙 REP 팝업 애니메이션
     private fun showRepPopup(count: Int) {

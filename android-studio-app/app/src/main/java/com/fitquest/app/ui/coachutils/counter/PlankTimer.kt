@@ -44,6 +44,17 @@ class PlankTimer : BaseCounter() {
     fun holdMs(): Long = totalHoldMs
     fun holdSeconds(): Double = totalHoldMs / 1000.0
 
+    // === Strategy 전용 override ===
+
+    // 플랭크는 "초.소수1자리"로 보여주고 싶음 (예: 12.3)
+    override fun getDisplayText(): String =
+        String.format("%.1f", holdSeconds())
+
+    // XP 정책은 기본(count * 10)을 그대로 사용 → getXpPoints() override 불필요
+
+    // 플랭크는 초당 팝업/콘페티가 너무 시끄러우니 아예 비활성화
+    override fun shouldShowRepPopup(previousCount: Int, isTraining: Boolean): Boolean = false
+
     override fun update(points: FloatArray, nowMs: Long) {
         if (points.size < 33 * 3) return
         if (lastUpdateMs == 0L) lastUpdateMs = nowMs
@@ -115,8 +126,6 @@ class PlankTimer : BaseCounter() {
                     phaseState = Phase.HOLDING
                     // 첫 진입 프레임부터 dt 가산
                     totalHoldMs += dt
-                } else {
-                    // 대기
                 }
             }
             Phase.HOLDING -> {
@@ -132,8 +141,6 @@ class PlankTimer : BaseCounter() {
                     phaseState = Phase.HOLDING
                     // 이어서 누적 계속
                     totalHoldMs += dt
-                } else {
-                    // 그대로 정지
                 }
             }
         }

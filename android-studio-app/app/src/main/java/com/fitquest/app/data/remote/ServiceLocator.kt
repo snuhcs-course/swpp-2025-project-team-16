@@ -4,7 +4,7 @@ object ServiceLocator {
     var apiService: ScheduleApiService = RetrofitClient.scheduleApiService
     var sessionApiService: SessionApiService= RetrofitClient.sessionApiService
     var userApiService: UserApiService= RetrofitClient.userApiService
-    var authApiService: ApiService= RetrofitClient.apiService
+    var authApiService: AuthApiService= RetrofitClient.authApiService
 
 
 

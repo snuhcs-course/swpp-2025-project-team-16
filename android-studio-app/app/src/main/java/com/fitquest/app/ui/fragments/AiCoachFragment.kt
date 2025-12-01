@@ -45,9 +45,7 @@ import java.util.Locale
 import kotlin.math.exp
 import androidx.recyclerview.widget.RecyclerView
 import androidx.viewpager2.widget.ViewPager2
-import com.fitquest.app.data.remote.ApiService
 import com.fitquest.app.data.remote.ServiceLocator
-import com.fitquest.app.data.remote.SessionApiService
 import nl.dionsegijn.konfetti.core.Party
 import nl.dionsegijn.konfetti.core.Position
 import nl.dionsegijn.konfetti.core.emitter.Emitter
@@ -60,7 +58,7 @@ class AiCoachFragment() : Fragment(), PoseLandmarkerHelper.LandmarkerListener {
     private val binding get() = _binding!!
 
     private val coachViewModel: AiCoachViewModel by activityViewModels {
-        AiCoachViewModelFactory(ServiceLocator.sessionApiService)
+        AiCoachViewModelFactory(RetrofitClient.sessionApiService)
     }
 
     private var sessionStartTime: Long? = null

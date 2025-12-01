@@ -35,7 +35,7 @@ class JourneyFragment() : Fragment() {
     private val binding get() = _binding!!
 
     private val viewModel: JourneyViewModel by viewModels {
-        JourneyViewModelFactory(ServiceLocator.apiService)
+        JourneyViewModelFactory(RetrofitClient.scheduleApiService)
     }
 
     private lateinit var adapter: DailyWorkoutAdapter

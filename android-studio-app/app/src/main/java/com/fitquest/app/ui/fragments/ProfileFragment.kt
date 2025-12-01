@@ -45,7 +45,7 @@ class ProfileFragment() : Fragment() {
     }
 
     private val userViewModel: UserViewModel by viewModels {
-        UserViewModelFactory(ServiceLocator.userApiService)
+        UserViewModelFactory(RetrofitClient.userApiService)
     }
 
     private lateinit var historyAdapter: HistoryAdapter

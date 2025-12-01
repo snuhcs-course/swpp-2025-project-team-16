@@ -1,7 +1,7 @@
 # FitQuest
 
 An AI-powered virtual sports personal trainer (PT) application.  
-Sportify leverages smartphone cameras and AI models to provide real-time posture correction, personalized training plans, smart equipment recommendations, and a social sports-mate matching feature.  
+FitQuest leverages smartphone cameras and AI models to provide real-time posture correction, personalized training plans, smart equipment recommendations, and a social sports-mate matching feature.  
 
 ![Application Screenshot](./docs/images/wireframe1130.png)
 
@@ -32,7 +32,7 @@ Sportify leverages smartphone cameras and AI models to provide real-time posture
 
 - **Problem**: In most sports, unlike gyms with personal trainers, there is no one-on-one guidance for beginners. This creates high entry barriers—proper form requires professional coaching, and choosing beginner-friendly equipment is often confusing, leading to loss of motivation.  
 - **New Feature in Market**: Our system provides AI-based posture correction, personalized training plans, and smart equipment recommendations—capabilities missing in traditional sports apps.  
-- **Why Important & Exciting**: Sportify lowers the barrier to sports participation, prevents “three-day resolutions” by offering structured guidance, and makes training more engaging through gamification and sports-mate matching, promoting both personal health and social connection.  
+- **Why Important & Exciting**: FitQuest lowers the barrier to sports participation, prevents “three-day resolutions” by offering structured guidance, and makes training more engaging through gamification and sports-mate matching, promoting both personal health and social connection.  
 
 ## Devices Needed
 

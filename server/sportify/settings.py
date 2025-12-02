@@ -169,3 +169,6 @@ POSE_TIMEOUT = 180                                # 초 (작업 길면 늘리세
 CELERY_BROKER_URL = "redis://localhost:6379/0"
 CELERY_RESULT_BACKEND = "redis://localhost:6379/0"
 CELERY_TIMEZONE = "Asia/Seoul"
+
+MEDIA_ROOT = os.path.join(BASE_DIR, "media")
+MEDIA_URL = "/media/"

@@ -20,7 +20,7 @@ import androidx.fragment.app.viewModels
 import com.fitquest.app.data.remote.RetrofitClient
 import com.fitquest.app.databinding.FragmentPoseBinding
 import com.fitquest.app.model.NetworkResult
-import com.fitquest.app.model.pose.PoseAnalysis
+import com.fitquest.app.model.pose.PoseUploadResponse
 import com.fitquest.app.model.pose.PoseUploadRequest
 import com.fitquest.app.ui.fragments.shared.camera.CameraManager
 import com.fitquest.app.ui.fragments.shared.camera.CameraPermissionHelper
@@ -290,13 +290,13 @@ class PoseFragment : Fragment() {
         }.start()
     }
 
-    private fun handleAnalysisSuccess(analysis: PoseAnalysis) {
+    private fun handleAnalysisSuccess(analysis: PoseUploadResponse) {
         completeLoadingProgress()
 
         val bottomSheet = PoseResultBottomSheet.newInstance(
-            goodPoints = analysis.goodPoints.ifBlank { "None" },
-            improvePoints = analysis.improvementPoints.ifBlank { "None" },
-            cue = analysis.improvementMethods?.ifBlank { "None" } ?: "None",
+            goodPoints = analysis.goodPoints.orEmpty().ifBlank { "None" },
+            improvePoints = analysis.improvementPoints.orEmpty().ifBlank { "None" },
+            cue = analysis.improvementMethods.orEmpty().ifBlank { "None" },
             imagePath = lastPhotoFile?.absolutePath
         )
 

@@ -44,4 +44,11 @@ def pose_evaluation_pipeline(vlm: VLMService, image_base64: str, category: str) 
     result_summary = vlm.summarize(result.get("feedback", ""))
 
     # result_summary가 dict(권장) 또는 string일 수 있음. 그대로 반환.
-    return result_summary
+    #return result_summary
+    return {
+        "pose_data": {
+            "joint_angles": joint_angles,
+            "keypoints_2d": keypoints_2d.tolist() if keypoints_2d is not None else None
+        },
+        "summary": result_summary
+    }

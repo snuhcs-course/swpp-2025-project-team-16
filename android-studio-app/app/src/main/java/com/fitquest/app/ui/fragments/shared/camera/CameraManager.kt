@@ -139,6 +139,8 @@ class CameraManager(
         )
     }
 
+    fun getImageCapture(): ImageCapture? = imageCapture
+
     fun setTargetRotation(rotation: Int) {
         imageCapture?.targetRotation = rotation
     }

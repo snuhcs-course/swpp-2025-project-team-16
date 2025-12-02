@@ -294,8 +294,8 @@ class AiCoachFragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener {
         coachViewModel.pauseTraining(workoutResult)
 
         handleScheduleLocking()
-        cleanupAfterWorkout()
         showPoseEvalDialogIfAvailable()
+        cleanupAfterWorkout()
     }
 
     private fun createCounter(activity: String): BaseCounter {
@@ -418,7 +418,7 @@ class AiCoachFragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener {
 
             // Photo capture
             photoCaptureManager.captureIfNeeded(
-                imageCapture = null, // Will be handled by CameraManager
+                imageCapture = cameraManager.getImageCapture(),
                 executor = ContextCompat.getMainExecutor(requireContext()),
                 exerciseName = exerciseSpinnerManager.getCurrentExercise(),
                 currentRep = currentCount,

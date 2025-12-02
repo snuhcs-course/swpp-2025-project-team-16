@@ -52,6 +52,7 @@ class MainActivity : AppCompatActivity() {
                 }
                 InitProgress.Completed -> {
                     binding.progressOverlay.visibility = View.GONE
+                    navController.navigate(R.id.journeyFragment)
                 }
                 is InitProgress.Error -> {
                     binding.progressOverlay.visibility = View.GONE
@@ -61,7 +62,6 @@ class MainActivity : AppCompatActivity() {
         }
 
         mainActivityViewModel.completeInitFlow()
-
         binding.bottomNavigation.setupWithNavController(navController)
 
         setupSessionLock()

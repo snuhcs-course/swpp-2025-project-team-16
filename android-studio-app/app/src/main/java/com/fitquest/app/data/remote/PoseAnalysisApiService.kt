@@ -1,6 +1,6 @@
 package com.fitquest.app.data.remote
 
-import com.fitquest.app.model.pose.PoseAnalysis
+import com.fitquest.app.model.pose.PoseUploadResponse
 import com.fitquest.app.model.pose.PoseUploadRequest
 import retrofit2.Response
 import retrofit2.http.Body
@@ -10,5 +10,5 @@ interface PoseAnalysisApiService {
     @POST("pose-analyses/evaluate_posture/")
     suspend fun uploadPose(
         @Body request: PoseUploadRequest
-    ): Response<PoseAnalysis>
+    ): Response<PoseUploadResponse>
 }

@@ -6,7 +6,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.fitquest.app.model.NetworkResult
 import com.fitquest.app.model.pose.PoseUploadRequest
-import com.fitquest.app.model.pose.PoseAnalysis
+import com.fitquest.app.model.pose.PoseUploadResponse
 import com.fitquest.app.repository.PoseAnalysisRepository
 import kotlinx.coroutines.launch
 
@@ -14,8 +14,8 @@ class PoseViewModel(
     private val repository: PoseAnalysisRepository
 ) : ViewModel() {
 
-    private val _poseAnalysisResult = MutableLiveData<NetworkResult<PoseAnalysis>>()
-    val poseAnalysisResult: LiveData<NetworkResult<PoseAnalysis>> = _poseAnalysisResult
+    private val _poseAnalysisResult = MutableLiveData<NetworkResult<PoseUploadResponse>>()
+    val poseAnalysisResult: LiveData<NetworkResult<PoseUploadResponse>> = _poseAnalysisResult
 
     fun uploadPose(request: PoseUploadRequest) {
         viewModelScope.launch {

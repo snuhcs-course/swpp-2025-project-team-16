@@ -20,7 +20,7 @@
 
     <fragment
         android:id="@+id/aiCoachFragment"
-        android:name="com.fitquest.app.ui.fragments.AiCoachFragment"
+        android:name="com.fitquest.app.ui.fragments.coach.AiCoachFragment"
         android:label="AI Coach">
         <argument
             android:name="scheduleId"
@@ -42,7 +42,7 @@
 
     <fragment
         android:id="@+id/poseFragment"
-        android:name="com.fitquest.app.ui.fragments.PoseFragment"
+        android:name="com.fitquest.app.ui.fragments.pose.PoseFragment"
         android:label="Pose" />
 
     <fragment

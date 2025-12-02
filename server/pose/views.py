@@ -115,88 +115,24 @@ def _extract_last_json(text: str):
 @permission_classes([IsAuthenticated])
 def evaluate_posture(request):
     user = request.user
+
     try:
         payload = request.data
     except Exception as e:
         return Response({"error": f"Invalid JSON: {e}"}, status=status.HTTP_400_BAD_REQUEST)
 
     result = run_pose_analysis(payload)
-    # if code != 200:
-    #     return Response(result, status=code)
 
     # pose = PoseAnalysis.objects.create(
     #     user=user,
-    #     session_id=payload.get("session_id"),
-    #     schedule_id=payload.get("schedule_id"),
-    #     image_url=payload.get("image_url"),
-    #     pose_data=result.get("pose_data"),
-    #     ai_comment=result.get("ai_comment"),
+    #     schedule=request.data.get("schedule_id"),
+    #     session=request.data.get("session_id"),
+    #     activity=request.data.get("category"),
+    #     image_url=request.data.get("image_url"),
+    #     pose_data=...,
+    #     ai_comment=result
     # )
     # serializer = PoseAnalysisSerializer(pose)
-    # return Response(serializer.data, status=status.HTTP_201_CREATED)
+    # return Response(result, status=status.HTTP_201_CREATED)
+
     return result
-
-
-@api_view(['POST'])
-@permission_classes([IsAuthenticated])
-def save(request):
-    user = request.user
-    try:
-        payload = request.data
-    except Exception as e:
-        return Response({"error": f"Invalid JSON: {e}"}, status=status.HTTP_400_BAD_REQUEST)
-    print(payload)
-
-
-
-    # pose = PoseAnalysis.objects.create(
-    #     user=user,
-    #     good_points=payload.get("good_points"),
-    #     improvement_points=payload.get("improvement_points"),
-    #     improvement_methods=payload.get("improvement_methods"),
-    #     created_at=payload.get("createdAt"),
-    #     image_base64=payload.get("image_url"),
-    #     category=payload.get("category"),
-    # )
-    # serializer = PoseAnalysisSerializer(pose)
-    # return Response(serializer.data, status=status.HTTP_201_CREATED)
-    return Response({"status": "success"}, status=status.HTTP_201_CREATED)
-# -----------------------------------
-# PoseAnalysis 전체 조회
-# -----------------------------------
-@api_view(['GET'])
-@permission_classes([IsAuthenticated])
-def pose_analyses_view(request):
-    poses = PoseAnalysis.objects.filter(user=request.user).order_by("-created_at")
-    serializer = PoseAnalysisSerializer(poses, many=True)
-    return Response(serializer.data, status=status.HTTP_200_OK)
-
-# -----------------------------------
-# PoseAnalysis 상세 조회
-# -----------------------------------
-@api_view(['GET'])
-@permission_classes([IsAuthenticated])
-def pose_analysis_detail(request, id):
-    pose = get_object_or_404(PoseAnalysis, id=id, user=request.user)
-    serializer = PoseAnalysisSerializer(pose)
-    return Response(serializer.data, status=status.HTTP_200_OK)
-
-# -----------------------------------
-# Session 기반 PoseAnalysis 조회
-# -----------------------------------
-@api_view(['GET'])
-@permission_classes([IsAuthenticated])
-def pose_analyses_by_session(request, session_id):
-    poses = PoseAnalysis.objects.filter(user=request.user, session_id=session_id).order_by("-created_at")
-    serializer = PoseAnalysisSerializer(poses, many=True)
-    return Response(serializer.data, status=status.HTTP_200_OK)
-
-# -----------------------------------
-# Schedule 기반 PoseAnalysis 조회
-# -----------------------------------
-@api_view(['GET'])
-@permission_classes([IsAuthenticated])
-def pose_analyses_by_schedule(request, schedule_id):
-    poses = PoseAnalysis.objects.filter(user=request.user, schedule_id=schedule_id).order_by("-created_at")
-    serializer = PoseAnalysisSerializer(poses, many=True)
-    return Response(serializer.data, status=status.HTTP_200_OK)

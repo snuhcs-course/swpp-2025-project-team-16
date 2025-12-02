@@ -7,6 +7,7 @@ import androidx.test.espresso.assertion.ViewAssertions.matches
 import androidx.test.espresso.matcher.ViewMatchers.*
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.fitquest.app.R
+import com.fitquest.app.ui.fragments.pose.PoseFragment
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith

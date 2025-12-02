@@ -1,12 +1,7 @@
 package com.fitquest.app.util
 
-import com.fitquest.app.model.DailyHistoryItem
-import com.fitquest.app.model.DailyWorkoutItem
 import com.fitquest.app.model.Schedule
 import com.fitquest.app.model.Session
-import com.fitquest.app.model.WorkoutItem
-import org.threeten.bp.Duration
-import org.threeten.bp.LocalTime
 
 enum class TargetType {
     REPS,

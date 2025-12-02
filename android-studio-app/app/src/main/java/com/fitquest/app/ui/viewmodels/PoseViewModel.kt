@@ -1,92 +1,45 @@
 package com.fitquest.app.ui.viewmodels
 
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.fitquest.app.data.remote.PoseUploadRequest
-import com.fitquest.app.model.PoseAnalysis
+import com.fitquest.app.model.NetworkResult
+import com.fitquest.app.model.pose.PoseUploadRequest
+import com.fitquest.app.model.pose.PoseAnalysis
 import com.fitquest.app.repository.PoseAnalysisRepository
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 
 class PoseViewModel(
     private val repository: PoseAnalysisRepository
 ) : ViewModel() {
 
-    private val _analyses = MutableStateFlow<List<PoseAnalysis>>(emptyList())
-    val analyses: StateFlow<List<PoseAnalysis>> = _analyses
-
-    private val _selectedAnalysis = MutableStateFlow<PoseAnalysis?>(null)
-    val selectedAnalysis: StateFlow<PoseAnalysis?> = _selectedAnalysis
-
-    private val _loading = MutableStateFlow(false)
-    val loading: StateFlow<Boolean> = _loading
-
-    private val _error = MutableStateFlow<String?>(null)
-    val error: StateFlow<String?> = _error
-
-    fun clearSelectedAnalysis() {
-        _selectedAnalysis.value = null
-    }
-
-    fun clearError() {
-        _error.value = null
-    }
-
-    fun getPoseAnalyses() {
-        viewModelScope.launch {
-            _loading.value = true
-            try {
-                _analyses.value = repository.getPoseAnalyses()
-                _error.value = null
-            } catch (e: Exception) {
-                _error.value = e.message ?: "Unknown error"
-            } finally {
-                _loading.value = false
-            }
-        }
-    }
-
-    fun getPoseAnalysesBySession(sessionId: Int) {
-        viewModelScope.launch {
-            _loading.value = true
-            try {
-                _analyses.value = repository.getPoseAnalysesBySession(sessionId)
-                _error.value = null
-            } catch (e: Exception) {
-                _error.value = e.message ?: "Unknown error"
-            } finally {
-                _loading.value = false
-            }
-        }
-    }
-
-    fun getPoseAnalysesBySchedule(scheduleId: Int) {
-        viewModelScope.launch {
-            _loading.value = true
-            try {
-                _analyses.value = repository.getPoseAnalysesBySchedule(scheduleId)
-                _error.value = null
-            } catch (e: Exception) {
-                _error.value = e.message ?: "Unknown error"
-            } finally {
-                _loading.value = false
-            }
-        }
-    }
+    private val _poseAnalysisResult = MutableLiveData<NetworkResult<PoseAnalysis>>()
+    val poseAnalysisResult: LiveData<NetworkResult<PoseAnalysis>> = _poseAnalysisResult
 
     fun uploadPose(request: PoseUploadRequest) {
         viewModelScope.launch {
-            _loading.value = true
+            _poseAnalysisResult.value = NetworkResult.Idle
             try {
-                val result = repository.uploadPose(request)
-                _selectedAnalysis.value = result
-                _error.value = null
+                val response = repository.uploadPose(request)
+                if (response.isSuccessful) {
+                    val body = response.body()
+                    if (body != null) {
+                        _poseAnalysisResult.value = NetworkResult.Success(body)
+                    } else {
+                        _poseAnalysisResult.value = NetworkResult.ServerError(response.code(), "Empty response body")
+                    }
+                } else {
+                    _poseAnalysisResult.value = NetworkResult.ServerError(response.code(), response.message())
+                }
             } catch (e: Exception) {
-                _error.value = e.message ?: "Network error"
-            } finally {
-                _loading.value = false
+                e.printStackTrace()
+                _poseAnalysisResult.value = NetworkResult.NetworkError(e)
             }
         }
+    }
+
+    fun resetPoseAnalysisResult() {
+        _poseAnalysisResult.value = NetworkResult.Idle
     }
 }

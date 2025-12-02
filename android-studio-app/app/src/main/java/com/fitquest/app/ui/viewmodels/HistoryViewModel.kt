@@ -30,7 +30,7 @@ class HistoryViewModel(
             Log.d("HistoryVM", "Loaded schedules = ${schedules.size}")
 
             val pastSchedules = schedules.filter {
-                LocalDateTime.of(it.scheduledDate, it.endTime).isBefore(now)
+                it.status != "planned"
             }
             Log.d("HistoryVM", "Past schedules = ${pastSchedules.size}")
             pastSchedules.forEach {

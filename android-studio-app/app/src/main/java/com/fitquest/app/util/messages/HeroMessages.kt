@@ -16,7 +16,7 @@ object HeroMessages {
         Message("Your next quest awaits", "\u2694\uFE0F"),   // ⚔️
         Message("The path to power continues", "\uD83D\uDC51"),   // 👑
         Message("Unbreakable spirit", "\uD83D\uDEE1\uFE0F"), // 🛡️
-        Message("Sweat is your armor", "\uD83E\uDDBbe"),     // 🦾
+        Message("Sweat is your armor", "\uD83E\uDDBE"),     // 🦾
         Message("Pain is temporary", "\u23F3"),              // ⏳
         Message("Become the champion", "\uD83E\uDD47"),      // 🥇
         Message("Defy the odds", "\uD83C\uDFB2"),            // 🎲

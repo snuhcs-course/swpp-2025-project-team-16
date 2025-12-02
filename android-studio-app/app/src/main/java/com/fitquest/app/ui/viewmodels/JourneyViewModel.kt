@@ -26,7 +26,6 @@ class JourneyViewModel(
                 val scheduleEnd = LocalDateTime.of(it.scheduledDate, it.endTime)
                 val isUpcoming = scheduleEnd.isAfter(now)
                 println("Schedule: ${it.scheduledDate} ${it.endTime}, Now: $now, IsUpcoming: $isUpcoming")
-                isUpcoming
                 scheduleEnd.isAfter(now) || scheduleEnd.isEqual(now)
             }
 

@@ -7,8 +7,6 @@ import androidx.lifecycle.viewModelScope
 import com.fitquest.app.model.DailyWorkoutItem
 import com.fitquest.app.repository.ScheduleRepository
 import kotlinx.coroutines.launch
-import org.threeten.bp.LocalDateTime
-import org.threeten.bp.ZoneId
 
 class JourneyViewModel(
     private val repository: ScheduleRepository
@@ -19,15 +17,10 @@ class JourneyViewModel(
 
     fun loadUpcomingSchedules() {
         viewModelScope.launch {
-            val now = LocalDateTime.now(ZoneId.of("Asia/Seoul"))
             val schedules = repository.getSchedules()
 
             val upcoming = schedules.filter {
-                val scheduleEnd = LocalDateTime.of(it.scheduledDate, it.endTime)
-                val isUpcoming = scheduleEnd.isAfter(now)
-                println("Schedule: ${it.scheduledDate} ${it.endTime}, Now: $now, IsUpcoming: $isUpcoming")
-                isUpcoming
-                scheduleEnd.isAfter(now) || scheduleEnd.isEqual(now)
+                it.status == "planned"
             }
 
             val grouped = upcoming.groupBy { it.scheduledDate }

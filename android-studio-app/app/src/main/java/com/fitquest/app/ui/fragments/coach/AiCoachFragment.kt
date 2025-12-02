@@ -466,6 +466,14 @@ class AiCoachFragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener {
 
     private fun handleScheduleLocking() {
         val isScheduled = scheduleId != null
+
+        if (isScheduled) {
+            val scheduledActivity = arguments?.getString(CoachConstants.ARG_ACTIVITY_KEY)?.lowercase()
+            if (scheduledActivity != null) {
+                exerciseSpinnerManager.setExercise(scheduledActivity)
+            }
+        }
+
         exerciseSpinnerManager.setEnabled(!isScheduled && !isTraining)
     }
 

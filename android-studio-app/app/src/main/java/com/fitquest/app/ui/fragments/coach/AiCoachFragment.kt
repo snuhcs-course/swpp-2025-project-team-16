@@ -293,6 +293,8 @@ class AiCoachFragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener {
         val workoutResult = createWorkoutResult(sessionDurationSec)
         coachViewModel.pauseTraining(workoutResult)
 
+        showToast("Session saved")
+
         handleScheduleLocking()
         showPoseEvalDialogIfAvailable()
         cleanupAfterWorkout()

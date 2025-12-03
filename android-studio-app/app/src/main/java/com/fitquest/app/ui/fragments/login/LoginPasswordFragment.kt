@@ -52,10 +52,17 @@ class LoginPasswordFragment : Fragment() {
 
         binding.btnPasswordLogin.setOnClickListener {
             val password = binding.etPassword.text.toString().trim()
-            if (password.isNotEmpty()) {
-                verifyPassword(email, password)
-            } else {
-                binding.etPassword.error = "Please enter your password"
+
+            when {
+                password.isEmpty() -> {
+                    binding.etPassword.error = "Please enter your password!"
+                }
+                password.length < 6 -> {
+                    binding.etPassword.error = "Password must be at least 6 characters"
+                }
+                else -> {
+                    verifyPassword(email, password)
+                }
             }
         }
 
@@ -90,7 +97,10 @@ class LoginPasswordFragment : Fragment() {
                     navigateToMainActivity()
                 }
                 is NetworkResult.ServerError -> {
-                    binding.etPassword.error = result.message
+                    Toast.makeText(requireContext(),
+                        "Invalid email or password",
+                        Toast.LENGTH_SHORT
+                    ).show()
                 }
                 is NetworkResult.NetworkError -> {
                     Toast.makeText(

@@ -31,6 +31,9 @@ class AiCoachViewModel(
     private val _sessionPreparing = MutableLiveData<Boolean>(false)
     val sessionPreparing: LiveData<Boolean> = _sessionPreparing
 
+    private val _currentScheduleId = MutableLiveData<Int?>(null)
+    val currentScheduleId: LiveData<Int?> = _currentScheduleId
+
     private val _currentSessionId = MutableLiveData<Int?>(null)
     val currentSessionId: LiveData<Int?> = _currentSessionId
 
@@ -59,6 +62,14 @@ class AiCoachViewModel(
     private val _sessionActive = MutableLiveData(false)
     val sessionActive: LiveData<Boolean> = _sessionActive
 
+    fun setCurrentScheduleId(id: Int?) {
+        _currentScheduleId.value = id
+    }
+
+    fun setSelectedExercise(ex: String) {
+        _selectedExercise.value = ex
+    }
+
     // ✅ 세션 준비 상태 설정 (카운트다운 시작)
     fun setSessionPreparing(preparing: Boolean) {
         _sessionPreparing.value = preparing
@@ -76,6 +87,7 @@ class AiCoachViewModel(
         if (_isTraining.value == true || _sessionPreparing.value == true) return
 
         _selectedExercise.value = activity
+        _currentScheduleId.value = scheduleId
 
         // ✅ 준비 상태 시작 (카운트다운 시작 시점)
         _sessionPreparing.value = true
@@ -117,6 +129,7 @@ class AiCoachViewModel(
             _isTraining.value = false
             _sessionPreparing.value = false
             _currentSessionId.value = null
+            _currentScheduleId.value = null
             updateSessionActiveState()
             _feedback.value = "Workout paused (No active session ID) 💪"
             return
@@ -134,6 +147,7 @@ class AiCoachViewModel(
             _sessionPreparing.value = false
             updateSessionActiveState()
             _currentSessionId.value = null
+            _currentScheduleId.value = null
 
             endResult.onSuccess { session ->
                 // TODO: 서버에서 받은 실제 XP로 업데이트하는 로직이 필요하지만, 현재는 임시로 표시
@@ -170,16 +184,6 @@ class AiCoachViewModel(
     fun updateFormFeedback(feedback: String, score: Int) {
         _feedback.value = feedback
         _formScore.value = score
-    }
-
-    private fun saveWorkoutSession() {
-        val exercise = _selectedExercise.value ?: ""
-        val reps = _repCount.value ?: 0
-        val xp = _points.value ?: 0
-        val avgScore = _formScore.value ?: 0
-
-        // TODO: backend/local DB 저장
-        // exercise, reps, xp, avgScore, timestamp 등
     }
 
     // ==========================

@@ -125,7 +125,10 @@ class AiCoachFragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener {
             val scheduledActivity = it.getString(CoachConstants.ARG_ACTIVITY_KEY)?.lowercase()
             if (scheduledActivity != null) {
                 exerciseSpinnerManager.setExercise(scheduledActivity)
+                coachViewModel.setSelectedExercise(scheduledActivity)
             }
+
+            coachViewModel.setCurrentScheduleId(scheduleId)
         }
     }
 
@@ -172,6 +175,11 @@ class AiCoachFragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener {
             if (message.isNotEmpty()) {
                 showToast(message)
             }
+        }
+
+        coachViewModel.currentScheduleId.observe(viewLifecycleOwner) {
+            handleScheduleLocking()
+            updateTargetUi()
         }
     }
 
@@ -465,21 +473,24 @@ class AiCoachFragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener {
     }
 
     private fun handleScheduleLocking() {
-        val isScheduled = scheduleId != null
+        val isScheduled = coachViewModel.currentScheduleId.value != null
 
         if (isScheduled) {
-            val scheduledActivity = arguments?.getString(CoachConstants.ARG_ACTIVITY_KEY)?.lowercase()
-            if (scheduledActivity != null) {
-                exerciseSpinnerManager.setExercise(scheduledActivity)
+            coachViewModel.selectedExercise.value?.let {
+                exerciseSpinnerManager.setExercise(it)
             }
+        } else {
+            exerciseSpinnerManager.setExercise("squat")
+            coachViewModel.setSelectedExercise("squat")
         }
 
         exerciseSpinnerManager.setEnabled(!isScheduled && !isTraining)
     }
 
     private fun updateTargetUi() {
+        val isScheduled = coachViewModel.currentScheduleId.value != null
         uiManager.updateTargetUi(
-            isScheduled = scheduleId != null,
+            isScheduled = isScheduled,
             exerciseName = exerciseSpinnerManager.getCurrentExercise(),
             repsTarget = scheduleRepsTarget,
             durationTarget = scheduleDurationTarget

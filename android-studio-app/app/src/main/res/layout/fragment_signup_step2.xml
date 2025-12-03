@@ -1,139 +1,357 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/signupStep2Root"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@drawable/bg_gradient_dark"
+    android:background="@color/background_dark"
     tools:context=".ui.fragments.login.SignupStep2Fragment">
 
-    <!-- 상단 안내 문구 -->
+    <!-- ================= 헤더 영역 (AiCoach 스타일) ================= -->
     <LinearLayout
-        android:layout_width="match_parent"
+        android:id="@+id/headerContainer"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:gravity="center_horizontal"
-        android:paddingTop="60dp"
-        android:paddingBottom="16dp">
+        android:gravity="center_vertical"
+        android:paddingStart="16dp"
+        android:paddingEnd="16dp"
+        android:paddingTop="24dp"
+        android:paddingBottom="12dp"
+        android:background="@drawable/gradient_overlay_top"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
 
+        <!-- 작은 레이블 -->
+        <TextView
+            android:id="@+id/tvHeaderLabel"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="FITQUEST CALIBRATION"
+            android:textColor="@color/cyan"
+            android:textSize="12sp" />
+
+        <!-- 메인 타이틀 -->
         <TextView
             android:id="@+id/tvGreeting"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Ready for your session?"
-            android:textColor="@color/text_secondary"
-            android:textSize="14sp" />
-
-        <TextView
-            android:id="@+id/tvMission"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Do as many squats as you can!"
-            android:textColor="@color/cyan_bright"
+            android:text="Show us your level"
+            android:textColor="@color/text_primary"
             android:textSize="20sp"
             android:textStyle="bold"
-            android:layout_marginTop="4dp" />
+            android:layout_marginTop="2dp" />
+
+        <LinearLayout
+            android:id="@+id/stepsContainer"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:layout_marginTop="8dp">
+
+            <!-- Step 1 -->
+            <LinearLayout
+                android:id="@+id/step1Row"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:layout_marginTop="0dp">
+
+                <TextView
+                    android:id="@+id/tvStep1Badge"
+                    android:layout_width="22dp"
+                    android:layout_height="22dp"
+                    android:background="@drawable/bg_badge_cyan"
+                    android:text="1"
+                    android:textColor="@android:color/white"
+                    android:textSize="12sp"
+                    android:gravity="center"
+                    android:layout_marginEnd="8dp" />
+
+                <TextView
+                    android:id="@+id/tvMissionStep1"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="Stand in front of the camera."
+                    android:textColor="@color/text_primary"
+                    android:textSize="14sp" />
+            </LinearLayout>
+
+            <!-- Step 2 -->
+            <LinearLayout
+                android:id="@+id/step2Row"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:layout_marginTop="4dp">
+
+                <TextView
+                    android:id="@+id/tvStep2Badge"
+                    android:layout_width="22dp"
+                    android:layout_height="22dp"
+                    android:background="@drawable/bg_badge_cyan"
+                    android:text="2"
+                    android:textColor="@android:color/white"
+                    android:textSize="12sp"
+                    android:gravity="center"
+                    android:layout_marginEnd="8dp" />
+
+                <TextView
+                    android:id="@+id/tvMissionStep2"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="Do as many squats as you can."
+                    android:textColor="@color/text_primary"
+                    android:textSize="14sp" />
+            </LinearLayout>
+
+            <!-- Step 3 -->
+            <LinearLayout
+                android:id="@+id/step3Row"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:layout_marginTop="4dp">
+
+                <TextView
+                    android:id="@+id/tvStep3Badge"
+                    android:layout_width="22dp"
+                    android:layout_height="22dp"
+                    android:background="@drawable/bg_badge_cyan"
+                    android:text="3"
+                    android:textColor="@android:color/white"
+                    android:textSize="12sp"
+                    android:gravity="center"
+                    android:layout_marginEnd="8dp" />
+
+                <TextView
+                    android:id="@+id/tvMissionStep3"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="FitQuest automatically counts your squats."
+                    android:textColor="@color/text_primary"
+                    android:textSize="14sp" />
+            </LinearLayout>
+
+            <!-- Step 4 -->
+            <LinearLayout
+                android:id="@+id/step4Row"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:layout_marginTop="4dp">
+
+                <TextView
+                    android:id="@+id/tvStep4Badge"
+                    android:layout_width="22dp"
+                    android:layout_height="22dp"
+                    android:background="@drawable/bg_badge_cyan"
+                    android:text="4"
+                    android:textColor="@android:color/white"
+                    android:textSize="12sp"
+                    android:gravity="center"
+                    android:layout_marginEnd="8dp" />
+
+                <TextView
+                    android:id="@+id/tvMissionStep4"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="Press Stop and start your journey."
+                    android:textColor="@color/text_primary"
+                    android:textSize="14sp" />
+            </LinearLayout>
+
+        </LinearLayout>
+
+
     </LinearLayout>
 
-    <!-- 카메라 카드 -->
-    <androidx.cardview.widget.CardView
-        android:id="@+id/cameraCard"
-        android:layout_width="320dp"
-        android:layout_height="420dp"
-        android:layout_gravity="center"
-        app:cardCornerRadius="20dp"
-        app:cardElevation="18dp"
-        android:backgroundTint="@color/surface_dark_translucent"
-        app:strokeColor="@color/cyan_20"
-        app:strokeWidth="1dp">
 
-        <!-- 미리보기/오버레이/카운트다운을 담는 컨테이너 -->
-        <FrameLayout
-            android:id="@+id/cameraContainer"
+
+    <!-- ================= 카메라 카드 (AiCoach 스타일) ================= -->
+    <com.google.android.material.card.MaterialCardView
+        android:id="@+id/cameraCard"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginEnd="16dp"
+        android:layout_marginTop="8dp"
+        android:layout_marginBottom="16dp"
+        app:cardBackgroundColor="@android:color/transparent"
+        app:cardCornerRadius="16dp"
+        app:cardElevation="8dp"
+        app:cardPreventCornerOverlap="false"
+        app:strokeColor="@color/cyan_30"
+        app:strokeWidth="2dp"
+        app:layout_constraintTop_toBottomOf="@id/headerContainer"
+        app:layout_constraintBottom_toTopOf="@id/bottomContainer"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/cameraCardRoot"
             android:layout_width="match_parent"
             android:layout_height="match_parent">
 
-            <!-- CameraX PreviewView -->
-            <androidx.camera.view.PreviewView
-                android:id="@+id/cameraPreview"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:keepScreenOn="true" />
+            <!-- 미리보기 + 오버레이 + 카운트다운 -->
+            <FrameLayout
+                android:id="@+id/cameraContainer"
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:background="@drawable/bg_camera_round_16"
+                android:clipToOutline="true"
+                android:outlineProvider="background"
+                android:clipToPadding="true"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constrainedHeight="true"
+                app:layout_constraintDimensionRatio="H,3:4">
 
-            <!-- 스켈레톤/각도 오버레이 -->
-            <com.fitquest.app.ui.coachutils.OverlayView
-                android:id="@+id/overlay"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:clickable="false"
-                android:importantForAccessibility="no"
-                android:visibility="gone" />
+                <!-- CameraX PreviewView -->
+                <androidx.camera.view.PreviewView
+                    android:id="@+id/cameraPreview"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:keepScreenOn="true" />
 
-            <!-- 10초 카운트다운 -->
-            <TextView
-                android:id="@+id/tvCountdown"
+                <!-- 스켈레톤 오버레이 -->
+                <com.fitquest.app.ui.coachutils.OverlayView
+                    android:id="@+id/overlay"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:clickable="false"
+                    android:importantForAccessibility="no"
+                    android:visibility="gone" />
+
+                <!-- 카운트다운 숫자 -->
+                <TextView
+                    android:id="@+id/tvCountdown"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:text="10"
+                    android:textColor="@android:color/white"
+                    android:textStyle="bold"
+                    android:textSize="48sp"
+                    android:shadowColor="@android:color/black"
+                    android:shadowDx="0"
+                    android:shadowDy="0"
+                    android:shadowRadius="8"
+                    android:visibility="gone" />
+
+                <TextView
+                    android:id="@+id/tvRepPopup"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="1"
+                    android:textColor="@android:color/white"
+                    android:textStyle="bold"
+                    android:textSize="72sp"
+                    android:shadowColor="@android:color/black"
+                    android:shadowDx="0"
+                    android:shadowDy="0"
+                    android:shadowRadius="10"
+                    android:visibility="gone"
+                    android:layout_gravity="center" />
+            </FrameLayout>
+
+            <!-- REP 카운트 (AiCoach 하단 뱃지 느낌) -->
+            <LinearLayout
+                android:id="@+id/countContainer"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="10"
-                android:textColor="@android:color/white"
-                android:textStyle="bold"
-                android:textSize="48sp"
-                android:shadowColor="@android:color/black"
-                android:shadowDx="0"
-                android:shadowDy="0"
-                android:shadowRadius="8"
-                android:visibility="gone"
-                android:layout_gravity="center"/>
-        </FrameLayout>
-    </androidx.cardview.widget.CardView>
+                android:orientation="vertical"
+                android:gravity="center_horizontal"
+                android:padding="8dp"
+                app:layout_constraintBottom_toBottomOf="@id/cameraContainer"
+                app:layout_constraintEnd_toEndOf="@id/cameraContainer"
+                android:layout_marginEnd="12dp"
+                android:layout_marginBottom="12dp">
 
-    <!-- 하단 컨트롤 -->
+                <TextView
+                    android:id="@+id/tvCountLabel"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="SQUATS"
+                    android:textColor="@android:color/white"
+                    android:textSize="11sp" />
+
+                <TextView
+                    android:id="@+id/tvCountNumber"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="0"
+                    android:textColor="@android:color/white"
+                    android:textSize="22sp"
+                    android:textStyle="bold" />
+            </LinearLayout>
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+    </com.google.android.material.card.MaterialCardView>
+
+
+
+    <!-- ================= 하단 Stop 버튼 ================= -->
     <LinearLayout
-        android:id="@+id/controlPanel"
-        android:layout_width="match_parent"
+        android:id="@+id/bottomContainer"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_gravity="bottom"
         android:orientation="horizontal"
         android:gravity="center"
-        android:padding="24dp">
-
-        <TextView
-            android:id="@+id/tvCountLabel"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Count : "
-            android:textColor="@color/gold"
-            android:textSize="24sp"
-            android:textStyle="bold" />
-
-        <LinearLayout
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:gravity="center"
-            android:layout_marginEnd="24dp">
-
-            <TextView
-                android:id="@+id/tvCountNumber"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="0"
-                android:textColor="@color/gold"
-                android:textSize="26sp"
-                android:textStyle="bold" />
-        </LinearLayout>
+        android:paddingStart="16dp"
+        android:paddingEnd="16dp"
+        android:paddingBottom="24dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btnStop"
-            android:layout_width="160dp"
-            android:layout_height="56dp"
-            android:background="@drawable/btn_gradient_blue"
-            android:elevation="6dp"
+            android:layout_width="0dp"
+            android:layout_height="52dp"
+            android:layout_weight="1"
+            android:minHeight="0dp"
             android:text="Stop"
             android:textColor="@android:color/white"
             android:textSize="15sp"
+            android:background="@drawable/btn_gradient_red"
+            app:backgroundTint="@null"
+            android:backgroundTint="@null"
             app:cornerRadius="12dp"
-            app:strokeColor="@color/cyan_30"
+            app:strokeColor="@color/error_red"
             app:strokeWidth="1dp" />
     </LinearLayout>
-</FrameLayout>
+
+    <!-- ================= 카메라 전환 버튼 (AiCoach와 동일) ================= -->
+    <ImageButton
+        android:id="@+id/btnSwitchCamera"
+        android:layout_width="56dp"
+        android:layout_height="56dp"
+        android:background="@drawable/bg_badge_cyan"
+        android:src="@drawable/ic_switch_camera"
+        android:contentDescription="Switch camera"
+        android:clickable="true"
+        android:focusable="true"
+        app:tint="@android:color/white"
+        app:layout_constraintTop_toTopOf="@id/cameraCard"
+        app:layout_constraintEnd_toEndOf="@id/cameraCard"
+        android:layout_marginTop="12dp"
+        android:layout_marginEnd="12dp"
+        android:elevation="10dp"
+        android:translationZ="10dp"
+        />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

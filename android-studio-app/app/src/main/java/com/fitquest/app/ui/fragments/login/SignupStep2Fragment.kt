@@ -29,6 +29,8 @@ import com.fitquest.app.ui.viewmodels.AuthViewModelFactory
 import com.google.mediapipe.tasks.vision.core.RunningMode
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
+import androidx.core.content.ContextCompat
+import com.fitquest.app.R
 
 class SignupStep2Fragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener {
 
@@ -60,6 +62,9 @@ class SignupStep2Fragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener 
     private var email: String = ""
     private var password: String = ""
     private var username: String = ""
+
+    private var lastCount = 0
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -139,6 +144,15 @@ class SignupStep2Fragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener 
         binding.btnStop.setOnClickListener {
             pauseAnalysis()
             stopSession()
+        }
+
+        // 카메라 전환 버튼
+        binding.btnSwitchCamera.setOnClickListener {
+            cameraManager.toggleCamera(
+                previewView = binding.cameraPreview,
+                analyzer = if (isAnalyzing) createPoseAnalyzer() else null,
+                onError = { error -> showToast(error) }
+            )
         }
     }
 
@@ -269,6 +283,12 @@ class SignupStep2Fragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener 
 
             val currentCount = counter?.count ?: 0
             uiManager.updateRepCount(currentCount)
+
+            val previous = lastCount
+            if (currentCount > previous) {
+                showRepPopup(currentCount)
+            }
+            lastCount = currentCount
         }
     }
 
@@ -331,6 +351,23 @@ class SignupStep2Fragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener 
             poseLandmarkerHelper.clearPoseLandmarker()
         }
         _binding = null
+    }
+
+    private fun showRepPopup(count: Int) {
+        val popup = binding.tvRepPopup
+        popup.text = count.toString()
+        popup.visibility = View.VISIBLE
+        popup.alpha = 1f
+        popup.scaleX = 1f
+        popup.scaleY = 1f
+
+        popup.animate()
+            .alpha(0f)
+            .scaleX(2f)
+            .scaleY(2f)
+            .setDuration(500)
+            .withEndAction { popup.visibility = View.GONE }
+            .start()
     }
 
     companion object {

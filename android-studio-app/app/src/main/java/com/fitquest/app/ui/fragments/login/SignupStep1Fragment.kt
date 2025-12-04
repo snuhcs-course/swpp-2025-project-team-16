@@ -74,11 +74,31 @@ class SignupStep1Fragment : Fragment() {
         val confirmPassword = binding.etConfirmPassword.text.toString()
 
         return when {
-            email.isEmpty() -> { binding.etEmail.error = "Email is required"; false }
-            username.isEmpty() -> { binding.etHeroName.error = "Username is required"; false }
-            password.isEmpty() -> { binding.etPassword.error = "Password is required"; false }
-            password != confirmPassword -> { binding.etConfirmPassword.error = "Passwords do not match"; false }
-            password.length < 6 -> { binding.etPassword.error = "Password must be at least 6 characters"; false }
+            email.isEmpty() -> {
+                Toast.makeText(requireContext(),
+                "Email is required",
+                Toast.LENGTH_SHORT
+            ).show(); false }
+            username.isEmpty() -> {
+                Toast.makeText(requireContext(),
+                "Username is required",
+                Toast.LENGTH_SHORT
+            ).show(); false }
+            password.isEmpty() -> {
+                Toast.makeText(requireContext(),
+                    "Password is required",
+                    Toast.LENGTH_SHORT
+            ).show(); false }
+            password != confirmPassword -> {
+                Toast.makeText(requireContext(),
+                    "Passwords do not match",
+                    Toast.LENGTH_SHORT
+                ).show(); false }
+            password.length < 6 -> {
+                Toast.makeText(requireContext(),
+                    "Password must be at least 6 characters",
+                    Toast.LENGTH_SHORT
+                ).show(); false }
             else -> true
         }
     }

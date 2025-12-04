@@ -194,7 +194,7 @@ def end_session(request, session_id):
     if reps_count is not None:
         user.xp += int(reps_count) * 10
     elif duration is not None:
-        user.xp += int(duration.total_seconds()) * 2
+        user.xp += int(duration.total_seconds())
 
     if session_duration_seconds is not None:
         try:

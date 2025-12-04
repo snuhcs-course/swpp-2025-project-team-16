@@ -55,7 +55,11 @@ class LoginEmailFragment : Fragment() {
             if (email.isNotEmpty()) {
                 checkEmailExists(email)
             } else {
-                emailInput.error = "Please enter your email!"
+                Toast.makeText(requireContext(),
+                    "Please enter your email!",
+                    Toast.LENGTH_SHORT
+                ).show()
+                // emailInput.error = "Please enter your email!"
             }
         }
 

@@ -9,18 +9,23 @@ FitQuest leverages smartphone cameras and AI models to provide real-time posture
 
 ## Features
 
-- **AI Posture Correction**  
-  Real-time feedback using camera input and pose-estimation models.  
-  (Starting with Squat, and more exercises will be supported later.)
+- **Baseline Camera Measurement for Instant Personalization**
+Right after sign-up, users complete a simple squat measurement that evaluates their initial fitness level and generates a personalized starting routine.
 
-- **Training Plan & Scheduling**  
-  AI generates structured lesson plans and syncs them with the user’s calendar.
+- **Adaptive Workout Roadmap Tailored to Each User**
+The main screen provides a clear, day-by-day schedule so users always know exactly what to do—and can begin training immediately.
 
-- **Skill Level Tracking**  
-  Records progress, provides gamified achievements, and adapts training difficulty.
+- **Guided Training Session with Countdown Lock-In**
+After pressing “Begin Training,” a 10-second countdown activates a temporary screen lock, ensuring full focus and preventing interruptions during the session.
 
-- **Sports Mate Finder** *(Additional Feature)*  
-  Match users with similar skill levels and goals.
+- **Pose Analysis & AI Coaching**
+Tracks posture, counts repetitions, and calculates XP automatically during training, with optional post-session pose evaluation for detailed AI feedback.
+
+- **Progress Tracking & Gamified Rewards**
+Levels, ranks, total workout time, and visual history help users see their growth, while XP and achievements keep them motivated to stay consistent.
+
+- **Community Rankings for Extra Motivation**
+A global leaderboard lets users compare performance, fostering friendly competition and amplifying long-term engagement.
 
 ## Target Customers
 
@@ -30,9 +35,11 @@ FitQuest leverages smartphone cameras and AI models to provide real-time posture
 
 ## Motivation
 
-- **Problem**: In most sports, unlike gyms with personal trainers, there is no one-on-one guidance for beginners. This creates high entry barriers—proper form requires professional coaching, and choosing beginner-friendly equipment is often confusing, leading to loss of motivation.  
-- **New Feature in Market**: Our system provides AI-based posture correction, personalized training plans, and smart equipment recommendations—capabilities missing in traditional sports apps.  
-- **Why Important & Exciting**: FitQuest lowers the barrier to sports participation, prevents “three-day resolutions” by offering structured guidance, and makes training more engaging through gamification and sports-mate matching, promoting both personal health and social connection.  
+- **Problem**: Many people begin exercising with strong initial motivation but quickly lose momentum. Without personal guidance—especially outside gym environments—beginners struggle with correct form, appropriate intensity, and knowing how to start. This lack of structure creates high entry barriers and leads to the common “three-day resolution” drop-off.
+
+- **New Feature in Market**: Our system captures this early motivation by having users perform simple baseline exercises through an intuitive camera interface. Using AI-based posture recognition, the app provides beginner-friendly feedback, adaptive workout schedules, and personalized plans from the very first session—features rarely offered together in existing sports applications.
+
+- **Why Important & Exciting**: By combining early commitment, real-time guidance, and gamified progression (XP, levels, rankings), FitQuest transforms short-term enthusiasm into long-term exercise habits. This approach makes training accessible, motivating, and socially engaging, helping users stay consistent, confident, and connected.
 
 ## Devices Needed
 
@@ -42,9 +49,9 @@ FitQuest leverages smartphone cameras and AI models to provide real-time posture
 ## Test & Demo
 
 - Create a new user account and set up a personal sports profile.  
-- Demonstrate real-time AI posture correction feedback using the smartphone camera.  
-- Show how the system generates a personalized training plan
-- Showcase the Sports Mate feature by matching the user with another account of similar skill level.  
+- Demonstrate AI posture correction feedback using the smartphone camera.  
+- Show how the system generates a personalized training plan.
+- Showcase the ranking to motivate the user.
 
 ## Getting Started
 

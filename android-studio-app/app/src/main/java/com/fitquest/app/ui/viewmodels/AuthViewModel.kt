@@ -127,12 +127,4 @@ class AuthViewModel(private val repository: AuthRepository) : ViewModel() {
     fun resetSignupResult() {
         _signupResult.value = NetworkResult.Idle
     }
-
-    fun resetLoginResult() {
-        _loginResult.value = NetworkResult.Idle
-    }
-
-    fun resetUpdateInitialRepsResult() {
-        _updateInitialRepsResult.value = NetworkResult.Idle
-    }
 }

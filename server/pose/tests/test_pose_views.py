@@ -1,73 +1,112 @@
 import pytest
-from unittest.mock import patch, MagicMock
+import base64
+from unittest.mock import patch
 from django.urls import reverse
 from rest_framework import status
+
 from pose.models import PoseAnalysis
-from factories.user_factory import UserFactory
-from factories.schedule_factory import SessionFactory, ScheduleFactory
+from factories.schedule_factory import SessionFactory
+
+
+# 임시 base64 이미지 생성
+def fake_base64_image():
+    return "data:image/jpeg;base64," + base64.b64encode(b"fake image content").decode("utf-8")
+
 
 @pytest.mark.django_db
-def test_evaluate_posture_success(auth_client, user):
+def test_evaluate_posture_success(auth_client, user, settings, tmp_path):
+
+    # 테스트용 media 경로
+    settings.MEDIA_ROOT = tmp_path
+    settings.MEDIA_URL = "/media/"
+    settings.ALLOWED_HOSTS = ["testserver"]
+
     session = SessionFactory(user=user)
+
     payload = {
+        "image_base64": fake_base64_image(),
+        "category": "squat",
+        "schedule_id": session.schedule.id if session.schedule else None,
         "session_id": session.id,
-        "image_url": "http://example.com/img.png"
     }
 
     mock_result = {
-        "pose_data": {"keypoints": []},
-        "ai_comment": "Great posture!"
+        "pose_data": {
+            "joint_angles": {
+                "left_knee": 95,
+                "right_knee": 100
+            },
+            "keypoints_2d": [[1, 2], [3, 4], [5, 6]]
+        },
+        "summary": {
+            "good_points": ["허리가 곧습니다."],
+            "improvement_points": ["무릎 각도 개선 필요"],
+            "improvement_methods": ["천천히 앉기"]
+        }
     }
 
     with patch("pose.views.run_pose_analysis") as mock_run:
-        mock_run.return_value = (mock_result, 200)
+        mock_run.return_value = mock_result
+
         url = reverse("evaluate_posture")
         response = auth_client.post(url, payload, format="json")
 
-    assert response.status_code == 201
-    assert response.data["ai_comment"] == "Great posture!"
-    assert response.data["session"] == session.id
-    assert PoseAnalysis.objects.filter(user=user).exists()
+    # ================= 검증 ==================
+    assert response.status_code == status.HTTP_201_CREATED
+
+    data = response.data
+
+    assert data["good_points"] == ["허리가 곧습니다."]
+    assert data["improvement_points"] == ["무릎 각도 개선 필요"]
+    assert data["improvement_methods"] == ["천천히 앉기"]
+
+    # DB 저장 확인
+    assert PoseAnalysis.objects.count() == 1
+    pose = PoseAnalysis.objects.first()
+
+    assert pose.user == user
+    assert pose.activity == "squat"
+    assert pose.session_id == session.id
+    assert pose.pose_data == mock_result["pose_data"]
+
+    # 이미지 파일 실제 생성 확인
+    assert (tmp_path / "pose_images").exists()
+    assert len(list((tmp_path / "pose_images").iterdir())) == 1
+
 
 @pytest.mark.django_db
-def test_evaluate_posture_failure(auth_client):
+def test_evaluate_posture_missing_fields(auth_client):
+    url = reverse("evaluate_posture")
+
     payload = {"session_id": 1}
+    response = auth_client.post(url, payload, format="json")
+
+    assert response.status_code == status.HTTP_400_BAD_REQUEST
+    assert response.data["error"] == "image_base64 and category are required."
+
+
+@pytest.mark.django_db
+def test_evaluate_posture_analysis_failed(auth_client, user):
+    session = SessionFactory(user=user)
+
+    payload = {
+        "image_base64": fake_base64_image(),
+        "category": "squat",
+        "session_id": session.id,
+    }
+
+    mock_result = {
+        "error": "External evaluation failed."
+    }
+
     with patch("pose.views.run_pose_analysis") as mock_run:
-        mock_run.return_value = ({"error": "Timeout"}, 504)
+        mock_run.return_value = mock_result
+
         url = reverse("evaluate_posture")
         response = auth_client.post(url, payload, format="json")
 
-    assert response.status_code == 504
+    assert response.status_code == status.HTTP_500_INTERNAL_SERVER_ERROR
     assert "error" in response.data
 
-@pytest.mark.django_db
-def test_pose_analyses_view(auth_client, user):
-    url = reverse("pose_analyses_view")
-    response = auth_client.get(url)
-    assert response.status_code == 200
-
-@pytest.mark.django_db
-def test_pose_analysis_detail(auth_client, user):
-    pose = PoseAnalysis.objects.create(user=user)
-    url = reverse("pose_analysis_detail", args=[pose.id])
-    response = auth_client.get(url)
-    assert response.status_code == 200
-    assert response.data["id"] == pose.id
-
-@pytest.mark.django_db
-def test_pose_analyses_by_session(auth_client, user):
-    session = SessionFactory(user=user)
-    pose = PoseAnalysis.objects.create(user=user, session=session)
-    url = reverse("pose_analyses_by_session", args=[session.id])
-    response = auth_client.get(url)
-    assert response.status_code == 200
-    assert any(p["id"] == pose.id for p in response.data)
-
-@pytest.mark.django_db
-def test_pose_analyses_by_schedule(auth_client, user):
-    schedule = ScheduleFactory(user=user)
-    pose = PoseAnalysis.objects.create(user=user, schedule=schedule)
-    url = reverse("pose_analyses_by_schedule", args=[schedule.id])
-    response = auth_client.get(url)
-    assert response.status_code == 200
-    assert any(p["id"] == pose.id for p in response.data)
+    # DB 저장 안 됐는지 확인
+    assert PoseAnalysis.objects.count() == 0

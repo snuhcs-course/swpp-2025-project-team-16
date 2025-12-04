@@ -55,10 +55,16 @@ class LoginPasswordFragment : Fragment() {
 
             when {
                 password.isEmpty() -> {
-                    binding.etPassword.error = "Please enter your password!"
+                    Toast.makeText(requireContext(),
+                        "Please enter your password!",
+                        Toast.LENGTH_SHORT
+                    ).show()
                 }
                 password.length < 6 -> {
-                    binding.etPassword.error = "Password must be at least 6 characters"
+                    Toast.makeText(requireContext(),
+                        "Password must be at least 6 characters",
+                        Toast.LENGTH_SHORT
+                    ).show()
                 }
                 else -> {
                     verifyPassword(email, password)

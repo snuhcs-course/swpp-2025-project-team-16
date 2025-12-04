@@ -15,7 +15,6 @@ import com.fitquest.app.model.login.SignupRequest
 import com.fitquest.app.ui.viewmodels.AuthViewModel
 import com.fitquest.app.ui.viewmodels.AuthViewModelFactory
 import kotlin.getValue
-import android.util.Log
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import com.fitquest.app.util.animateLogo
@@ -74,11 +73,36 @@ class SignupStep1Fragment : Fragment() {
         val confirmPassword = binding.etConfirmPassword.text.toString()
 
         return when {
-            email.isEmpty() -> { binding.etEmail.error = "Email is required"; false }
-            username.isEmpty() -> { binding.etHeroName.error = "Username is required"; false }
-            password.isEmpty() -> { binding.etPassword.error = "Password is required"; false }
-            password != confirmPassword -> { binding.etConfirmPassword.error = "Passwords do not match"; false }
-            password.length < 6 -> { binding.etPassword.error = "Password must be at least 6 characters"; false }
+            email.isEmpty() -> {
+                Toast.makeText(requireContext(),
+                "Email is required",
+                Toast.LENGTH_SHORT
+            ).show(); false }
+            username.isEmpty() -> {
+                Toast.makeText(requireContext(),
+                "Username is required",
+                Toast.LENGTH_SHORT
+            ).show(); false }
+            password.isEmpty() -> {
+                Toast.makeText(requireContext(),
+                    "Password is required",
+                    Toast.LENGTH_SHORT
+            ).show(); false }
+            password.length < 6 -> {
+                Toast.makeText(requireContext(),
+                    "Password must be at least 6 characters",
+                    Toast.LENGTH_SHORT
+                ).show(); false }
+            confirmPassword.isEmpty() -> {
+                Toast.makeText(requireContext(),
+                    "Confirm Password is required",
+                    Toast.LENGTH_SHORT
+                ).show(); false }
+            password != confirmPassword -> {
+                Toast.makeText(requireContext(),
+                    "Passwords do not match",
+                    Toast.LENGTH_SHORT
+                ).show(); false }
             else -> true
         }
     }
@@ -87,8 +111,6 @@ class SignupStep1Fragment : Fragment() {
         inputEmail = binding.etEmail.text.toString().trim()
         inputName = binding.etHeroName.text.toString().trim()
         inputPassword = binding.etPassword.text.toString().trim()
-
-        Log.d("SignupStep1", "REQUEST → email=$inputEmail, name=$inputName, pw=$inputPassword")
 
         authViewModel.signup(SignupRequest(name = inputName, email = inputEmail, password = inputPassword))
     }
@@ -101,7 +123,7 @@ class SignupStep1Fragment : Fragment() {
                     authViewModel.resetSignupResult()
                     val body = result.data
                     TokenManager.saveToken(requireContext(), body.token ?: "", inputEmail, inputName)
-                    Toast.makeText(requireContext(), body.message ?: "Signup success!", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(requireContext(), body.message, Toast.LENGTH_SHORT).show()
                     val action = SignupStep1FragmentDirections
                         .actionSignupStep1FragmentToSignupStep2Fragment(
                             email = inputEmail,
@@ -112,30 +134,13 @@ class SignupStep1Fragment : Fragment() {
                 }
                 is NetworkResult.ServerError -> {
                     authViewModel.resetSignupResult()
-                    Toast.makeText(requireContext(), "Signup failed: ${result.code}", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(requireContext(), "Invalid email or password", Toast.LENGTH_SHORT).show()
                 }
                 is NetworkResult.NetworkError -> {
                     authViewModel.resetSignupResult()
                     Toast.makeText(requireContext(), "Network error: ${result.exception.localizedMessage}", Toast.LENGTH_SHORT).show()
                 }
             }
-        }
-    }
-
-    // SignupStep1Fragment.kt 안에 추가 (validateInputs 아래쪽에)
-    internal fun validateInputsForTest(
-        email: String,
-        username: String,
-        password: String,
-        confirm: String
-    ): Boolean {
-        return when {
-            email.isEmpty() -> false
-            username.isEmpty() -> false
-            password.isEmpty() -> false
-            password != confirm -> false
-            password.length < 6 -> false
-            else -> true
         }
     }
 

@@ -2,7 +2,6 @@ package com.fitquest.app.ui.fragments.login
 
 import android.graphics.Color
 import android.os.Bundle
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -50,12 +49,14 @@ class LoginEmailFragment : Fragment() {
         continueButton.setBackgroundColor(Color.RED)
 
         continueButton.setOnClickListener {
-            Log.d("DEBUG", "button = $continueButton")
             val email = emailInput.text.toString().trim()
             if (email.isNotEmpty()) {
                 checkEmailExists(email)
             } else {
-                emailInput.error = "Please enter your email!"
+                Toast.makeText(requireContext(),
+                    "Please enter your email!",
+                    Toast.LENGTH_SHORT
+                ).show()
             }
         }
 

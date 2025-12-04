@@ -3,7 +3,7 @@
 An AI-powered virtual sports personal trainer (PT) application.  
 FitQuest leverages smartphone cameras and AI models to provide real-time posture correction, personalized training plans, smart equipment recommendations, and a social sports-mate matching feature.  
 
-![Application Screenshot](./docs/images/wireframe1130.png)
+![My First Board2](https://github.com/user-attachments/assets/bab8025f-720e-42e7-9595-9b11f41468e8)
 
 ### Screen video for iteration is provided in this link [video](./docs/video/Screen_Recording_20251127_151316_FitQuest.mp4)
 

@@ -8,7 +8,7 @@ This guide describes how to set up **Pose VLM** and **Django server** on your lo
 
 You need the project code **both on the remote server and your local machine**:
 
-- **Remote Server:** Django and POSVLM server processes need the code.
+- **Remote Server:** Django and Pose VLM processes need the code.
 - **Local Machine:** Android Studio requires the code to connect to the server and test the app.
 
 **Option 1: Clone via Git**
@@ -111,5 +111,6 @@ python manage.py runserver 0.0.0.0:8080
 ### 3-3. Launch Android Studio App (Local Machine)
 
 - Open the Android Studio project with the local repository
-- Connect the app to the server via the forwarded port `8004`.
-
+- Connect your smartphone via USB.
+- Run the app on your device.
+- The app will communicate with the server through the forwarded port `8004`.

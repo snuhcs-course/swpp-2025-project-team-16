@@ -6,7 +6,6 @@ import com.fitquest.app.data.remote.ScheduleApiService
 import com.fitquest.app.model.DailyWorkoutItem
 import com.fitquest.app.model.Exercise
 import com.fitquest.app.model.Schedule
-import com.fitquest.app.model.WorkoutPlan
 import com.fitquest.app.repository.ScheduleRepository
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.advanceUntilIdle

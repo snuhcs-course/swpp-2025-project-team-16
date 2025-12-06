@@ -31,6 +31,7 @@ import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 import androidx.core.content.ContextCompat
 import com.fitquest.app.R
+import com.fitquest.app.data.remote.ServiceLocator
 
 class SignupStep2Fragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener {
 
@@ -38,7 +39,7 @@ class SignupStep2Fragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener 
     private val binding get() = _binding!!
 
     private val authViewModel: AuthViewModel by viewModels {
-        AuthViewModelFactory(RetrofitClient.authApiService, requireContext())
+        AuthViewModelFactory(ServiceLocator.authApiService, requireContext())
     }
 
     private val args: SignupStep2FragmentArgs by navArgs()

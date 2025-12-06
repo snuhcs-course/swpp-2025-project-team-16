@@ -2,10 +2,10 @@ package com.fitquest.app.ui.viewmodels
 
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import com.fitquest.app.MainDispatcherRule
-import com.fitquest.app.data.remote.EndSessionRequest
 import com.fitquest.app.data.remote.SessionApiService
-import com.fitquest.app.data.remote.StartSessionRequest
+import com.fitquest.app.model.EndSessionRequest
 import com.fitquest.app.model.Session
+import com.fitquest.app.model.StartSessionRequest
 import com.fitquest.app.model.WorkoutResult
 import com.fitquest.app.repository.SessionRepository
 import com.fitquest.app.ui.coachutils.PoseLandmarkerHelper
@@ -84,7 +84,7 @@ class AiCoachViewModelTest {
     fun `pauseTraining updates LiveData correctly`() =runTest{
         // Start training first
         Mockito.`when`(repository.startSession(StartSessionRequest("squat"))).thenReturn(Response.success(Session(activity="squat")))
-        Mockito.`when`(repository.endSession(0, EndSessionRequest(0,0,0))).thenReturn(Response.success(Session(activity="squat")))
+        Mockito.`when`(repository.endSession(0, EndSessionRequest(0, 0, 0))).thenReturn(Response.success(Session(activity="squat")))
         viewModel.beginTraining("squat",0)
         // Then pause
         advanceUntilIdle()

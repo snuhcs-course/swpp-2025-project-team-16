@@ -27,8 +27,7 @@ class JourneyViewModel(
                 val now = now()
                 val isUpcoming = scheduleEnd.isAfter(now)
                 println("Schedule: ${it.scheduledDate} ${it.endTime}, Now: $now, IsUpcoming: $isUpcoming")
-                scheduleEnd.isAfter(now) || scheduleEnd.isEqual(now)
-                it.status == "planned"
+                (scheduleEnd.isAfter(now) || scheduleEnd.isEqual(now)) && it.status == "planned"
             }
 
             val grouped = upcoming.groupBy { it.scheduledDate }

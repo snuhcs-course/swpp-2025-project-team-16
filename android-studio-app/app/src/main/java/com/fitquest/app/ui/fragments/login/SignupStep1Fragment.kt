@@ -17,6 +17,7 @@ import com.fitquest.app.ui.viewmodels.AuthViewModelFactory
 import kotlin.getValue
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
+import com.fitquest.app.data.remote.ServiceLocator
 import com.fitquest.app.util.animateLogo
 
 class SignupStep1Fragment : Fragment() {
@@ -25,7 +26,7 @@ class SignupStep1Fragment : Fragment() {
     private val binding get() = _binding!!
 
     private val authViewModel: AuthViewModel by viewModels {
-        AuthViewModelFactory(RetrofitClient.authApiService, requireContext())
+        AuthViewModelFactory(ServiceLocator.authApiService, requireContext())
     }
 
     private val args: SignupStep1FragmentArgs by navArgs()

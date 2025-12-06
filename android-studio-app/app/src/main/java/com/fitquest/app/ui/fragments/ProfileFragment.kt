@@ -41,11 +41,12 @@ class ProfileFragment() : Fragment() {
     private var _binding: FragmentProfileBinding? = null
     private val binding get() = _binding!!
     private val historyViewModel: HistoryViewModel by viewModels {
-        HistoryViewModelFactory(RetrofitClient.dailySummaryApiService, RetrofitClient.scheduleApiService, RetrofitClient.sessionApiService)
+        HistoryViewModelFactory(ServiceLocator.dailySummaryApiService, ServiceLocator.scheduleApiService,
+            ServiceLocator.sessionApiService)
     }
 
     private val userViewModel: UserViewModel by viewModels {
-        UserViewModelFactory(RetrofitClient.userApiService)
+        UserViewModelFactory(ServiceLocator.userApiService)
     }
 
     private lateinit var historyAdapter: HistoryAdapter

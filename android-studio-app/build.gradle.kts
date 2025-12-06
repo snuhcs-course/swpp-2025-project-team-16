@@ -4,6 +4,7 @@ plugins {
     id("com.android.library") version "8.12.0" apply false
     id("org.jetbrains.kotlin.android") version "2.2.0" apply false
     id("jacoco")
+
 }
 
 
@@ -20,3 +21,4 @@ buildscript {
 tasks.register<Delete>("clean") {
     delete(rootProject.buildDir)
 }
+

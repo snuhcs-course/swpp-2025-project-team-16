@@ -11,6 +11,7 @@ import androidx.core.view.forEach
 import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.ui.setupWithNavController
 import com.fitquest.app.data.remote.RetrofitClient
+import com.fitquest.app.data.remote.ServiceLocator
 import com.fitquest.app.databinding.ActivityMainBinding
 import com.fitquest.app.model.InitProgress
 import com.fitquest.app.ui.viewmodels.AiCoachViewModel
@@ -24,13 +25,13 @@ class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
     private val mainActivityViewModel: MainActivityViewModel by viewModels {
         MainActivityViewModelFactory(
-            RetrofitClient.scheduleApiService,
-            RetrofitClient.dailySummaryApiService
+            ServiceLocator.scheduleApiService,
+            ServiceLocator.dailySummaryApiService
         )
     }
 
     private val coachVm: AiCoachViewModel by viewModels {
-        AiCoachViewModelFactory(RetrofitClient.sessionApiService)
+        AiCoachViewModelFactory(ServiceLocator.sessionApiService)
     }
 
     private val navController by lazy {

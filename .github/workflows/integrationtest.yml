@@ -28,10 +28,7 @@ jobs:
       # 4. Android SDK 설치
       - name: Install Android SDK
         uses: android-actions/setup-android@v3
-        
-      - name: Build project
-        run: ./gradlew build
-        working-directory: android-studio-app
+      
 
 
       # 5. Managed Device Coverage 실행

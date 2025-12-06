@@ -1,43 +1,36 @@
-name: Android Instrumentation Coverage
+name: Android Coverage Report
 
 on:
+  workflow_dispatch: # 수동 실행
   push:
     branches: [ "iteration-final-test" ]
-  pull_request:
 
 jobs:
-  android-test-coverage:
+  coverage:
     runs-on: ubuntu-latest
-
+    defaults:
+      run:
+        working-directory: android-studio-app
     steps:
-      # 1. 체크아웃
-      - name: Checkout
+      - name: Checkout source
         uses: actions/checkout@v4
 
-      # 2. JDK 설치
-      - name: Set up JDK 17
+      - name: Set up JDK
         uses: actions/setup-java@v4
         with:
-          distribution: temurin
-          java-version: 17
+          java-version: '17'
+          distribution: 'temurin'
 
-      # 3. Gradle 캐시
-      - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@v3
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
 
-      # 4. Android SDK 설치
-      - name: Install Android SDK
-        uses: android-actions/setup-android@v3
-      
+      # 이미 instrumentation test를 통해 .ec 파일이 생성되어 있다고 가정
+      # 여기서는 리포트만 생성
+      - name: Generate Jacoco coverage report
+        run: ./gradlew pixel6DebugAndroidTestCoverage
 
-
-      # 5. Managed Device Coverage 실행
-      - name: Run Instrumentation Coverage
-        run: ./gradlew :app:pixel6DebugAndroidTestCoverage
-        working-directory: android-studio-app
-      # 6. 커버리지 리포트 아티팩트 업로드
-      - name: Upload Coverage Report
+      - name: Upload coverage report artifact
         uses: actions/upload-artifact@v4
         with:
           name: coverage-report
-          path: android-studio-app/app/build/reports/androidTests/managedDevice/coverage/
+          path: app/build/reports/jacoco/instrumentedTestCoverageReport/html

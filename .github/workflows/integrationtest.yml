@@ -47,9 +47,9 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: coverage-report
-          path: app/build/reports/
+          path: ./app/build/reports/jacoco/pixel6DebugAndroidTestCoverage/html
       - name: Upload problem report artifact
         uses: actions/upload-artifact@v4
         with:
           name: problem-report
-          path: app/build/
+          path: ./app/build/reports/jacoco/pixel6DebugAndroidTestCoverage/html/

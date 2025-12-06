@@ -34,11 +34,7 @@ jobs:
           name: coverage-ec
           path: app/
       - name: Check Jacoco report
-        run: |
-          pwd
-          ls -R ./
-          
-
+        run: ./gradlew build
           
       # 이미 instrumentation test를 통해 .ec 파일이 생성되어 있다고 가정
       # 여기서는 리포트만 생성

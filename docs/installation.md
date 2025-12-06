@@ -50,6 +50,10 @@ Create the conda environment:
 
 ```bash
 conda env create -f environment.yml
+conda activate vlm
+cd rtmpose3d
+python -m pip install -r requirements.txt
+python -m pip install -e .
 
 ```
 

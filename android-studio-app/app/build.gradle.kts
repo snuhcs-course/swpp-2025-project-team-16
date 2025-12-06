@@ -108,6 +108,18 @@ android {
         })
     }
 
+    tasks.register<JacocoReport>("pixel6DebugAndroidTestCoverage") {
+        dependsOn("pixel6DebugAndroidTest")
+        reports {
+            xml.required.set(true)
+            html.required.set(true)
+        }
+        classDirectories.setFrom(fileTree("${buildDir}/intermediates/javac/debug"))
+        sourceDirectories.setFrom(files("src/main/java"))
+        executionData.setFrom(fileTree("${buildDir}") {
+            include("**/*.exec", "**/*.ec")
+        })
+    }
 
 }
 

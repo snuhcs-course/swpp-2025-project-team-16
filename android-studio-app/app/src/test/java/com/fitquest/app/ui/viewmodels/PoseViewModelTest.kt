@@ -14,7 +14,7 @@ class PoseViewModelTest {
     val main = MainDispatcherRule()
     @Before
     fun setUp() {
-        TODO("Not yet implemented")
+
     }
 
     @Test

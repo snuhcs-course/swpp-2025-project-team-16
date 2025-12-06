@@ -126,7 +126,7 @@ android {
         val kotlinDebugTree = fileTree("${project(":app").buildDir}/tmp/kotlin-classes/debug") {
             exclude(fileFilter)
         }
-        val javaDebugTree = fileTree("${project(":app").buildDir}/intermediates/javac/debug/classes") {
+        val javaDebugTree = fileTree("${project(":app").buildDir}/intermediates/javac/debug/compileDebugJavaWithJavac/classes") {
             exclude(fileFilter)
         }
 

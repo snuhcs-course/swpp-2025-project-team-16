@@ -137,9 +137,7 @@ android {
         classDirectories.setFrom(files(kotlinDebugTree, javaDebugTree))
 
         // 여기서 coverage.ec 파일을 읽어옵니다
-        executionData.setFrom(fileTree("${project(":app").buildDir}/outputs/code_coverage/debugAndroidTest/connected/SM-S918N - 13") {
-            include("coverage.ec")
-        })
+        executionData.setFrom(files("./coverage.ec"))
     }
 
 }

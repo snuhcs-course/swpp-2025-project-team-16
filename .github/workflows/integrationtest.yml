@@ -41,7 +41,8 @@ jobs:
       # 여기서는 리포트만 생성
       - name: Generate Jacoco coverage report
         run: ./gradlew pixel6DebugAndroidTestCoverage --rerun-tasks
-
+      - name: Check Jacoco report
+        run: ls -R ./
       - name: Upload coverage report artifact
         uses: actions/upload-artifact@v4
         with:

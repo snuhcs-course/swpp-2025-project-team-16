@@ -15,6 +15,7 @@ You need the project code **both on the remote server and your local machine**:
 
 ```bash
 git clone --recursive https://github.com/snuhcs-course/swpp-2025-project-team-16.git
+git submodule update --init --recursive
 
 ```
 

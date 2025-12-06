@@ -137,7 +137,7 @@ android {
         classDirectories.setFrom(files(kotlinDebugTree, javaDebugTree))
 
         // 여기서 coverage.ec 파일을 읽어옵니다
-        executionData.setFrom(files("./coverage.ec"))
+        executionData.setFrom(files("**/coverage.ec"))
     }
 
 }

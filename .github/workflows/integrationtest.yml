@@ -32,8 +32,11 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: coverage-ec
-          path: android-studio-app/
+          path: app/
+      - name: Check Jacoco report
+        run: ls -R ./
 
+          
       # 이미 instrumentation test를 통해 .ec 파일이 생성되어 있다고 가정
       # 여기서는 리포트만 생성
       - name: Generate Jacoco coverage report

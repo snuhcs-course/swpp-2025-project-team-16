@@ -1,9 +1,16 @@
 package com.fitquest.app.ui.viewmodels
 
+import androidx.arch.core.executor.testing.InstantTaskExecutorRule
+import com.fitquest.app.MainDispatcherRule
 import org.junit.Assert.*
+import org.junit.Rule
 import org.junit.Test
 
 class HistoryViewModelTest {
+    @get:Rule
+    val instantExecutorRule = InstantTaskExecutorRule()
+    @get:Rule
+    val main = MainDispatcherRule()
     @Test
     fun getDailyHistories() {
     }

@@ -60,7 +60,7 @@ android {
                 create<com.android.build.api.dsl.ManagedVirtualDevice>("pixel6") {
                     device = "Pixel 6"
                     apiLevel = 33
-                    systemImageSource = "aosp"
+                    systemImageSource = "google"
                 }
             }
         }

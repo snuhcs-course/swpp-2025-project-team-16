@@ -1,6 +1,5 @@
 package com.fitquest.app.ui.viewmodels
 
-import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -27,24 +26,14 @@ class HistoryViewModel(
             val now = LocalDateTime.now(ZoneId.of("Asia/Seoul"))
 
             val schedules = scheduleRepository.getSchedules()
-            Log.d("HistoryVM", "Loaded schedules = ${schedules.size}")
 
             val pastSchedules = schedules.filter {
                 it.status != "planned"
             }
-            Log.d("HistoryVM", "Past schedules = ${pastSchedules.size}")
-            pastSchedules.forEach {
-                Log.d("HistoryVM", "Past schedule: ${it.scheduledDate} ${it.startTime} ~ ${it.endTime}")
-            }
 
             val sessions = sessionRepository.getSessions()
-            Log.d("HistoryVM", "Loaded sessions = ${sessions.size}")
             val pastSessions = sessions.filter {
                 (it.createdAt?.isBefore(now) ?: false) && it.schedule == null
-            }
-            Log.d("HistoryVM", "Past sessions (schedule == null) = ${pastSessions.size}")
-            pastSessions.forEach {
-                Log.d("HistoryVM", "Past session: createdAt=${it.createdAt}, schedule=${it.schedule}")
             }
 
             val dailySummaries = dailySummaryRepository.getDailySummaries()
@@ -53,8 +42,6 @@ class HistoryViewModel(
             }
 
             val allDates = (pastSchedules.map { it.scheduledDate } + pastSessions.map { it.createdAt!!.toLocalDate() }).distinct()
-
-            Log.d("HistoryVM", "All unique dates = $allDates")
 
             val dailyItems = allDates.map { date ->
                 DailyHistoryItem(

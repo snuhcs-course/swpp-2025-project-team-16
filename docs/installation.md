@@ -14,7 +14,7 @@ You need the project code **both on the remote server and your local machine**:
 **Option 1: Clone via Git**
 
 ```bash
-git clone https://github.com/snuhcs-course/swpp-2025-project-team-16.git
+git clone --recursive https://github.com/snuhcs-course/swpp-2025-project-team-16.git
 
 ```
 

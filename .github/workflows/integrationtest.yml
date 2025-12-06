@@ -23,14 +23,24 @@ jobs:
 
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
+      - name: Upload coverage.ec
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-ec
+          path: '**/coverage.ec'
+      - name: Download coverage.ec
+        uses: actions/download-artifact@v4
+        with:
+          name: coverage-ec
+          path: android-studio-app/
 
       # 이미 instrumentation test를 통해 .ec 파일이 생성되어 있다고 가정
       # 여기서는 리포트만 생성
       - name: Generate Jacoco coverage report
-        run: ./gradlew pixel6DebugAndroidTestCoverage
+        run: ./gradlew pixel6DebugAndroidTestCoverage --rerun-tasks
 
       - name: Upload coverage report artifact
         uses: actions/upload-artifact@v4
         with:
           name: coverage-report
-          path: app/build/reports/jacoco/instrumentedTestCoverageReport/html
+          path: app/build/reports/jacoco/pixel6DebugAndroidTestCoverage/html

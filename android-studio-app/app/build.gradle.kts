@@ -109,15 +109,36 @@ android {
     }
 
     tasks.register<JacocoReport>("pixel6DebugAndroidTestCoverage") {
-        dependsOn("pixel6DebugAndroidTest")
         reports {
             xml.required.set(true)
             html.required.set(true)
         }
-        classDirectories.setFrom(fileTree("${buildDir}/intermediates/javac/debug"))
-        sourceDirectories.setFrom(files("src/main/java"))
-        executionData.setFrom(fileTree("${buildDir}") {
-            include("**/*.exec", "**/*.ec")
+
+        val fileFilter = listOf(
+            "**/R.class",
+            "**/R$*.class",
+            "**/BuildConfig.*",
+            "**/Manifest*.*",
+            "**/*Test*.*"
+        )
+
+        // Kotlin 클래스와 Java 클래스 디렉토리 모두 잡아줍니다
+        val kotlinDebugTree = fileTree("${project(":app").buildDir}/tmp/kotlin-classes/debug") {
+            exclude(fileFilter)
+        }
+        val javaDebugTree = fileTree("${project(":app").buildDir}/intermediates/javac/debug/classes") {
+            exclude(fileFilter)
+        }
+
+
+        val mainSrc = "${project(":app").projectDir}/src/main/java"
+
+        sourceDirectories.setFrom(files(mainSrc))
+        classDirectories.setFrom(files(kotlinDebugTree, javaDebugTree))
+
+        // 여기서 coverage.ec 파일을 읽어옵니다
+        executionData.setFrom(fileTree("${project(":app").buildDir}/outputs/code_coverage/debugAndroidTest/connected/SM-S918N - 13") {
+            include("coverage.ec")
         })
     }
 

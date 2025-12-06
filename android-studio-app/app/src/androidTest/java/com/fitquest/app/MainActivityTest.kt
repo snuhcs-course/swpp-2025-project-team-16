@@ -110,7 +110,6 @@ class MainActivityTest {
                     0, click()
                 )
             )
-        // Thread.sleep(10000)
         onView(withId(R.id.btnStartSession)).perform(click())
         onView(withId(R.id.btnStartWorkout)).perform(click())
         onView(withId(R.id.btnSwitchCamera)).perform(click())

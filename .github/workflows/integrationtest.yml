@@ -1,53 +1,36 @@
-name: Android Instrumentation Coverage
+name: Android Coverage Report
 
 on:
+  workflow_dispatch: # 수동 실행
   push:
-    branches: [ "iteration-final-test" ]
-  pull_request:
+    branches: [ "main" ]
 
 jobs:
-  android-test-coverage:
+  coverage:
     runs-on: ubuntu-latest
-
-    steps:
-      # 1. 체크아웃
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      # 2. JDK 설치
-      - name: Set up JDK 17
-        uses: actions/setup-java@v4
-        with:
-          distribution: temurin
-          java-version: 17
-
-      # 3. Gradle 캐시
-      - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@v3
-      - name: Install
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y wget unzip
-          wget https://dl.google.com/android/repository/commandlinetools-linux-10406996_latest.zip
-          mkdir -p $HOME/android-sdk/cmdline-tools/latest
-          unzip -q commandlinetools-linux-10406996_latest.zip -d $HOME/android-sdk/cmdline-tools/latest
-          echo "ANDROID_HOME=$HOME/android-sdk" >> $GITHUB_ENV
-          echo "PATH=$ANDROID_HOME/cmdline-tools/latest/bin:$ANDROID_HOME/platform-tools:$PATH" >> $GITHUB_ENV
-          
-
-      # 4. Android SDK 설치
-      - name: Install Android SDK
-        run: sdkmanager --install "system-images;android-33;google-atd;arm64-v8a"
-      
-
-
-      # 5. Managed Device Coverage 실행
-      - name: Run Instrumentation Coverage
-        run: ./gradlew :app:pixel6DebugAndroidTestCoverage
+    defaults:
+      run:
         working-directory: android-studio-app
-      # 6. 커버리지 리포트 아티팩트 업로드
-      - name: Upload Coverage Report
-        uses: actions/upload-artifact@v4
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v3
+
+      - name: Set up JDK
+        uses: actions/setup-java@v3
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+
+      # 이미 instrumentation test를 통해 .ec 파일이 생성되어 있다고 가정
+      # 여기서는 리포트만 생성
+      - name: Generate Jacoco coverage report
+        run: ./gradlew :app:connectedDebugAndroidTest
+
+      - name: Upload coverage report artifact
+        uses: actions/upload-artifact@v3
         with:
           name: coverage-report
-          path: android-studio-app/app/build/reports/androidTests/managedDevice/coverage/
+          path: app/build/reports/jacoco/instrumentedTestCoverageReport/html

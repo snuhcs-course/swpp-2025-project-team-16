@@ -35,6 +35,8 @@ android {
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
+
+        isCoreLibraryDesugaringEnabled = true
     }
 
     kotlinOptions {
@@ -100,8 +102,7 @@ dependencies {
     implementation("androidx.coordinatorlayout:coordinatorlayout:1.2.0")
     implementation("com.google.android.material:material:1.12.0")
 
-    // ThreeTenABP (java.time backport)
-    implementation("com.jakewharton.threetenabp:threetenabp:1.4.4")
+    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.0.4")
 
     // Image loading
     implementation("com.github.bumptech.glide:glide:4.16.0")
@@ -179,7 +180,7 @@ dependencies {
     testImplementation("androidx.arch.core:core-testing:2.2.0")
 
     // --- ✅ Robolectric ---
-    testImplementation("org.robolectric:robolectric:4.12.2")
+    testImplementation("org.robolectric:robolectric:4.13")
 
     // --- ✅ Fragment / Activity 테스트 지원 (optional but recommended) ---
     testImplementation("androidx.fragment:fragment-testing:1.8.2")

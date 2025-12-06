@@ -1,7 +1,7 @@
 package com.fitquest.app.model
 
 import com.google.gson.annotations.SerializedName
-import org.threeten.bp.LocalDateTime
+import java.time.LocalDateTime
 
 data class Session(
     val id: Int? = null,

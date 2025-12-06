@@ -2,7 +2,6 @@ package com.fitquest.app.repository
 
 import android.content.Context
 import com.fitquest.app.data.remote.AuthApiService
-import com.fitquest.app.data.remote.TokenManager
 import com.fitquest.app.model.login.EmailCheckResponse
 import com.fitquest.app.model.login.InitialCountRequest
 import com.fitquest.app.model.login.InitialCountResponse

@@ -30,12 +30,14 @@ jobs:
         uses: android-actions/setup-android@v3
         
       - name: Build project
-        run: ./android-studio-app/gradlew build
+        run: ./gradlew build
+        working-directory: android-studio-app
+
 
       # 5. Managed Device Coverage 실행
       - name: Run Instrumentation Coverage
-        run: ./android-studio-app/gradlew pixel6DebugAndroidTestCoverage
-
+        run: ./gradlew pixel6DebugAndroidTestCoverage
+        working-directory: android-studio-app
       # 6. 커버리지 리포트 아티팩트 업로드
       - name: Upload Coverage Report
         uses: actions/upload-artifact@v4

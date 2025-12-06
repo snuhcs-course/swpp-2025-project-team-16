@@ -1,6 +1,6 @@
 package com.fitquest.app.model
 
-import org.threeten.bp.LocalDate
+import java.time.LocalDate
 
 data class DailyWorkoutItem(
     val date: LocalDate,

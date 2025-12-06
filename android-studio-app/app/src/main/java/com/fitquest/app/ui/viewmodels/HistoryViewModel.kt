@@ -10,8 +10,8 @@ import com.fitquest.app.repository.DailySummaryRepository
 import com.fitquest.app.repository.ScheduleRepository
 import com.fitquest.app.repository.SessionRepository
 import kotlinx.coroutines.launch
-import org.threeten.bp.LocalDateTime
-import org.threeten.bp.ZoneId
+import java.time.LocalDateTime
+import java.time.ZoneId
 
 class HistoryViewModel(
     private val dailySummaryRepository: DailySummaryRepository,

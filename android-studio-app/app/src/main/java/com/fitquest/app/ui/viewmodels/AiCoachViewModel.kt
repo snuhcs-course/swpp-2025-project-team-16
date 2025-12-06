@@ -172,16 +172,6 @@ class AiCoachViewModel(
         _formScore.value = score
     }
 
-    private fun saveWorkoutSession() {
-        val exercise = _selectedExercise.value ?: ""
-        val reps = _repCount.value ?: 0
-        val xp = _points.value ?: 0
-        val avgScore = _formScore.value ?: 0
-
-        // TODO: backend/local DB 저장
-        // exercise, reps, xp, avgScore, timestamp 등
-    }
-
     // ==========================
     // Pose Landmarker settings
     // (원래 MainViewModel가 하던 일)

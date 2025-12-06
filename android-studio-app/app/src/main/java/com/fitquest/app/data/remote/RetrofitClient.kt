@@ -5,10 +5,10 @@ import com.google.gson.GsonBuilder
 import com.google.gson.JsonDeserializer
 import okhttp3.ConnectionPool
 import okhttp3.OkHttpClient
-import org.threeten.bp.LocalDate
-import org.threeten.bp.LocalDateTime
-import org.threeten.bp.LocalTime
-import org.threeten.bp.OffsetDateTime
+import java.time.LocalDate
+import java.time.LocalDateTime
+import java.time.LocalTime
+import java.time.OffsetDateTime
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import java.util.concurrent.TimeUnit

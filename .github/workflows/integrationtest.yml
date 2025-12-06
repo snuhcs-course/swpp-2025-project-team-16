@@ -32,15 +32,30 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: coverage-ec
-          path: android-studio-app/
-
+          path: app/
+      - name: Check Jacoco report
+        run: ./gradlew build
+          
       # 이미 instrumentation test를 통해 .ec 파일이 생성되어 있다고 가정
       # 여기서는 리포트만 생성
       - name: Generate Jacoco coverage report
         run: ./gradlew pixel6DebugAndroidTestCoverage --rerun-tasks
-
+      - name: Check Jacoco report
+        run: |
+          pwd
+          ls -R ./
       - name: Upload coverage report artifact
         uses: actions/upload-artifact@v4
         with:
           name: coverage-report
-          path: app/build/reports/jacoco/pixel6DebugAndroidTestCoverage/html
+          path: /home/runner/work/swpp-2025-project-team-16/swpp-2025-project-team-16/android-studio-app/app/build/reports/jacoco/pixel6DebugAndroidTestCoverage/html
+      - name: Upload problem report artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: problem-report
+          path: |
+           /home/runner/work/swpp-2025-project-team-16/swpp-2025-project-team-16/android-studio-app/app/build/reports/jacoco/pixel6DebugAndroidTestCoverage/html
+           /home/runner/work/swpp-2025-project-team-16/swpp-2025-project-team-16/android-studio-app/app/build/reports/jacoco/pixel6DebugAndroidTestCoverage/*.xml
+
+
+          

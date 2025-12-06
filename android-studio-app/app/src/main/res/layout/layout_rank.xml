@@ -100,7 +100,8 @@
                             android:textColor="@color/silver"
                             android:textStyle="bold"
                             android:textSize="13sp"
-                            android:gravity="center" />
+                            android:gravity="center"
+                            android:layout_marginBottom="10dp"/>
                     </LinearLayout>
 
                     <!-- 🥇 1st -->
@@ -132,7 +133,8 @@
                             android:textColor="@color/gold"
                             android:textStyle="bold"
                             android:textSize="14sp"
-                            android:gravity="center" />
+                            android:gravity="center"
+                            android:layout_marginBottom="10dp"/>
                     </LinearLayout>
 
                     <!-- 🥉 3rd -->
@@ -165,7 +167,8 @@
                             android:textColor="@color/bronze"
                             android:textStyle="bold"
                             android:textSize="13sp"
-                            android:gravity="center" />
+                            android:gravity="center"
+                            android:layout_marginBottom="10dp"/>
                     </LinearLayout>
 
                 </LinearLayout>
@@ -176,7 +179,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="vertical"
-                    android:layout_marginTop="12dp">
+                    android:layout_marginTop="20dp">
 
                     <TextView
                         android:layout_width="match_parent"

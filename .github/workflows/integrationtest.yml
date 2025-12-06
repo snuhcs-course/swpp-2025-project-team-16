@@ -3,7 +3,7 @@ name: Android Coverage Report
 on:
   workflow_dispatch: # 수동 실행
   push:
-    branches: [ "main" ]
+    branches: [ "iteration-final-test" ]
 
 jobs:
   coverage:

@@ -19,7 +19,7 @@ jobs:
         uses: actions/setup-java@v4
         with:
           distribution: temurin
-          java-version: 17
+          java-version: 11
 
       # 3. Gradle 캐시
       - name: Setup Gradle
@@ -28,16 +28,17 @@ jobs:
       # 4. Android SDK 설치
       - name: Install Android SDK
         uses: android-actions/setup-android@v3
+        
       - name: Build project
-        run: ./gradlew build
+        run: ./android-studio-app/gradlew build
 
       # 5. Managed Device Coverage 실행
       - name: Run Instrumentation Coverage
-        run: ./gradlew pixel6DebugAndroidTestCoverage
+        run: ./android-studio-app/gradlew pixel6DebugAndroidTestCoverage
 
       # 6. 커버리지 리포트 아티팩트 업로드
       - name: Upload Coverage Report
         uses: actions/upload-artifact@v4
         with:
           name: coverage-report
-          path: app/build/reports/androidTests/managedDevice/coverage/
+          path: android-studio-app/app/build/reports/androidTests/managedDevice/coverage/

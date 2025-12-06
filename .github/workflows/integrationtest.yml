@@ -52,13 +52,14 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: coverage-report
-          path: /app/build/reports/jacoco/pixel6DebugAndroidTestCoverage/html
+          path: /home/runner/work/swpp-2025-project-team-16/swpp-2025-project-team-16/android-studio-app/app/build/reports/jacoco/pixel6DebugAndroidTestCoverage/html
       - name: Upload problem report artifact
         uses: actions/upload-artifact@v4
         with:
           name: problem-report
           path: |
-            app/build/reports/jacoco/pixel6DebugAndroidTestCoverage/html
-            app/build/reports/jacoco/pixel6DebugAndroidTestCoverage/*.xml
+           /home/runner/work/swpp-2025-project-team-16/swpp-2025-project-team-16/android-studio-app/app/build/reports/jacoco/pixel6DebugAndroidTestCoverage/html
+           /home/runner/work/swpp-2025-project-team-16/swpp-2025-project-team-16/android-studio-app/app/build/reports/jacoco/pixel6DebugAndroidTestCoverage/*.xml
+
 
           

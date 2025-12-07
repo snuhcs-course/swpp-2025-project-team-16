@@ -1,0 +1,161 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>SquatCounter.kt</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">app</a> &gt; <a href="index.source.html" class="el_package">com.fitquest.app.ui.coachutils.counter</a> &gt; <span class="el_source">SquatCounter.kt</span></div><h1>SquatCounter.kt</h1><pre class="source lang-java linenums">package com.fitquest.app.ui.coachutils.counter
+
+import kotlin.math.acos
+import kotlin.math.max
+import kotlin.math.min
+import kotlin.math.sqrt
+
+/**
+ * SquatCounter
+ * - 무릎/힙 각도 + 골반 높이 하강량으로 스쿼트 1회 판단
+ * - 입력: MediaPipe NormalizedLandmark (정규화좌표), y는 화면 아래로 증가
+ *
+ * ⚠️ drop(하강량) 계산은 &quot;기준-현재&quot; 또는 &quot;현재-기준&quot; 중 하나를 택해야 합니다.
+ *    아래 구현은 baselinePelvisY - pelvisY (위로 갈수록 y가 작아지는 기준)에 맞춰져 있습니다.
+ *    만약 환경에 따라 부호가 반대라면, drop = (pelvisY - baselinePelvisY) 로 바꿔주세요.
+ */
+<span class="fc" id="L17">class SquatCounter : BaseCounter() {</span>
+
+<span class="fc" id="L19">    enum class Phase { UP, DOWN, BOTTOM, UP_GOING }</span>
+
+<span class="fc" id="L21">    override var count = 0</span>
+<span class="fc" id="L22">    override var phase: String = &quot;UP&quot;</span>
+<span class="fc" id="L23">    private var phaseState: Phase = Phase.UP</span>
+        set(value) {
+<span class="fc" id="L25">            field = value</span>
+<span class="fc" id="L26">            phase = value.name</span>
+<span class="fc" id="L27">        }</span>
+
+    // EMA 상태값
+<span class="fc" id="L30">    private var kneeL = 180.0; private var kneeR = 180.0</span>
+<span class="fc" id="L31">    private var hipL  = 180.0; private var hipR  = 180.0</span>
+    private var pelvisY = 0.0
+    private var emaInit = false
+<span class="fc" id="L34">    private val alpha = 0.98</span>
+
+    // 기준(서있는 자세) 캘리브레이션
+<span class="fc" id="L37">    private var baselinePelvisY = Double.NaN</span>
+<span class="fc" id="L38">    private var calibUntilMs = Long.MIN_VALUE</span>
+
+    // 타이밍
+    private var lastRepMs = 0L
+    private var bottomEnterMs = 0L
+
+    // 임계치(필요시 조정)
+<span class="fc" id="L45">    private val KNEE_UP = 150.0</span>
+<span class="fc" id="L46">    private val KNEE_DOWN_ENTER = 140.0</span>
+<span class="fc" id="L47">    private val KNEE_BOTTOM = 95.0</span>
+<span class="fc" id="L48">    private val KNEE_UP_GOING = 130.0</span>
+
+<span class="fc" id="L50">    private val PELVIS_DROP = 0.07      // 정규화 y 기준 (~12% 이상 하강)</span>
+<span class="fc" id="L51">    private val MIN_REP_INTERVAL = 300  // ms</span>
+<span class="fc" id="L52">    private val MIN_BOTTOM_HOLD = 100   // ms</span>
+
+    override fun reset(nowMs: Long) {
+<span class="fc" id="L55">        count = 0</span>
+<span class="fc" id="L56">        phaseState = Phase.UP</span>
+<span class="fc" id="L57">        emaInit = false</span>
+<span class="fc" id="L58">        baselinePelvisY = Double.NaN</span>
+<span class="fc" id="L59">        lastRepMs = 0L</span>
+<span class="fc" id="L60">        bottomEnterMs = 0L</span>
+<span class="fc" id="L61">        calibUntilMs = nowMs + 800 // 0.8s 동안 기준자세 캡처</span>
+<span class="fc" id="L62">    }</span>
+
+    override fun update(points: FloatArray, nowMs: Long) {
+<span class="pc bpc" id="L65" title="1 of 2 branches missed.">        if (points.size &lt; 33 * 3) return</span>
+
+<span class="fc" id="L67">        fun idx(i: Int) = 3 * i</span>
+        fun v(i: Int) = doubleArrayOf(
+<span class="fc" id="L69">            points[idx(i)].toDouble(),</span>
+<span class="fc" id="L70">            points[idx(i) + 1].toDouble(),</span>
+<span class="fc" id="L71">            points[idx(i) + 2].toDouble()</span>
+<span class="fc" id="L72">        )</span>
+<span class="fc" id="L73">        fun sub(a: DoubleArray, b: DoubleArray) = doubleArrayOf(a[0]-b[0], a[1]-b[1], a[2]-b[2])</span>
+<span class="fc" id="L74">        fun dot(a: DoubleArray, b: DoubleArray) = a[0]*b[0] + a[1]*b[1] + a[2]*b[2]</span>
+        fun nrm(a: DoubleArray): Double {
+<span class="fc" id="L76">            val t = sqrt(dot(a,a))</span>
+<span class="pc bpc" id="L77" title="1 of 2 branches missed.">            return if (t &lt; 1e-8) 1e-8 else t</span>
+        }
+        fun angle(a: DoubleArray, b: DoubleArray): Double {
+<span class="fc" id="L80">            val c = dot(a,b) / (nrm(a)*nrm(b))</span>
+<span class="fc" id="L81">            val clamped = max(-1.0, min(1.0, c))</span>
+<span class="fc" id="L82">            return Math.toDegrees(acos(clamped))</span>
+        }
+
+<span class="fc" id="L85">        val hipLpt = v(23); val hipRpt = v(24)</span>
+<span class="fc" id="L86">        val kneeLpt = v(25); val kneeRpt = v(26)</span>
+<span class="fc" id="L87">        val ankLpt = v(27); val ankRpt = v(28)</span>
+<span class="fc" id="L88">        val shLpt = v(11);  val shRpt = v(12)</span>
+
+<span class="fc" id="L90">        val pelvis = doubleArrayOf((hipLpt[0]+hipRpt[0])/2.0, (hipLpt[1]+hipRpt[1])/2.0, (hipLpt[2]+hipRpt[2])/2.0)</span>
+<span class="fc" id="L91">        val midShoulder = doubleArrayOf((shLpt[0]+shRpt[0])/2.0, (shLpt[1]+shRpt[1])/2.0, (shLpt[2]+shRpt[2])/2.0)</span>
+
+        // 무릎각(좌/우), 힙 굴곡각(좌/우)
+<span class="fc" id="L94">        val kneeLA = angle(sub(hipLpt, kneeLpt), sub(ankLpt, kneeLpt))</span>
+<span class="fc" id="L95">        val kneeRA = angle(sub(hipRpt, kneeRpt), sub(ankRpt, kneeRpt))</span>
+<span class="fc" id="L96">        val hipLA  = angle(sub(midShoulder, hipLpt), sub(kneeLpt, hipLpt))</span>
+<span class="fc" id="L97">        val hipRA  = angle(sub(midShoulder, hipRpt), sub(kneeRpt, hipRpt))</span>
+
+        // EMA
+<span class="fc bfc" id="L100" title="All 2 branches covered.">        if (!emaInit) {</span>
+<span class="fc" id="L101">            kneeL = kneeLA; kneeR = kneeRA; hipL = hipLA; hipR = hipRA; pelvisY = pelvis[1]</span>
+<span class="fc" id="L102">            emaInit = true</span>
+        } else {
+<span class="fc" id="L104">            fun ema(prev: Double, x: Double) = alpha * x + (1 - alpha) * prev</span>
+<span class="fc" id="L105">            kneeL = ema(kneeL, kneeLA); kneeR = ema(kneeR, kneeRA)</span>
+<span class="fc" id="L106">            hipL  = ema(hipL, hipLA);   hipR  = ema(hipR, hipRA)</span>
+<span class="fc" id="L107">            pelvisY = ema(pelvisY, pelvis[1])</span>
+        }
+
+        // 초기 기준자세 수집
+<span class="fc bfc" id="L111" title="All 2 branches covered.">        if (nowMs &lt;= calibUntilMs) {</span>
+<span class="fc bfc" id="L112" title="All 2 branches covered.">            baselinePelvisY = if (baselinePelvisY.isNaN()) pelvisY else 0.9*baselinePelvisY + 0.1*pelvisY</span>
+<span class="fc" id="L113">            phaseState = Phase.UP</span>
+<span class="fc" id="L114">            return</span>
+        }
+<span class="pc bpc" id="L116" title="1 of 2 branches missed.">        if (baselinePelvisY.isNaN()) baselinePelvisY = pelvisY</span>
+
+<span class="fc" id="L118">        val kneeMax = max(kneeL, kneeR)</span>
+<span class="fc" id="L119">        val hipMin  = min(hipL, hipR)</span>
+
+        // ↓ drop 부호가 환경과 맞지 않으면 (pelvisY - baselinePelvisY)로 바꾸세요.
+<span class="fc" id="L122">        val drop = (baselinePelvisY - pelvisY)</span>
+
+<span class="fc bfc" id="L124" title="All 4 branches covered.">        when (phaseState) {</span>
+            Phase.UP -&gt; {
+<span class="fc bfc" id="L126" title="All 2 branches covered.">                if (kneeMax &lt; KNEE_DOWN_ENTER) {</span>
+<span class="fc" id="L127">                    phaseState = Phase.DOWN</span>
+                }
+            }
+            Phase.DOWN -&gt; {
+<span class="fc bfc" id="L131" title="All 2 branches covered.">                if (kneeMax &lt; KNEE_BOTTOM /* &amp;&amp; drop &gt; PELVIS_DROP &amp;&amp; hipMin &lt; 110.0 */) {</span>
+<span class="fc" id="L132">                    phaseState = Phase.BOTTOM</span>
+<span class="fc" id="L133">                    bottomEnterMs = nowMs</span>
+<span class="pc bpc" id="L134" title="1 of 2 branches missed.">                } else if (kneeMax &gt; KNEE_UP) {</span>
+                    // 되돌림
+<span class="nc" id="L136">                    phaseState = Phase.UP</span>
+                }
+            }
+            Phase.BOTTOM -&gt; {
+<span class="fc bfc" id="L140" title="All 2 branches covered.">                if (nowMs - bottomEnterMs &gt;= MIN_BOTTOM_HOLD) {</span>
+<span class="fc" id="L141">                    phaseState = Phase.UP_GOING</span>
+                }
+            }
+            Phase.UP_GOING -&gt; {
+<span class="fc bfc" id="L145" title="All 2 branches covered.">                val canCount = (kneeMax &gt; KNEE_UP) // &amp;&amp; (drop &lt; PELVIS_DROP * 0.5)</span>
+<span class="fc bfc" id="L146" title="All 2 branches covered.">                if (canCount) {</span>
+<span class="pc bpc" id="L147" title="1 of 2 branches missed.">                    if (nowMs - lastRepMs &gt;= MIN_REP_INTERVAL) {</span>
+<span class="fc" id="L148">                        count += 1</span>
+<span class="fc" id="L149">                        lastRepMs = nowMs</span>
+                    }
+<span class="fc" id="L151">                    phaseState = Phase.UP</span>
+<span class="fc bfc" id="L152" title="All 2 branches covered.">                } else if (kneeMax &lt; KNEE_BOTTOM) {// &amp;&amp; drop &gt; PELVIS_DROP) {</span>
+                    // 다시 너무 내려가면 BOTTOM으로 복귀
+<span class="fc" id="L154">                    phaseState = Phase.BOTTOM</span>
+<span class="fc" id="L155">                    bottomEnterMs = nowMs</span>
+                }
+            }
+        }
+<span class="fc" id="L159">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

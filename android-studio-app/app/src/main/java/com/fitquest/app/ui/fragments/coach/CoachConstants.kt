@@ -6,9 +6,9 @@ object CoachConstants {
     const val COUNTDOWN_INTERVAL_MS = 1000L
 
     // Tracking lock FSM
-    const val VIS_THRESH = 0.95f
-    val LOWER_NEEDED = intArrayOf(23, 24, 25, 26, 27, 28)
-    const val LOWER_REQUIRED = 5
+    const val VIS_THRESH = 0.97f
+    val LOWER_NEEDED = intArrayOf(0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23, 24, 25, 26, 27, 28,29,30,31,32)
+    const val LOWER_REQUIRED = 31
     const val BAD_VIS_LIMIT = 12
     const val GOOD_VIS_LIMIT = 12
     const val DISARM_MS_AFTER_UNLOCK = 300L

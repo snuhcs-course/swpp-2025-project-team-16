@@ -8,7 +8,7 @@ import retrofit2.Response
 
 class FakeUserApiService: UserApiService {
     override suspend fun getRankings(): Response<List<RankResponse>> {
-        return Response.success(listOf())
+        return Response.success(listOf(RankResponse(1,"test",100,1)))
     }
 
     override suspend fun getProfile(): User {

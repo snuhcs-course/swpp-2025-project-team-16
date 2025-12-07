@@ -8,10 +8,10 @@ import org.threeten.bp.LocalTime
 
 class FakeScheduleApiService: ScheduleApiService {
     override suspend fun getSchedules(status: String?): List<Schedule> {
-        return listOf(Schedule(scheduledDate = LocalDate.now(), startTime = LocalTime.now(), endTime = LocalTime.now().plusHours(1), activity = "squat",status="planned", repsTarget = 100, repsDone = 0,id=0),
-            Schedule(scheduledDate = LocalDate.now().minusDays(1), startTime = LocalTime.now(),endTime=LocalTime.now(), activity = "squat", status = "missed",id=1),
-            Schedule(scheduledDate = LocalDate.now().minusDays(2), startTime = LocalTime.now(), endTime = LocalTime.now().plusHours(1), activity = "squat",status="planned", repsTarget = 100, repsDone = 0,id=2),
-            Schedule(scheduledDate = LocalDate.now().plusDays(1), startTime = LocalTime.now(), endTime = LocalTime.now().plusHours(1), activity = "squat",status="planned", repsTarget = 100, repsDone = 0,id=3))
+        return listOf(Schedule(scheduledDate = LocalDate.now(), startTime = LocalTime.now(), endTime = LocalTime.now().plusHours(1), activity = "lunge",status="planned", repsTarget = 11, repsDone = 0,id=0,user=0, updatedAt = null, createdAt = null, durationDone = null),
+            Schedule(scheduledDate = LocalDate.now().minusDays(1), startTime = LocalTime.now(),endTime=LocalTime.now(), activity = "lunge", status = "missed",id=1),
+            Schedule(scheduledDate = LocalDate.now().minusDays(2), startTime = LocalTime.now(), endTime = LocalTime.now().plusHours(1), activity = "lunge",status="planned", repsTarget = 100, repsDone = 0,id=2),
+            Schedule(scheduledDate = LocalDate.now().plusDays(1), startTime = LocalTime.now(), endTime = LocalTime.now().plusHours(1), activity = "lunge",status="planned", repsTarget = 11, repsDone = 0,id=3))
     }
 
 

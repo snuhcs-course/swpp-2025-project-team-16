@@ -112,7 +112,7 @@ class MainActivityTest {
             )
         onView(withId(R.id.btnStartSession)).perform(click())
         onView(withId(R.id.btnStartWorkout)).perform(click())
-        Thread.sleep(15000)
+        Thread.sleep(35000)
         onView(withId(R.id.btnSwitchCamera)).perform(click())
         onView(withId(R.id.btnStartWorkout)).perform(click())
     }
@@ -141,8 +141,9 @@ class MainActivityTest {
         // 2. 드롭다운에서 "Push-ups" 항목 클릭
         onView(withText(containsString("Lunge"))).perform(click())
         onView(withId(R.id.btnStartWorkout)).perform(click())
-        Thread.sleep(35000)
+        Thread.sleep(15000)
         onView(withId(R.id.btnStartWorkout)).perform(click())
+        Thread.sleep(5000)
         onView(withId(R.id.btnEvaluate)).perform(click())
         onView(withId(R.id.bottomNavigation))
             .perform(clickBottomNavigationItem(R.id.profileFragment))

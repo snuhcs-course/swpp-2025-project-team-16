@@ -137,6 +137,7 @@ class MainActivityTest {
         onView(withId(R.id.btnSwitchCamera)).perform(click())
         Thread.sleep(15000)
         onView(withId(R.id.btnStartWorkout)).perform(click())
+        onView(withId(R.id.btnLater)).perform(click())
         onView(withId(R.id.bottomNavigation))
             .perform(clickBottomNavigationItem(R.id.profileFragment))
         onView(withId(R.id.recyclerHistory))

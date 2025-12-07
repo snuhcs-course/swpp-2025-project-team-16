@@ -137,6 +137,7 @@ class LoginActivityTest {
         onView(withId(R.id.etConfirmPassword)).perform(typeText("123456"), closeSoftKeyboard())
         //정상
         onView(withId(R.id.btnContinue)).perform(click())
+        Thread.sleep(15000)
         onView(withId(R.id.btnStop)).perform(click())
     }
 

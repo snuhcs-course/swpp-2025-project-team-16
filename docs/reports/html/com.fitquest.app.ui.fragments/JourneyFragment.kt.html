@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>JourneyFragment.kt</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">app</a> &gt; <a href="index.source.html" class="el_package">com.fitquest.app.ui.fragments</a> &gt; <span class="el_source">JourneyFragment.kt</span></div><h1>JourneyFragment.kt</h1><pre class="source lang-java linenums">package com.fitquest.app.ui.fragments
+
+import android.os.Bundle
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
+import androidx.fragment.app.Fragment
+import androidx.fragment.app.viewModels
+import androidx.navigation.fragment.findNavController
+import androidx.recyclerview.widget.LinearLayoutManager
+import com.fitquest.app.data.remote.RetrofitClient
+import com.fitquest.app.data.remote.ScheduleApiService
+import com.fitquest.app.data.remote.ServiceLocator
+import com.fitquest.app.databinding.FragmentJourneyBinding
+import com.fitquest.app.databinding.ItemScheduleBinding
+import com.fitquest.app.databinding.LayoutJourneyDaydetailBinding
+import com.fitquest.app.model.DailyWorkoutItem
+import com.fitquest.app.model.Schedule
+import com.fitquest.app.ui.adapters.DailyWorkoutAdapter
+import com.fitquest.app.ui.viewmodels.JourneyViewModel
+import com.fitquest.app.ui.viewmodels.JourneyViewModelFactory
+import com.fitquest.app.util.ActivityUtils.getEmoji
+import com.fitquest.app.util.ActivityUtils.getLabel
+import com.fitquest.app.util.DateUtils.formatDate
+import com.fitquest.app.util.DateUtils.formatTime
+import com.fitquest.app.util.animateLogo
+import com.fitquest.app.util.messages.HeroMessages
+import com.google.android.material.bottomsheet.BottomSheetDialog
+import org.threeten.bp.LocalDateTime
+import org.threeten.bp.ZoneId
+
+<span class="fc" id="L32">class JourneyFragment() : Fragment() {</span>
+
+    private var _binding: FragmentJourneyBinding? = null
+<span class="fc" id="L35">    private val binding get() = _binding!!</span>
+
+<span class="fc" id="L37">    private val viewModel: JourneyViewModel by viewModels {</span>
+<span class="fc" id="L38">        JourneyViewModelFactory(ServiceLocator.scheduleApiService)</span>
+    }
+
+    private lateinit var adapter: DailyWorkoutAdapter
+
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
+<span class="fc" id="L44">        _binding = FragmentJourneyBinding.inflate(inflater, container, false)</span>
+<span class="fc" id="L45">        return binding.root</span>
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+<span class="fc" id="L49">        super.onViewCreated(view, savedInstanceState)</span>
+
+<span class="fc" id="L51">        setRandomHeroMessageAndEmoji()</span>
+
+<span class="fc" id="L53">        adapter = DailyWorkoutAdapter { dailyItem -&gt;</span>
+<span class="fc" id="L54">            showScheduleDetails(dailyItem)</span>
+<span class="fc" id="L55">            setRandomHeroMessageAndEmoji()</span>
+<span class="fc" id="L56">        }</span>
+<span class="fc" id="L57">        val layoutManager = LinearLayoutManager(context).apply {</span>
+<span class="fc" id="L58">            orientation = LinearLayoutManager.VERTICAL</span>
+<span class="fc" id="L59">            stackFromEnd = false</span>
+<span class="fc" id="L60">            reverseLayout = true</span>
+<span class="fc" id="L61">        }</span>
+<span class="fc" id="L62">        binding.recyclerJourney.layoutManager = layoutManager</span>
+<span class="fc" id="L63">        binding.recyclerJourney.adapter = adapter</span>
+
+<span class="fc" id="L65">        viewModel.dailyWorkouts.observe(viewLifecycleOwner) { dailyItems -&gt;</span>
+<span class="fc" id="L66">            adapter.submitList(dailyItems)</span>
+<span class="pc bpc" id="L67" title="1 of 2 branches missed.">            binding.tvEmpty.visibility = if (dailyItems.isEmpty()) View.VISIBLE else View.GONE</span>
+<span class="fc" id="L68">        }</span>
+
+<span class="fc" id="L70">        viewModel.loadUpcomingSchedules()</span>
+<span class="fc" id="L71">    }</span>
+
+
+    private fun showScheduleDetails(dailyItem: DailyWorkoutItem) {
+<span class="fc" id="L75">        val dialog = BottomSheetDialog(requireContext())</span>
+<span class="fc" id="L76">        val detailBinding = LayoutJourneyDaydetailBinding.inflate(layoutInflater)</span>
+<span class="fc" id="L77">        dialog.setContentView(detailBinding.root)</span>
+
+<span class="fc" id="L79">        setRandomHeroMessageAndEmoji()</span>
+
+<span class="fc" id="L81">        detailBinding.tvDayTitle.text = formatDate(dailyItem.date)</span>
+<span class="fc" id="L82">        detailBinding.exerciseListContainer.removeAllViews()</span>
+
+<span class="fc" id="L84">        val currentTime = LocalDateTime.now(ZoneId.of(&quot;Asia/Seoul&quot;))</span>
+
+<span class="fc" id="L86">        dailyItem.schedules.forEach { schedule -&gt;</span>
+<span class="fc" id="L87">            val itemBinding = ItemScheduleBinding.inflate(layoutInflater)</span>
+<span class="fc" id="L88">            itemBinding.tvActivityLabel.text = getLabel(schedule.activity)</span>
+<span class="fc" id="L89">            itemBinding.tvActivityEmoji.text = getEmoji(schedule.activity)</span>
+<span class="fc" id="L90">            itemBinding.tvStartEnd.text = &quot;${formatTime(schedule.startTime)} - ${formatTime(schedule.endTime)}&quot;</span>
+<span class="fc" id="L91">            itemBinding.tvTarget.text = when {</span>
+<span class="pc bpc" id="L92" title="1 of 2 branches missed.">                schedule.repsTarget != null -&gt; &quot;Target: ${schedule.repsTarget} reps&quot;</span>
+<span class="nc bnc" id="L93" title="All 2 branches missed.">                schedule.durationTarget != null -&gt; &quot;Target: ${schedule.durationTarget} secs&quot;</span>
+<span class="nc" id="L94">                else -&gt; &quot;&quot;</span>
+            }
+
+<span class="pc bpc" id="L97" title="2 of 4 branches missed.">            if (currentTime.isAfter(LocalDateTime.of(schedule.scheduledDate, schedule.startTime)) &amp;&amp; currentTime.isBefore(LocalDateTime.of(schedule.scheduledDate, schedule.endTime))) {</span>
+<span class="fc" id="L98">                itemBinding.btnStartSession.visibility = View.VISIBLE</span>
+<span class="fc" id="L99">                itemBinding.btnStartSession.setOnClickListener {</span>
+<span class="fc" id="L100">                    onStartSession(schedule)</span>
+<span class="fc" id="L101">                    dialog.dismiss()</span>
+<span class="fc" id="L102">                }</span>
+            } else {
+<span class="nc" id="L104">                itemBinding.btnStartSession.visibility = View.GONE</span>
+            }
+
+<span class="fc" id="L107">            detailBinding.exerciseListContainer.addView(itemBinding.root)</span>
+<span class="fc" id="L108">        }</span>
+
+<span class="fc" id="L110">        dialog.show()</span>
+<span class="fc" id="L111">    }</span>
+
+    private fun onStartSession(schedule: Schedule) {
+<span class="pc bpc" id="L114" title="1 of 2 branches missed.">        val repsTarget = schedule.repsTarget ?: -1</span>
+<span class="pc bpc" id="L115" title="1 of 2 branches missed.">        val durationTarget = schedule.durationTarget ?: -1</span>
+
+<span class="fc" id="L117">        val action = JourneyFragmentDirections.actionJourneyFragmentToAiCoachFragment(</span>
+<span class="fc" id="L118">            scheduleId = schedule.id!!,</span>
+<span class="fc" id="L119">            activityKey = schedule.activity.lowercase(),</span>
+<span class="fc" id="L120">            repsTarget = repsTarget,</span>
+<span class="fc" id="L121">            durationTarget = durationTarget)</span>
+<span class="fc" id="L122">        findNavController().navigate(action)</span>
+<span class="fc" id="L123">    }</span>
+
+    private fun setRandomHeroMessageAndEmoji() {
+<span class="fc" id="L126">        val message: HeroMessages.Message = HeroMessages.random()</span>
+<span class="fc" id="L127">        binding.tvSystemSubtitle.text = message.text</span>
+<span class="fc" id="L128">        binding.tvHeroEmoji.text = message.emoji</span>
+
+<span class="fc" id="L130">        animateLogo(binding.tvHeroEmoji)</span>
+<span class="fc" id="L131">    }</span>
+
+    override fun onDestroyView() {
+<span class="fc" id="L134">        super.onDestroyView()</span>
+<span class="fc" id="L135">        _binding = null</span>
+<span class="fc" id="L136">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

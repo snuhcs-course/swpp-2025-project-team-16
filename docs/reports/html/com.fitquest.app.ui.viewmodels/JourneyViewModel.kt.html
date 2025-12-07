@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>JourneyViewModel.kt</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">app</a> &gt; <a href="index.source.html" class="el_package">com.fitquest.app.ui.viewmodels</a> &gt; <span class="el_source">JourneyViewModel.kt</span></div><h1>JourneyViewModel.kt</h1><pre class="source lang-java linenums">package com.fitquest.app.ui.viewmodels
+
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import com.fitquest.app.model.DailyWorkoutItem
+import com.fitquest.app.repository.ScheduleRepository
+import kotlinx.coroutines.launch
+import org.threeten.bp.LocalDateTime
+import org.threeten.bp.LocalDateTime.now
+
+
+<span class="fc" id="L14">class JourneyViewModel(</span>
+<span class="fc" id="L15">    private val repository: ScheduleRepository</span>
+<span class="fc" id="L16">) : ViewModel() {</span>
+
+<span class="fc" id="L18">    private val _dailyWorkouts = MutableLiveData&lt;List&lt;DailyWorkoutItem&gt;&gt;()</span>
+<span class="fc" id="L19">    val dailyWorkouts: LiveData&lt;List&lt;DailyWorkoutItem&gt;&gt; = _dailyWorkouts</span>
+
+    fun loadUpcomingSchedules() {
+<span class="fc" id="L22">        viewModelScope.launch {</span>
+<span class="fc" id="L23">            val schedules = repository.getSchedules()</span>
+
+<span class="fc" id="L25">            val upcoming = schedules.filter {</span>
+<span class="fc" id="L26">                val scheduleEnd = LocalDateTime.of(it.scheduledDate, it.endTime)</span>
+<span class="fc" id="L27">                val now = now()</span>
+<span class="fc" id="L28">                val isUpcoming = scheduleEnd.isAfter(now)</span>
+<span class="fc bfc" id="L29" title="All 2 branches covered.">                println(&quot;Schedule: ${it.scheduledDate} ${it.endTime}, Now: $now, IsUpcoming: $isUpcoming&quot;)</span>
+<span class="pc bpc" id="L30" title="2 of 6 branches missed.">                (scheduleEnd.isAfter(now) || scheduleEnd.isEqual(now)) &amp;&amp; it.status == &quot;planned&quot;</span>
+            }
+
+<span class="fc" id="L33">            val grouped = upcoming.groupBy { it.scheduledDate }</span>
+
+<span class="fc" id="L35">            val dailyItems = grouped.map { (date, scheduleList) -&gt;</span>
+<span class="fc" id="L36">                DailyWorkoutItem(</span>
+<span class="fc" id="L37">                    date = date,</span>
+<span class="fc" id="L38">                    schedules = scheduleList.sortedBy { it.startTime }</span>
+<span class="fc" id="L39">                )</span>
+<span class="fc" id="L40">            }.sortedBy { it.date }</span>
+
+<span class="fc" id="L42">            _dailyWorkouts.value = dailyItems</span>
+<span class="fc" id="L43">        }</span>
+<span class="fc" id="L44">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

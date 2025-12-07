@@ -1,0 +1,222 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>PoseLandmarkerHelper.kt</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">app</a> &gt; <a href="index.source.html" class="el_package">com.fitquest.app.ui.coachutils</a> &gt; <span class="el_source">PoseLandmarkerHelper.kt</span></div><h1>PoseLandmarkerHelper.kt</h1><pre class="source lang-java linenums">package com.fitquest.app.ui.coachutils
+
+import android.content.Context
+import android.graphics.Bitmap
+import android.graphics.Matrix
+import android.os.SystemClock
+import android.util.Log
+import androidx.annotation.VisibleForTesting
+import androidx.camera.core.ImageProxy
+import com.google.mediapipe.framework.image.BitmapImageBuilder
+import com.google.mediapipe.framework.image.MPImage
+import com.google.mediapipe.tasks.core.BaseOptions
+import com.google.mediapipe.tasks.core.Delegate
+import com.google.mediapipe.tasks.vision.core.RunningMode
+import com.google.mediapipe.tasks.vision.poselandmarker.PoseLandmarker
+import com.google.mediapipe.tasks.vision.poselandmarker.PoseLandmarkerResult
+
+/**
+ * PoseLandmarkerHelper
+ *
+ * CameraX에서 온 이미지 프레임(ImageProxy)을 MediaPipe Pose Landmarker에 넣고,
+ * 관절 landmark 결과를 callback으로 돌려준다.
+ *
+ * runningMode = LIVE_STREAM일 때는 detectLiveStream() + onResults() 콜백 패턴.
+ */
+<span class="fc" id="L26">class PoseLandmarkerHelper(</span>
+<span class="pc" id="L27">    var minPoseDetectionConfidence: Float = DEFAULT_POSE_DETECTION_CONFIDENCE,</span>
+<span class="pc" id="L28">    var minPoseTrackingConfidence: Float = DEFAULT_POSE_TRACKING_CONFIDENCE,</span>
+<span class="pc" id="L29">    var minPosePresenceConfidence: Float = DEFAULT_POSE_PRESENCE_CONFIDENCE,</span>
+<span class="pc" id="L30">    var currentModel: Int = MODEL_POSE_LANDMARKER_FULL,</span>
+<span class="pc" id="L31">    var currentDelegate: Int = DELEGATE_GPU,</span>
+<span class="pc" id="L32">    var runningMode: RunningMode = RunningMode.IMAGE,</span>
+<span class="pc" id="L33">    val context: Context,</span>
+    // LIVE_STREAM 모드일 때 결과/에러를 받을 listener
+<span class="pc" id="L35">    val poseLandmarkerHelperListener: LandmarkerListener? = null</span>
+<span class="fc" id="L36">) {</span>
+
+    private var poseLandmarker: PoseLandmarker? = null
+
+<span class="fc" id="L40">    init {</span>
+<span class="fc" id="L41">        setupPoseLandmarker()</span>
+<span class="fc" id="L42">    }</span>
+
+    fun clearPoseLandmarker() {
+<span class="fc bfc" id="L45" title="All 2 branches covered.">        poseLandmarker?.close()</span>
+<span class="fc" id="L46">        poseLandmarker = null</span>
+<span class="fc" id="L47">    }</span>
+
+    /**
+     * MediaPipe PoseLandmarker 인스턴스를 초기화한다.
+     * GPU delegate를 쓰는 경우, 반드시 그 delegate를 초기화한 thread(=우리가 analyzer 돌리는 executor thread)에서 호출해야 한다.
+     */
+    fun setupPoseLandmarker() {
+<span class="fc" id="L54">        val baseOptionBuilder = BaseOptions.builder()</span>
+
+        // CPU or GPU delegate
+<span class="pc bpc" id="L57" title="2 of 3 branches missed.">        when (currentDelegate) {</span>
+<span class="nc" id="L58">            DELEGATE_CPU -&gt; baseOptionBuilder.setDelegate(Delegate.CPU)</span>
+<span class="fc" id="L59">            DELEGATE_GPU -&gt; baseOptionBuilder.setDelegate(Delegate.GPU)</span>
+        }
+
+<span class="pc bpc" id="L62" title="3 of 4 branches missed.">        val modelName = when (currentModel) {</span>
+<span class="fc" id="L63">            MODEL_POSE_LANDMARKER_FULL -&gt; &quot;pose_landmarker_full.task&quot;</span>
+<span class="nc" id="L64">            MODEL_POSE_LANDMARKER_LITE -&gt; &quot;pose_landmarker_lite.task&quot;</span>
+<span class="nc" id="L65">            MODEL_POSE_LANDMARKER_HEAVY -&gt; &quot;pose_landmarker_heavy.task&quot;</span>
+<span class="nc" id="L66">            else -&gt; &quot;pose_landmarker_full.task&quot;</span>
+        }
+
+<span class="fc" id="L69">        baseOptionBuilder.setModelAssetPath(modelName)</span>
+
+<span class="pc bpc" id="L71" title="2 of 4 branches missed.">        if (runningMode == RunningMode.LIVE_STREAM &amp;&amp; poseLandmarkerHelperListener == null) {</span>
+<span class="nc" id="L72">            throw IllegalStateException(</span>
+<span class="nc" id="L73">                &quot;poseLandmarkerHelperListener must be set in LIVE_STREAM mode.&quot;</span>
+            )
+        }
+
+<span class="fc" id="L77">        try {</span>
+<span class="fc" id="L78">            val baseOptions = baseOptionBuilder.build()</span>
+
+<span class="fc" id="L80">            val optionsBuilder =</span>
+<span class="fc" id="L81">                PoseLandmarker.PoseLandmarkerOptions.builder()</span>
+<span class="fc" id="L82">                    .setBaseOptions(baseOptions)</span>
+<span class="fc" id="L83">                    .setMinPoseDetectionConfidence(minPoseDetectionConfidence)</span>
+<span class="fc" id="L84">                    .setMinTrackingConfidence(minPoseTrackingConfidence)</span>
+<span class="fc" id="L85">                    .setMinPosePresenceConfidence(minPosePresenceConfidence)</span>
+<span class="fc" id="L86">                    .setRunningMode(runningMode)</span>
+
+<span class="pc bpc" id="L88" title="1 of 2 branches missed.">            if (runningMode == RunningMode.LIVE_STREAM) {</span>
+<span class="fc" id="L89">                optionsBuilder</span>
+<span class="fc" id="L90">                    .setResultListener(this::returnLivestreamResult)</span>
+<span class="fc" id="L91">                    .setErrorListener(this::returnLivestreamError)</span>
+            }
+
+<span class="fc" id="L94">            val options = optionsBuilder.build()</span>
+<span class="fc" id="L95">            poseLandmarker = PoseLandmarker.createFromOptions(context, options)</span>
+
+<span class="nc" id="L97">        } catch (e: IllegalStateException) {</span>
+<span class="nc bnc" id="L98" title="All 2 branches missed.">            poseLandmarkerHelperListener?.onError(</span>
+<span class="nc" id="L99">                &quot;Pose Landmarker failed to initialize. See error logs for details&quot;</span>
+            )
+<span class="nc" id="L101">            Log.e(TAG, &quot;MediaPipe failed to load with error: ${e.message}&quot;)</span>
+<span class="nc" id="L102">        } catch (e: RuntimeException) {</span>
+            // GPU delegate 미지원 모델일 때
+<span class="nc bnc" id="L104" title="All 2 branches missed.">            poseLandmarkerHelperListener?.onError(</span>
+<span class="nc" id="L105">                &quot;Pose Landmarker failed to initialize. See error logs for details&quot;,</span>
+<span class="nc" id="L106">                GPU_ERROR</span>
+            )
+<span class="nc" id="L108">            Log.e(TAG, &quot;Failed to load model with error: ${e.message}&quot;)</span>
+        }
+<span class="fc" id="L110">    }</span>
+
+    /**
+     * LIVE_STREAM 모드일 때 CameraX 프레임을 받아서 비동기로 분석.
+     * 결과는 returnLivestreamResult() -&gt; listener.onResults() 로.
+     */
+    fun detectLiveStream(
+        imageProxy: ImageProxy,
+        isFrontCamera: Boolean
+    ) {
+<span class="pc bpc" id="L120" title="1 of 2 branches missed.">        if (runningMode != RunningMode.LIVE_STREAM) {</span>
+<span class="nc" id="L121">            throw IllegalArgumentException(</span>
+<span class="nc" id="L122">                &quot;detectLiveStream() called while not in LIVE_STREAM mode.&quot;</span>
+            )
+        }
+<span class="fc" id="L125">        val frameTime = SystemClock.uptimeMillis()</span>
+
+        // ImageProxy -&gt; Bitmap
+<span class="fc" id="L128">        val bitmapBuffer = Bitmap.createBitmap(</span>
+<span class="fc" id="L129">            imageProxy.width,</span>
+<span class="fc" id="L130">            imageProxy.height,</span>
+<span class="fc" id="L131">            Bitmap.Config.ARGB_8888</span>
+        )
+
+<span class="pc" id="L134">        imageProxy.use {</span>
+<span class="fc" id="L135">            bitmapBuffer.copyPixelsFromBuffer(it.planes[0].buffer)</span>
+<span class="fc" id="L136">        }</span>
+<span class="fc" id="L137">        imageProxy.close()</span>
+
+        // 회전/좌우반전(셀피 카메라면 미러링)
+<span class="fc" id="L140">        val matrix = Matrix().apply {</span>
+<span class="fc" id="L141">            postRotate(imageProxy.imageInfo.rotationDegrees.toFloat())</span>
+<span class="pc bpc" id="L142" title="1 of 2 branches missed.">            if (isFrontCamera) {</span>
+<span class="fc" id="L143">                postScale(</span>
+<span class="fc" id="L144">                    -1f,</span>
+<span class="fc" id="L145">                    1f,</span>
+<span class="fc" id="L146">                    imageProxy.width.toFloat(),</span>
+<span class="fc" id="L147">                    imageProxy.height.toFloat()</span>
+                )
+            }
+<span class="fc" id="L150">        }</span>
+
+<span class="fc" id="L152">        val rotatedBitmap = Bitmap.createBitmap(</span>
+<span class="fc" id="L153">            bitmapBuffer, 0, 0, bitmapBuffer.width, bitmapBuffer.height,</span>
+<span class="fc" id="L154">            matrix, true</span>
+        )
+
+<span class="fc" id="L157">        val mpImage = BitmapImageBuilder(rotatedBitmap).build()</span>
+
+<span class="fc" id="L159">        detectAsync(mpImage, frameTime)</span>
+<span class="fc" id="L160">    }</span>
+
+    @VisibleForTesting
+    fun detectAsync(mpImage: MPImage, frameTime: Long) {
+<span class="pc bpc" id="L164" title="1 of 2 branches missed.">        poseLandmarker?.detectAsync(mpImage, frameTime)</span>
+        // 결과는 returnLivestreamResult()에서 listener로 전달된다.
+<span class="fc" id="L166">    }</span>
+
+    // 비디오 파일, 스틸 이미지용 detectVideoFile(), detectImage() 등은
+    // 원본 그대로 유지. 필요 없으면 나중에 정리해도 됨.
+
+    private fun returnLivestreamResult(
+        result: PoseLandmarkerResult,
+        input: MPImage
+    ) {
+<span class="fc" id="L175">        val finishTimeMs = SystemClock.uptimeMillis()</span>
+<span class="fc" id="L176">        val inferenceTime = finishTimeMs - result.timestampMs()</span>
+
+<span class="pc bpc" id="L178" title="1 of 2 branches missed.">        poseLandmarkerHelperListener?.onResults(</span>
+<span class="fc" id="L179">            ResultBundle(</span>
+<span class="fc" id="L180">                listOf(result),</span>
+<span class="fc" id="L181">                inferenceTime,</span>
+<span class="fc" id="L182">                input.height,</span>
+<span class="fc" id="L183">                input.width</span>
+            )
+        )
+<span class="fc" id="L186">    }</span>
+
+    private fun returnLivestreamError(error: RuntimeException) {
+<span class="nc bnc" id="L189" title="All 2 branches missed.">        poseLandmarkerHelperListener?.onError(</span>
+<span class="nc bnc" id="L190" title="All 2 branches missed.">            error.message ?: &quot;An unknown error has occurred&quot;</span>
+        )
+<span class="nc" id="L192">    }</span>
+
+    companion object {
+        const val TAG = &quot;PoseLandmarkerHelper&quot;
+
+        const val DELEGATE_CPU = 0
+        const val DELEGATE_GPU = 1
+        const val DEFAULT_POSE_DETECTION_CONFIDENCE = 0.5F
+        const val DEFAULT_POSE_TRACKING_CONFIDENCE = 0.5F
+        const val DEFAULT_POSE_PRESENCE_CONFIDENCE = 0.5F
+        const val DEFAULT_NUM_POSES = 1
+        const val OTHER_ERROR = 0
+        const val GPU_ERROR = 1
+        const val MODEL_POSE_LANDMARKER_FULL = 0
+        const val MODEL_POSE_LANDMARKER_LITE = 1
+        const val MODEL_POSE_LANDMARKER_HEAVY = 2
+    }
+
+<span class="fc" id="L210">    data class ResultBundle(</span>
+<span class="fc" id="L211">        val results: List&lt;PoseLandmarkerResult&gt;,</span>
+<span class="pc" id="L212">        val inferenceTime: Long,</span>
+<span class="fc" id="L213">        val inputImageHeight: Int,</span>
+<span class="fc" id="L214">        val inputImageWidth: Int,</span>
+    )
+
+    interface LandmarkerListener {
+<span class="nc" id="L218">        fun onError(error: String, errorCode: Int = OTHER_ERROR)</span>
+        fun onResults(resultBundle: ResultBundle)
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

@@ -1,0 +1,383 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>PoseFragment.kt</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">app</a> &gt; <a href="index.source.html" class="el_package">com.fitquest.app.ui.fragments.pose</a> &gt; <span class="el_source">PoseFragment.kt</span></div><h1>PoseFragment.kt</h1><pre class="source lang-java linenums">package com.fitquest.app.ui.fragments.pose
+
+import android.app.Activity
+import android.content.Intent
+import android.graphics.Bitmap
+import android.net.Uri
+import android.os.Bundle
+import android.os.CountDownTimer
+import android.view.LayoutInflater
+import android.view.OrientationEventListener
+import android.view.Surface
+import android.view.View
+import android.view.ViewGroup
+import android.widget.Toast
+import androidx.activity.result.ActivityResultLauncher
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.core.content.ContextCompat
+import androidx.fragment.app.Fragment
+import androidx.fragment.app.viewModels
+import com.fitquest.app.data.remote.RetrofitClient
+import com.fitquest.app.data.remote.ServiceLocator
+import com.fitquest.app.databinding.FragmentPoseBinding
+import com.fitquest.app.model.NetworkResult
+import com.fitquest.app.model.pose.PoseUploadResponse
+import com.fitquest.app.model.pose.PoseUploadRequest
+import com.fitquest.app.ui.fragments.shared.camera.CameraManager
+import com.fitquest.app.ui.fragments.shared.camera.CameraPermissionHelper
+import com.fitquest.app.ui.fragments.shared.exercise.ExerciseSpinnerManager
+import com.fitquest.app.ui.viewmodels.PoseViewModel
+import com.fitquest.app.ui.viewmodels.PoseViewModelFactory
+import java.io.File
+import java.util.concurrent.ExecutorService
+import java.util.concurrent.Executors
+
+<span class="fc" id="L35">class PoseFragment : Fragment() {</span>
+
+    private var _binding: FragmentPoseBinding? = null
+<span class="fc" id="L38">    private val binding get() = _binding!!</span>
+
+<span class="fc" id="L40">    private val viewModel: PoseViewModel by viewModels {</span>
+<span class="fc" id="L41">        PoseViewModelFactory(ServiceLocator.poseAnalysisApiService)</span>
+    }
+
+    private lateinit var cameraManager: CameraManager
+    private lateinit var imageProcessor: ImageProcessor
+    private lateinit var exerciseSpinnerManager: ExerciseSpinnerManager
+    private lateinit var cameraExecutor: ExecutorService
+
+    private var lastPhotoFile: File? = null
+
+    private var countdownTimer: CountDownTimer? = null
+    private var loadingTimer: CountDownTimer? = null
+    private var orientationListener: OrientationEventListener? = null
+
+    private lateinit var pickImageLauncher: ActivityResultLauncher&lt;Intent&gt;
+
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View {
+<span class="fc" id="L62">        _binding = FragmentPoseBinding.inflate(inflater, container, false)</span>
+<span class="fc" id="L63">        return binding.root</span>
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+<span class="fc" id="L67">        super.onViewCreated(view, savedInstanceState)</span>
+
+<span class="fc" id="L69">        initializeComponents()</span>
+<span class="fc" id="L70">        setupObservers()</span>
+<span class="fc" id="L71">        setupExerciseSpinner()</span>
+<span class="fc" id="L72">        handlePreloadedImage()</span>
+<span class="fc" id="L73">        setupButtons()</span>
+<span class="fc" id="L74">    }</span>
+
+    private fun initializeComponents() {
+<span class="fc" id="L77">        cameraExecutor = Executors.newSingleThreadExecutor()</span>
+<span class="fc" id="L78">        cameraManager = CameraManager(requireContext(), viewLifecycleOwner)</span>
+<span class="fc" id="L79">        imageProcessor = ImageProcessor(requireContext())</span>
+<span class="fc" id="L80">        exerciseSpinnerManager = ExerciseSpinnerManager(</span>
+<span class="fc" id="L81">            requireContext(),</span>
+<span class="fc" id="L82">            binding.spinnerExercisePose</span>
+        )
+
+<span class="fc" id="L85">        pickImageLauncher = registerForActivityResult(</span>
+<span class="fc" id="L86">            ActivityResultContracts.StartActivityForResult()</span>
+        ) { result -&gt;
+<span class="nc bnc" id="L88" title="All 2 branches missed.">            handleGalleryResult(result.resultCode, result.data?.data)</span>
+<span class="nc" id="L89">        }</span>
+
+<span class="fc" id="L91">        setupOrientationListener()</span>
+<span class="fc" id="L92">    }</span>
+
+    private fun setupObservers() {
+<span class="fc" id="L95">        viewModel.poseAnalysisResult.observe(viewLifecycleOwner) { result -&gt;</span>
+<span class="fc" id="L96">            when (result) {</span>
+<span class="fc bfc" id="L97" title="All 2 branches covered.">                is NetworkResult.Idle -&gt; Unit</span>
+<span class="pc bpc" id="L98" title="1 of 2 branches missed.">                is NetworkResult.Success -&gt; {</span>
+<span class="fc" id="L99">                    viewModel.resetPoseAnalysisResult()</span>
+<span class="fc" id="L100">                    handleAnalysisSuccess(result.data)</span>
+                }
+<span class="nc bnc" id="L102" title="All 2 branches missed.">                is NetworkResult.ServerError -&gt; {</span>
+<span class="nc" id="L103">                    viewModel.resetPoseAnalysisResult()</span>
+<span class="nc" id="L104">                    handleAnalysisError(&quot;Server error: ${result.code}&quot;)</span>
+                }
+<span class="nc" id="L106">                is NetworkResult.NetworkError -&gt; {</span>
+<span class="nc" id="L107">                    viewModel.resetPoseAnalysisResult()</span>
+<span class="nc" id="L108">                    handleAnalysisError(&quot;Network error: ${result.exception.localizedMessage}&quot;)</span>
+                }
+            }
+<span class="fc" id="L111">        }</span>
+<span class="fc" id="L112">    }</span>
+
+    private fun setupExerciseSpinner() {
+<span class="fc" id="L115">        exerciseSpinnerManager.setup { selectedExercise -&gt;</span>
+<span class="fc" id="L116">        }</span>
+<span class="fc" id="L117">    }</span>
+
+    private fun handlePreloadedImage() {
+<span class="fc bfc" id="L120" title="All 2 branches covered.">        val poseExerciseKey = arguments?.getString(&quot;poseExerciseKey&quot;)</span>
+<span class="fc bfc" id="L121" title="All 2 branches covered.">        val poseImagePath = arguments?.getString(&quot;poseImagePath&quot;)</span>
+
+<span class="fc bfc" id="L123" title="All 2 branches covered.">        if (poseExerciseKey != null) {</span>
+<span class="fc" id="L124">            exerciseSpinnerManager.setExercise(poseExerciseKey)</span>
+        }
+
+<span class="pc bpc" id="L127" title="1 of 4 branches missed.">        val preloadedFile = poseImagePath?.let { File(it) }?.takeIf { it.exists() }</span>
+<span class="fc bfc" id="L128" title="All 2 branches covered.">        if (preloadedFile != null) {</span>
+<span class="fc" id="L129">            lastPhotoFile = preloadedFile</span>
+<span class="fc" id="L130">            processAndUpload(preloadedFile)</span>
+        } else {
+<span class="fc" id="L132">            startCameraIfPermissionsGranted()</span>
+        }
+<span class="fc" id="L134">    }</span>
+
+    private fun setupButtons() {
+<span class="fc" id="L137">        binding.btnCapture.setOnClickListener {</span>
+<span class="fc" id="L138">            startCountdownAndCapture()</span>
+<span class="fc" id="L139">        }</span>
+
+<span class="fc" id="L141">        binding.btnUpload.setOnClickListener {</span>
+<span class="fc" id="L142">            openGalleryForImage()</span>
+<span class="fc" id="L143">        }</span>
+
+<span class="fc" id="L145">        binding.btnSwitchCamera.setOnClickListener {</span>
+<span class="fc" id="L146">            cameraManager.toggleCamera(</span>
+<span class="fc" id="L147">                previewView = binding.cameraPreview,</span>
+<span class="fc" id="L148">                analyzer = null,</span>
+<span class="nc" id="L149">                onError = { error -&gt; showToast(error) }</span>
+            )
+<span class="fc" id="L151">        }</span>
+<span class="fc" id="L152">    }</span>
+
+    private fun setupOrientationListener() {
+<span class="fc" id="L155">        orientationListener = object : OrientationEventListener(requireContext()) {</span>
+            override fun onOrientationChanged(orientation: Int) {
+<span class="fc" id="L157">                val rotation = when (orientation) {</span>
+<span class="pc bpc" id="L158" title="4 of 6 branches missed.">                    in 45..134 -&gt; Surface.ROTATION_270</span>
+<span class="pc bpc" id="L159" title="4 of 6 branches missed.">                    in 135..224 -&gt; Surface.ROTATION_180</span>
+<span class="pc bpc" id="L160" title="4 of 6 branches missed.">                    in 225..314 -&gt; Surface.ROTATION_90</span>
+<span class="fc" id="L161">                    else -&gt; Surface.ROTATION_0</span>
+                }
+<span class="fc" id="L163">                cameraManager.setTargetRotation(rotation)</span>
+<span class="fc" id="L164">            }</span>
+        }
+<span class="pc bpc" id="L166" title="1 of 2 branches missed.">        orientationListener?.enable()</span>
+<span class="fc" id="L167">    }</span>
+
+    private fun startCameraIfPermissionsGranted() {
+<span class="pc bpc" id="L170" title="1 of 2 branches missed.">        if (CameraPermissionHelper.allPermissionsGranted(requireContext())) {</span>
+<span class="fc" id="L171">            cameraManager.startCamera(binding.cameraPreview) { error -&gt;</span>
+<span class="nc" id="L172">                showToast(error)</span>
+<span class="nc" id="L173">            }</span>
+        } else {
+<span class="nc" id="L175">            CameraPermissionHelper.requestPermissions(this)</span>
+        }
+<span class="fc" id="L177">    }</span>
+
+    private fun startCountdownAndCapture() {
+<span class="fc" id="L180">        var seconds = PoseConstants.COUNTDOWN_INITIAL_SECONDS</span>
+<span class="fc" id="L181">        binding.tvCountdown.visibility = View.VISIBLE</span>
+<span class="fc" id="L182">        binding.btnCapture.isEnabled = false</span>
+
+<span class="pc bpc" id="L184" title="1 of 2 branches missed.">        countdownTimer?.cancel()</span>
+<span class="fc" id="L185">        countdownTimer = object : CountDownTimer(</span>
+<span class="fc" id="L186">            PoseConstants.COUNTDOWN_DURATION_MS,</span>
+<span class="fc" id="L187">            PoseConstants.COUNTDOWN_INTERVAL_MS</span>
+        ) {
+            override fun onTick(ms: Long) {
+<span class="fc" id="L190">                binding.tvCountdown.text = seconds.toString()</span>
+<span class="fc" id="L191">                seconds--</span>
+<span class="fc" id="L192">            }</span>
+
+            override fun onFinish() {
+<span class="fc" id="L195">                binding.tvCountdown.visibility = View.GONE</span>
+<span class="fc" id="L196">                capturePhoto()</span>
+<span class="fc" id="L197">                binding.btnCapture.isEnabled = true</span>
+<span class="fc" id="L198">            }</span>
+<span class="fc" id="L199">        }.start()</span>
+<span class="fc" id="L200">    }</span>
+
+    private fun capturePhoto() {
+<span class="fc" id="L203">        val file = File(</span>
+<span class="fc" id="L204">            requireContext().externalCacheDir,</span>
+<span class="fc" id="L205">            &quot;${PoseConstants.FILE_PREFIX_CAMERA}${System.currentTimeMillis()}${PoseConstants.FILE_EXTENSION}&quot;</span>
+        )
+
+<span class="fc" id="L208">        cameraManager.capturePhoto(</span>
+<span class="fc" id="L209">            outputFile = file,</span>
+<span class="fc" id="L210">            executor = ContextCompat.getMainExecutor(requireContext()),</span>
+            onSuccess = { savedFile -&gt;
+<span class="fc" id="L212">                lastPhotoFile = savedFile</span>
+<span class="fc" id="L213">                processAndUpload(savedFile)</span>
+<span class="fc" id="L214">            },</span>
+            onError = { error -&gt;
+<span class="nc" id="L216">                showToast(error)</span>
+<span class="nc" id="L217">            }</span>
+        )
+<span class="fc" id="L219">    }</span>
+
+    private fun openGalleryForImage() {
+<span class="fc" id="L222">        val intent = Intent(Intent.ACTION_PICK).apply {</span>
+<span class="fc" id="L223">            type = &quot;image/*&quot;</span>
+<span class="fc" id="L224">        }</span>
+<span class="fc" id="L225">        pickImageLauncher.launch(intent)</span>
+<span class="fc" id="L226">    }</span>
+
+    private fun handleGalleryResult(resultCode: Int, uri: Uri?) {
+<span class="nc bnc" id="L229" title="All 4 branches missed.">        if (resultCode == Activity.RESULT_OK &amp;&amp; uri != null) {</span>
+<span class="nc" id="L230">            val file = imageProcessor.createFileFromUri(uri)</span>
+<span class="nc bnc" id="L231" title="All 2 branches missed.">            if (file != null) {</span>
+<span class="nc" id="L232">                lastPhotoFile = file</span>
+<span class="nc" id="L233">                processAndUpload(file)</span>
+            } else {
+<span class="nc" id="L235">                showToast(&quot;Failed to load selected image.&quot;)</span>
+            }
+        }
+<span class="nc" id="L238">    }</span>
+
+    private fun processAndUpload(photoFile: File) {
+<span class="fc" id="L241">        disableUploadButton()</span>
+
+<span class="fc" id="L243">        val bitmap = imageProcessor.decodeBitmapWithExifCorrected(photoFile)</span>
+<span class="pc bpc" id="L244" title="1 of 2 branches missed.">        if (bitmap == null) {</span>
+<span class="nc" id="L245">            showToast(&quot;Failed to decode image.&quot;)</span>
+<span class="nc" id="L246">            enableUploadButton()</span>
+<span class="nc" id="L247">            return</span>
+        }
+
+<span class="fc" id="L250">        val processedFile = imageProcessor.saveBitmapToFile(bitmap)</span>
+<span class="fc" id="L251">        lastPhotoFile = processedFile</span>
+
+<span class="fc" id="L253">        displayProcessedImage(bitmap)</span>
+<span class="fc" id="L254">        disableCameraControls()</span>
+
+<span class="fc" id="L256">        val base64 = imageProcessor.bitmapToBase64(bitmap)</span>
+<span class="fc" id="L257">        startLoadingProgress()</span>
+
+<span class="fc" id="L259">        val request = PoseUploadRequest(</span>
+<span class="fc" id="L260">            category = exerciseSpinnerManager.getCurrentExercise(),</span>
+<span class="fc" id="L261">            imageBase64 = base64</span>
+        )
+<span class="fc" id="L263">        viewModel.uploadPose(request)</span>
+<span class="fc" id="L264">    }</span>
+
+    private fun startLoadingProgress() {
+<span class="fc" id="L267">        binding.progressLoading.visibility = View.VISIBLE</span>
+<span class="fc" id="L268">        binding.tvProgressPercent.visibility = View.VISIBLE</span>
+<span class="fc" id="L269">        binding.progressLoading.isIndeterminate = false</span>
+<span class="fc" id="L270">        binding.progressLoading.max = PoseConstants.LOADING_MAX_PROGRESS</span>
+<span class="fc" id="L271">        binding.progressLoading.progress = 0</span>
+<span class="fc" id="L272">        binding.tvProgressPercent.text = &quot;0%&quot;</span>
+
+<span class="pc bpc" id="L274" title="1 of 2 branches missed.">        loadingTimer?.cancel()</span>
+<span class="fc" id="L275">        loadingTimer = object : CountDownTimer(</span>
+<span class="fc" id="L276">            PoseConstants.LOADING_DURATION_MS,</span>
+<span class="fc" id="L277">            PoseConstants.LOADING_INTERVAL_MS</span>
+        ) {
+            override fun onTick(millisUntilFinished: Long) {
+<span class="fc" id="L280">                val elapsed = PoseConstants.LOADING_DURATION_MS - millisUntilFinished</span>
+<span class="fc" id="L281">                val fraction = elapsed.toFloat() / PoseConstants.LOADING_DURATION_MS.toFloat()</span>
+<span class="fc" id="L282">                val progress = (fraction * PoseConstants.LOADING_TARGET_PROGRESS).toInt()</span>
+<span class="fc" id="L283">                binding.progressLoading.progress = progress</span>
+<span class="fc" id="L284">                binding.tvProgressPercent.text = &quot;$progress%&quot;</span>
+<span class="fc" id="L285">            }</span>
+
+            override fun onFinish() {
+<span class="nc" id="L288">                binding.progressLoading.progress = PoseConstants.LOADING_TARGET_PROGRESS</span>
+<span class="nc" id="L289">                binding.tvProgressPercent.text = &quot;${PoseConstants.LOADING_TARGET_PROGRESS}%&quot;</span>
+<span class="nc" id="L290">            }</span>
+<span class="fc" id="L291">        }.start()</span>
+<span class="fc" id="L292">    }</span>
+
+    private fun handleAnalysisSuccess(analysis: PoseUploadResponse) {
+<span class="fc" id="L295">        completeLoadingProgress()</span>
+
+<span class="fc" id="L297">        val bottomSheet = PoseResultBottomSheet.newInstance(</span>
+<span class="pc bpc" id="L298" title="2 of 4 branches missed.">            goodPoints = analysis.goodPoints.orEmpty().ifBlank { &quot;None&quot; },</span>
+<span class="pc bpc" id="L299" title="2 of 4 branches missed.">            improvePoints = analysis.improvementPoints.orEmpty().ifBlank { &quot;None&quot; },</span>
+<span class="pc bpc" id="L300" title="2 of 4 branches missed.">            cue = analysis.improvementMethods.orEmpty().ifBlank { &quot;None&quot; },</span>
+<span class="pc bpc" id="L301" title="1 of 2 branches missed.">            imagePath = lastPhotoFile?.absolutePath</span>
+        )
+
+<span class="fc" id="L304">        bottomSheet.setOnDismissCallback {</span>
+<span class="fc" id="L305">            resetCameraUiAndRestart()</span>
+<span class="fc" id="L306">        }</span>
+
+<span class="fc" id="L308">        bottomSheet.show(childFragmentManager, &quot;PoseResultBottomSheet&quot;)</span>
+<span class="fc" id="L309">    }</span>
+
+    private fun handleAnalysisError(message: String) {
+<span class="nc" id="L312">        stopLoadingProgress()</span>
+<span class="nc" id="L313">        enableUploadButton()</span>
+<span class="nc" id="L314">        showToast(message)</span>
+<span class="nc" id="L315">    }</span>
+
+    private fun completeLoadingProgress() {
+<span class="pc bpc" id="L318" title="1 of 2 branches missed.">        loadingTimer?.cancel()</span>
+<span class="fc" id="L319">        binding.progressLoading.progress = PoseConstants.LOADING_MAX_PROGRESS</span>
+<span class="fc" id="L320">        binding.tvProgressPercent.text = &quot;${PoseConstants.LOADING_MAX_PROGRESS}%&quot;</span>
+<span class="fc" id="L321">        binding.progressLoading.visibility = View.GONE</span>
+<span class="fc" id="L322">        binding.tvProgressPercent.visibility = View.GONE</span>
+<span class="fc" id="L323">        enableUploadButton()</span>
+<span class="fc" id="L324">    }</span>
+
+    private fun stopLoadingProgress() {
+<span class="pc bpc" id="L327" title="1 of 2 branches missed.">        loadingTimer?.cancel()</span>
+<span class="fc" id="L328">        binding.progressLoading.visibility = View.GONE</span>
+<span class="fc" id="L329">        binding.tvProgressPercent.visibility = View.GONE</span>
+<span class="fc" id="L330">    }</span>
+
+    private fun displayProcessedImage(bitmap: Bitmap) {
+<span class="fc" id="L333">        binding.tvGuideText.visibility = View.GONE</span>
+<span class="fc" id="L334">        binding.cameraPreview.visibility = View.GONE</span>
+<span class="fc" id="L335">        binding.imgAnalysisResult.visibility = View.VISIBLE</span>
+<span class="fc" id="L336">        binding.imgAnalysisResult.setImageBitmap(bitmap)</span>
+<span class="fc" id="L337">    }</span>
+
+    private fun disableCameraControls() {
+<span class="fc" id="L340">        cameraManager.unbindAll()</span>
+<span class="fc" id="L341">        binding.btnCapture.isEnabled = false</span>
+<span class="fc" id="L342">        binding.btnSwitchCamera.isEnabled = false</span>
+<span class="fc" id="L343">    }</span>
+
+    private fun enableUploadButton() {
+<span class="fc" id="L346">        binding.btnUpload.isEnabled = true</span>
+<span class="fc" id="L347">    }</span>
+
+    private fun disableUploadButton() {
+<span class="fc" id="L350">        binding.btnUpload.isEnabled = false</span>
+<span class="fc" id="L351">    }</span>
+
+    private fun resetCameraUiAndRestart() {
+<span class="fc" id="L354">        binding.imgAnalysisResult.setImageDrawable(null)</span>
+<span class="fc" id="L355">        binding.imgAnalysisResult.visibility = View.GONE</span>
+
+<span class="fc" id="L357">        binding.tvGuideText.visibility = View.VISIBLE</span>
+<span class="fc" id="L358">        binding.cameraPreview.visibility = View.VISIBLE</span>
+
+<span class="fc" id="L360">        binding.btnCapture.isEnabled = true</span>
+<span class="fc" id="L361">        binding.btnUpload.isEnabled = true</span>
+<span class="fc" id="L362">        binding.btnSwitchCamera.isEnabled = true</span>
+
+<span class="fc" id="L364">        stopLoadingProgress()</span>
+<span class="fc" id="L365">        binding.progressLoading.progress = 0</span>
+
+<span class="fc" id="L367">        startCameraIfPermissionsGranted()</span>
+<span class="fc" id="L368">    }</span>
+
+    private fun showToast(message: String) {
+<span class="nc" id="L371">        Toast.makeText(requireContext(), message, Toast.LENGTH_SHORT).show()</span>
+<span class="nc" id="L372">    }</span>
+
+    override fun onDestroyView() {
+<span class="fc" id="L375">        super.onDestroyView()</span>
+<span class="fc bfc" id="L376" title="All 2 branches covered.">        countdownTimer?.cancel()</span>
+<span class="pc bpc" id="L377" title="1 of 2 branches missed.">        loadingTimer?.cancel()</span>
+<span class="pc bpc" id="L378" title="1 of 2 branches missed.">        orientationListener?.disable()</span>
+<span class="fc" id="L379">        cameraExecutor.shutdown()</span>
+<span class="fc" id="L380">        _binding = null</span>
+<span class="fc" id="L381">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

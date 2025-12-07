@@ -1,0 +1,158 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>CameraManager.kt</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">app</a> &gt; <a href="index.source.html" class="el_package">com.fitquest.app.ui.fragments.shared.camera</a> &gt; <span class="el_source">CameraManager.kt</span></div><h1>CameraManager.kt</h1><pre class="source lang-java linenums">package com.fitquest.app.ui.fragments.shared.camera
+
+import android.content.Context
+import android.util.Log
+import android.view.Surface
+import androidx.camera.core.*
+import androidx.camera.lifecycle.ProcessCameraProvider
+import androidx.camera.view.PreviewView
+import androidx.core.content.ContextCompat
+import androidx.lifecycle.LifecycleOwner
+import java.io.File
+import java.util.concurrent.Executor
+
+<span class="fc" id="L14">class CameraManager(</span>
+<span class="fc" id="L15">    private val context: Context,</span>
+<span class="fc" id="L16">    private val lifecycleOwner: LifecycleOwner</span>
+) {
+    private var cameraProvider: ProcessCameraProvider? = null
+    private var imageCapture: ImageCapture? = null
+    private var imageAnalyzer: ImageAnalysis? = null
+
+<span class="fc" id="L22">    var lensFacing: Int = CameraSelector.LENS_FACING_BACK</span>
+        private set
+
+    fun startCamera(
+        previewView: PreviewView,
+        onError: (String) -&gt; Unit
+    ) {
+<span class="fc" id="L29">        val cameraProviderFuture = ProcessCameraProvider.getInstance(context)</span>
+<span class="fc" id="L30">        cameraProviderFuture.addListener({</span>
+<span class="fc" id="L31">            try {</span>
+<span class="fc" id="L32">                cameraProvider = cameraProviderFuture.get()</span>
+<span class="fc" id="L33">                bindCameraUseCases(previewView, null, onError)</span>
+<span class="nc" id="L34">            } catch (e: Exception) {</span>
+<span class="nc" id="L35">                Log.e(TAG, &quot;Failed to get camera provider&quot;, e)</span>
+<span class="nc" id="L36">                onError(&quot;Failed to initialize camera: ${e.message}&quot;)</span>
+            }
+<span class="fc" id="L38">        }, ContextCompat.getMainExecutor(context))</span>
+<span class="fc" id="L39">    }</span>
+
+<span class="nc" id="L41">    fun bindCameraUseCases(</span>
+        previewView: PreviewView,
+<span class="nc" id="L43">        analyzer: ImageAnalysis.Analyzer? = null,</span>
+        onError: (String) -&gt; Unit
+    ) {
+<span class="pc bpc" id="L46" title="1 of 2 branches missed.">        val provider = cameraProvider ?: return</span>
+
+<span class="fc" id="L48">        val preview = Preview.Builder().build().also {</span>
+<span class="fc" id="L49">            it.setSurfaceProvider(previewView.surfaceProvider)</span>
+<span class="fc" id="L50">        }</span>
+
+<span class="fc bfc" id="L52" title="All 2 branches covered.">        imageAnalyzer = if (analyzer != null) {</span>
+<span class="fc" id="L53">            ImageAnalysis.Builder()</span>
+<span class="fc" id="L54">                .setTargetAspectRatio(AspectRatio.RATIO_4_3)</span>
+<span class="fc" id="L55">                .setTargetRotation(previewView.display.rotation)</span>
+<span class="fc" id="L56">                .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)</span>
+<span class="fc" id="L57">                .setOutputImageFormat(ImageAnalysis.OUTPUT_IMAGE_FORMAT_RGBA_8888)</span>
+<span class="fc" id="L58">                .build().also { it.setAnalyzer(ContextCompat.getMainExecutor(context), analyzer) }</span>
+<span class="fc" id="L59">        } else null</span>
+
+<span class="fc" id="L61">        imageCapture = ImageCapture.Builder()</span>
+<span class="fc" id="L62">            .setCaptureMode(ImageCapture.CAPTURE_MODE_MINIMIZE_LATENCY)</span>
+<span class="pc bpc" id="L63" title="1 of 2 branches missed.">            .setTargetRotation(previewView.display?.rotation ?: Surface.ROTATION_0)</span>
+<span class="fc" id="L64">            .build()</span>
+
+<span class="fc" id="L66">        val selector = CameraSelector.Builder()</span>
+<span class="fc" id="L67">            .requireLensFacing(lensFacing)</span>
+<span class="fc" id="L68">            .build()</span>
+
+<span class="fc" id="L70">        try {</span>
+<span class="pc bpc" id="L71" title="1 of 2 branches missed.">            if (!provider.hasCamera(selector)) {</span>
+<span class="nc bnc" id="L72" title="All 2 branches missed.">                val message = if (lensFacing == CameraSelector.LENS_FACING_FRONT) {</span>
+<span class="nc" id="L73">                    &quot;This device does not have a front camera.&quot;</span>
+                } else {
+<span class="nc" id="L75">                    &quot;This device does not have a rear camera.&quot;</span>
+                }
+<span class="nc" id="L77">                onError(message)</span>
+<span class="nc" id="L78">                return</span>
+            }
+
+<span class="fc" id="L81">            provider.unbindAll()</span>
+
+            // UseCase 리스트 구성
+<span class="fc" id="L84">            val useCases = mutableListOf&lt;UseCase&gt;(preview)</span>
+<span class="fc bfc" id="L85" title="All 2 branches covered.">            imageAnalyzer?.let { useCases.add(it) }</span>
+<span class="pc bpc" id="L86" title="1 of 2 branches missed.">            imageCapture?.let { useCases.add(it) }</span>
+
+<span class="fc" id="L88">            provider.bindToLifecycle(lifecycleOwner, selector, *useCases.toTypedArray())</span>
+<span class="nc" id="L89">        } catch (exc: Exception) {</span>
+<span class="nc" id="L90">            Log.e(TAG, &quot;Camera bind failed&quot;, exc)</span>
+<span class="nc" id="L91">            onError(&quot;Failed to bind camera: ${exc.message}&quot;)</span>
+        }
+<span class="fc" id="L93">    }</span>
+
+<span class="nc" id="L95">    fun toggleCamera(</span>
+        previewView: PreviewView,
+<span class="nc" id="L97">        analyzer: ImageAnalysis.Analyzer? = null,</span>
+        onError: (String) -&gt; Unit
+    ) {
+<span class="fc bfc" id="L100" title="All 2 branches covered.">        lensFacing = if (lensFacing == CameraSelector.LENS_FACING_FRONT) {</span>
+<span class="fc" id="L101">            CameraSelector.LENS_FACING_BACK</span>
+        } else {
+<span class="fc" id="L103">            CameraSelector.LENS_FACING_FRONT</span>
+        }
+<span class="fc" id="L105">        bindCameraUseCases(previewView, analyzer, onError)</span>
+<span class="fc" id="L106">    }</span>
+
+    fun capturePhoto(
+        outputFile: File,
+        executor: Executor,
+        onSuccess: (File) -&gt; Unit,
+        onError: (String) -&gt; Unit
+    ) {
+<span class="pc bpc" id="L114" title="1 of 2 branches missed.">        val capture = imageCapture ?: run {</span>
+<span class="nc" id="L115">            onError(&quot;Camera not initialized&quot;)</span>
+<span class="pc" id="L116">            return</span>
+        }
+
+<span class="fc" id="L119">        val metadata = ImageCapture.Metadata().apply {</span>
+<span class="pc bpc" id="L120" title="1 of 2 branches missed.">            isReversedHorizontal = (lensFacing == CameraSelector.LENS_FACING_FRONT)</span>
+<span class="fc" id="L121">        }</span>
+
+<span class="fc" id="L123">        val output = ImageCapture.OutputFileOptions.Builder(outputFile)</span>
+<span class="fc" id="L124">            .setMetadata(metadata)</span>
+<span class="fc" id="L125">            .build()</span>
+
+<span class="fc" id="L127">        capture.takePicture(</span>
+<span class="fc" id="L128">            output,</span>
+<span class="fc" id="L129">            executor,</span>
+<span class="fc" id="L130">            object : ImageCapture.OnImageSavedCallback {</span>
+                override fun onError(exc: ImageCaptureException) {
+<span class="nc" id="L132">                    onError(&quot;Capture failed: ${exc.message}&quot;)</span>
+<span class="nc" id="L133">                }</span>
+
+                override fun onImageSaved(output: ImageCapture.OutputFileResults) {
+<span class="fc" id="L136">                    onSuccess(outputFile)</span>
+<span class="fc" id="L137">                }</span>
+            }
+        )
+<span class="fc" id="L140">    }</span>
+
+<span class="fc" id="L142">    fun getImageCapture(): ImageCapture? = imageCapture</span>
+
+    fun setTargetRotation(rotation: Int) {
+<span class="fc bfc" id="L145" title="All 2 branches covered.">        imageCapture?.targetRotation = rotation</span>
+<span class="fc" id="L146">    }</span>
+
+    fun unbindAll() {
+<span class="fc bfc" id="L149" title="All 2 branches covered.">        cameraProvider?.unbindAll()</span>
+<span class="fc" id="L150">        imageCapture = null</span>
+<span class="fc" id="L151">        imageAnalyzer = null</span>
+<span class="fc" id="L152">    }</span>
+
+    companion object {
+        private const val TAG = &quot;CameraManager&quot;
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ConfettiManager.kt</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">app</a> &gt; <a href="index.source.html" class="el_package">com.fitquest.app.ui.fragments.coach</a> &gt; <span class="el_source">ConfettiManager.kt</span></div><h1>ConfettiManager.kt</h1><pre class="source lang-java linenums">package com.fitquest.app.ui.fragments.coach
+
+import android.graphics.Color
+import nl.dionsegijn.konfetti.core.Party
+import nl.dionsegijn.konfetti.core.Position
+import nl.dionsegijn.konfetti.core.emitter.Emitter
+import nl.dionsegijn.konfetti.core.models.Size
+import nl.dionsegijn.konfetti.xml.KonfettiView
+import java.util.concurrent.TimeUnit
+
+<span class="fc" id="L11">class ConfettiManager(</span>
+<span class="fc" id="L12">    private val konfettiView: KonfettiView</span>
+) {
+    fun showMilestone() {
+<span class="fc" id="L15">        konfettiView.start(</span>
+<span class="fc" id="L16">            Party(</span>
+<span class="fc" id="L17">                speed = 10f,</span>
+<span class="fc" id="L18">                maxSpeed = 50f,</span>
+<span class="fc" id="L19">                damping = 0.88f,</span>
+<span class="fc" id="L20">                spread = 360,</span>
+<span class="fc" id="L21">                emitter = Emitter(duration = 900, TimeUnit.MILLISECONDS).max(120),</span>
+<span class="fc" id="L22">                colors = listOf(</span>
+<span class="fc" id="L23">                    Color.parseColor(&quot;#FFD54F&quot;), // Yellow</span>
+<span class="fc" id="L24">                    Color.parseColor(&quot;#FF6E40&quot;), // Orange Accent</span>
+<span class="fc" id="L25">                    Color.parseColor(&quot;#4DB6AC&quot;), // Mint</span>
+<span class="fc" id="L26">                    Color.parseColor(&quot;#9575CD&quot;)  // Lavender</span>
+                ),
+<span class="fc" id="L28">                position = Position.Relative(0.5, 0.9),</span>
+<span class="fc" id="L29">                size = listOf(Size.SMALL, Size.MEDIUM, Size.LARGE)</span>
+            )
+        )
+<span class="fc" id="L32">    }</span>
+
+    fun showMilestone10() {
+<span class="fc" id="L35">        konfettiView.start(</span>
+<span class="fc" id="L36">            Party(</span>
+<span class="fc" id="L37">                speed = 20f,</span>
+<span class="fc" id="L38">                maxSpeed = 42f,</span>
+<span class="fc" id="L39">                damping = 0.9f,</span>
+<span class="fc" id="L40">                spread = 360,</span>
+<span class="fc" id="L41">                emitter = Emitter(duration = 2200, TimeUnit.MILLISECONDS).perSecond(250),</span>
+<span class="fc" id="L42">                colors = listOf(</span>
+<span class="fc" id="L43">                    Color.parseColor(&quot;#FF8A65&quot;),</span>
+<span class="fc" id="L44">                    Color.parseColor(&quot;#4DB6AC&quot;),</span>
+<span class="fc" id="L45">                    Color.parseColor(&quot;#FFD54F&quot;),</span>
+<span class="fc" id="L46">                    Color.parseColor(&quot;#9575CD&quot;),</span>
+<span class="fc" id="L47">                    Color.parseColor(&quot;#81D4FA&quot;),</span>
+<span class="fc" id="L48">                    Color.parseColor(&quot;#FF5252&quot;)</span>
+                ),
+<span class="fc" id="L50">                position = Position.Relative(0.5, 0.4)</span>
+            )
+        )
+<span class="fc" id="L53">    }</span>
+
+    fun showGoalAchieved() {
+<span class="fc" id="L56">        konfettiView.start(</span>
+<span class="fc" id="L57">            Party(</span>
+<span class="fc" id="L58">                speed = 10f,</span>
+<span class="fc" id="L59">                maxSpeed = 28f,</span>
+<span class="fc" id="L60">                damping = 0.88f,</span>
+<span class="fc" id="L61">                spread = 300,</span>
+<span class="fc" id="L62">                emitter = Emitter(duration = 1200, TimeUnit.MILLISECONDS).max(120),</span>
+<span class="fc" id="L63">                colors = listOf(</span>
+<span class="fc" id="L64">                    Color.parseColor(&quot;#FF8A65&quot;), // Orange</span>
+<span class="fc" id="L65">                    Color.parseColor(&quot;#4DB6AC&quot;), // Mint</span>
+<span class="fc" id="L66">                    Color.parseColor(&quot;#FFD54F&quot;), // Yellow</span>
+<span class="fc" id="L67">                    Color.parseColor(&quot;#81D4FA&quot;)  // Sky Blue</span>
+                ),
+<span class="fc" id="L69">                position = Position.Relative(0.5, 0.9)</span>
+            )
+        )
+<span class="fc" id="L72">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

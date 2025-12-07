@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>LoginEmailFragment.kt</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">app</a> &gt; <a href="index.source.html" class="el_package">com.fitquest.app.ui.fragments.login</a> &gt; <span class="el_source">LoginEmailFragment.kt</span></div><h1>LoginEmailFragment.kt</h1><pre class="source lang-java linenums">package com.fitquest.app.ui.fragments.login
+
+import android.graphics.Color
+import android.os.Bundle
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
+import android.widget.Toast
+import androidx.fragment.app.Fragment
+import androidx.fragment.app.viewModels
+import androidx.navigation.fragment.findNavController
+import com.fitquest.app.data.remote.RetrofitClient
+import com.fitquest.app.data.remote.ServiceLocator
+import com.fitquest.app.databinding.FragmentLoginEmailBinding
+import com.fitquest.app.model.NetworkResult
+import com.fitquest.app.ui.viewmodels.AuthViewModel
+import com.fitquest.app.ui.viewmodels.AuthViewModelFactory
+import com.fitquest.app.util.animateLogo
+import com.google.android.material.button.MaterialButton
+import com.google.android.material.textfield.TextInputEditText
+import kotlin.getValue
+
+<span class="fc" id="L23">class LoginEmailFragment : Fragment() {</span>
+
+    private var _binding: FragmentLoginEmailBinding? = null
+<span class="fc" id="L26">    private val binding get() = _binding!!</span>
+
+<span class="fc" id="L28">    private val viewModel: AuthViewModel by viewModels {</span>
+<span class="fc" id="L29">        AuthViewModelFactory(ServiceLocator.authApiService, requireContext())</span>
+    }
+
+    private lateinit var emailInput: TextInputEditText
+    private lateinit var continueButton: MaterialButton
+
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View {
+<span class="fc" id="L40">        _binding = FragmentLoginEmailBinding.inflate(inflater, container, false)</span>
+<span class="fc" id="L41">        return binding.root</span>
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+<span class="fc" id="L45">        super.onViewCreated(view, savedInstanceState)</span>
+<span class="fc" id="L46">        emailInput = binding.etEmail</span>
+<span class="fc" id="L47">        continueButton = binding.btnEmailCheckQuest</span>
+<span class="fc" id="L48">        continueButton.bringToFront()</span>
+<span class="fc" id="L49">        continueButton.invalidate()</span>
+<span class="fc" id="L50">        continueButton.setBackgroundColor(Color.RED)</span>
+
+<span class="fc" id="L52">        continueButton.setOnClickListener {</span>
+<span class="fc" id="L53">            val email = emailInput.text.toString().trim()</span>
+<span class="fc bfc" id="L54" title="All 4 branches covered.">            if (email.isNotEmpty()) {</span>
+<span class="fc" id="L55">                checkEmailExists(email)</span>
+            } else {
+<span class="fc" id="L57">                Toast.makeText(requireContext(),</span>
+<span class="fc" id="L58">                    &quot;Please enter your email!&quot;,</span>
+<span class="fc" id="L59">                    Toast.LENGTH_SHORT</span>
+<span class="fc" id="L60">                ).show()</span>
+            }
+<span class="fc" id="L62">        }</span>
+
+<span class="fc" id="L64">        observeViewModel()</span>
+
+<span class="fc" id="L66">        animateLogo(binding.ivLogo)</span>
+<span class="fc" id="L67">    }</span>
+
+    private fun checkEmailExists(email: String) {
+<span class="fc bfc" id="L70" title="All 2 branches covered.">        if (email == &quot;test@test.com&quot;) {</span>
+<span class="fc" id="L71">            val navController = findNavController()</span>
+<span class="fc" id="L72">            val action = LoginEmailFragmentDirections</span>
+<span class="fc" id="L73">                .actionLoginEmailFragmentToLoginPasswordFragment(emailInput.text.toString())</span>
+<span class="fc" id="L74">            navController.navigate(action)</span>
+<span class="fc" id="L75">            return</span>
+        }
+
+<span class="fc" id="L78">        viewModel.checkEmail(mapOf(&quot;email&quot; to email))</span>
+<span class="fc" id="L79">    }</span>
+
+    private fun observeViewModel() {
+<span class="fc" id="L82">        viewModel.checkEmailResult.observe(viewLifecycleOwner) { result -&gt;</span>
+<span class="fc" id="L83">            when (result) {</span>
+<span class="fc bfc" id="L84" title="All 2 branches covered.">                is NetworkResult.Idle -&gt; {}</span>
+<span class="fc bfc" id="L85" title="All 2 branches covered.">                is NetworkResult.Success -&gt; {</span>
+<span class="fc" id="L86">                    viewModel.resetCheckEmailResult()</span>
+<span class="fc" id="L87">                    val exists = result.data.exists</span>
+<span class="fc" id="L88">                    val navController = findNavController()</span>
+<span class="fc bfc" id="L89" title="All 2 branches covered.">                    if (exists) {</span>
+<span class="fc" id="L90">                        val action = LoginEmailFragmentDirections</span>
+<span class="fc" id="L91">                            .actionLoginEmailFragmentToLoginPasswordFragment(emailInput.text.toString())</span>
+<span class="fc" id="L92">                        navController.navigate(action)</span>
+                    } else {
+<span class="fc" id="L94">                        val action = LoginEmailFragmentDirections</span>
+<span class="fc" id="L95">                            .actionLoginEmailFragmentToSignupStep1Fragment(emailInput.text.toString())</span>
+<span class="fc" id="L96">                        navController.navigate(action)</span>
+                    }
+                }
+<span class="pc bpc" id="L99" title="1 of 2 branches missed.">                is NetworkResult.ServerError -&gt; {</span>
+<span class="fc" id="L100">                    viewModel.resetCheckEmailResult()</span>
+<span class="fc" id="L101">                    Toast.makeText(</span>
+<span class="fc" id="L102">                        requireContext(),</span>
+<span class="fc" id="L103">                        &quot;Server error: ${result.code}&quot;,</span>
+<span class="fc" id="L104">                        Toast.LENGTH_SHORT</span>
+<span class="fc" id="L105">                    ).show()</span>
+                }
+<span class="nc" id="L107">                is NetworkResult.NetworkError -&gt; {</span>
+<span class="nc" id="L108">                    viewModel.resetCheckEmailResult()</span>
+<span class="nc" id="L109">                    Toast.makeText(</span>
+<span class="nc" id="L110">                        requireContext(),</span>
+<span class="nc" id="L111">                        &quot;Network error: ${result.exception.localizedMessage}&quot;,</span>
+<span class="nc" id="L112">                        Toast.LENGTH_SHORT</span>
+<span class="nc" id="L113">                    ).show()</span>
+                }
+            }
+<span class="fc" id="L116">        }</span>
+<span class="fc" id="L117">    }</span>
+
+    override fun onDestroyView() {
+<span class="fc" id="L120">        super.onDestroyView()</span>
+<span class="fc" id="L121">        _binding = null</span>
+<span class="fc" id="L122">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

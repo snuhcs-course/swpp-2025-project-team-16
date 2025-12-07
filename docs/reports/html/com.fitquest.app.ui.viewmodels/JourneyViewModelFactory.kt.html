@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>JourneyViewModelFactory.kt</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">app</a> &gt; <a href="index.source.html" class="el_package">com.fitquest.app.ui.viewmodels</a> &gt; <span class="el_source">JourneyViewModelFactory.kt</span></div><h1>JourneyViewModelFactory.kt</h1><pre class="source lang-java linenums">package com.fitquest.app.ui.viewmodels
+
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
+import com.fitquest.app.data.remote.ScheduleApiService
+import com.fitquest.app.repository.ScheduleRepository
+
+<span class="fc" id="L8">class JourneyViewModelFactory(</span>
+<span class="fc" id="L9">    private val scheduleApiService: ScheduleApiService</span>
+) : ViewModelProvider.Factory {
+
+    override fun &lt;T : ViewModel&gt; create(modelClass: Class&lt;T&gt;): T {
+<span class="pc bpc" id="L13" title="1 of 2 branches missed.">        if (modelClass.isAssignableFrom(JourneyViewModel::class.java)) {</span>
+<span class="fc" id="L14">            val repository = ScheduleRepository(scheduleApiService)</span>
+            @Suppress(&quot;UNCHECKED_CAST&quot;)
+<span class="fc" id="L16">            return JourneyViewModel(repository) as T</span>
+        }
+<span class="nc" id="L18">        throw IllegalArgumentException(&quot;Unknown ViewModel class: ${modelClass.name}&quot;)</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

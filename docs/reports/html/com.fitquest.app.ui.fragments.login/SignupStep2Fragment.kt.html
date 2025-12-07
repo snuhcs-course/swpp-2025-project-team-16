@@ -1,0 +1,392 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>SignupStep2Fragment.kt</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">app</a> &gt; <a href="index.source.html" class="el_package">com.fitquest.app.ui.fragments.login</a> &gt; <span class="el_source">SignupStep2Fragment.kt</span></div><h1>SignupStep2Fragment.kt</h1><pre class="source lang-java linenums">package com.fitquest.app.ui.fragments.login
+
+import android.content.Intent
+import android.os.Bundle
+import android.os.CountDownTimer
+import android.util.Log
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
+import android.widget.Toast
+import androidx.camera.core.ImageAnalysis
+import androidx.camera.core.ImageProxy
+import androidx.fragment.app.Fragment
+import androidx.fragment.app.viewModels
+import androidx.navigation.fragment.navArgs
+import com.fitquest.app.MainActivity
+import com.fitquest.app.data.remote.RetrofitClient
+import com.fitquest.app.databinding.FragmentSignupStep2Binding
+import com.fitquest.app.model.NetworkResult
+import com.fitquest.app.model.login.InitialCountRequest
+import com.fitquest.app.ui.coachutils.PoseLandmarkerHelper
+import com.fitquest.app.ui.coachutils.counter.BaseCounter
+import com.fitquest.app.ui.coachutils.counter.SquatCounter
+import com.fitquest.app.ui.fragments.coach.TrackingLockManager
+import com.fitquest.app.ui.fragments.shared.camera.CameraManager
+import com.fitquest.app.ui.fragments.shared.camera.CameraPermissionHelper
+import com.fitquest.app.ui.viewmodels.AuthViewModel
+import com.fitquest.app.ui.viewmodels.AuthViewModelFactory
+import com.google.mediapipe.tasks.vision.core.RunningMode
+import java.util.concurrent.ExecutorService
+import java.util.concurrent.Executors
+import androidx.core.content.ContextCompat
+import com.fitquest.app.R
+import com.fitquest.app.data.remote.ServiceLocator
+
+<span class="fc" id="L36">class SignupStep2Fragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener {</span>
+
+    private var _binding: FragmentSignupStep2Binding? = null
+<span class="fc" id="L39">    private val binding get() = _binding!!</span>
+
+<span class="fc" id="L41">    private val authViewModel: AuthViewModel by viewModels {</span>
+<span class="fc" id="L42">        AuthViewModelFactory(ServiceLocator.authApiService, requireContext())</span>
+    }
+
+<span class="fc" id="L45">    private val args: SignupStep2FragmentArgs by navArgs()</span>
+
+    // Managers
+    private lateinit var cameraManager: CameraManager
+    private lateinit var trackingLockManager: TrackingLockManager
+    private lateinit var uiManager: SignupUiManager
+
+    // Camera &amp; Pose
+    private lateinit var cameraExecutor: ExecutorService
+    private lateinit var poseLandmarkerHelper: PoseLandmarkerHelper
+
+    // State
+    private var isAnalyzing = false
+    private var isCountingDown = false
+    private var counter: BaseCounter? = null
+    private var countdownTimer: CountDownTimer? = null
+
+    // Args
+<span class="fc" id="L63">    private var email: String = &quot;&quot;</span>
+<span class="fc" id="L64">    private var password: String = &quot;&quot;</span>
+<span class="fc" id="L65">    private var username: String = &quot;&quot;</span>
+
+    private var lastCount = 0
+
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+<span class="fc" id="L71">        super.onCreate(savedInstanceState)</span>
+<span class="fc" id="L72">        email = args.email</span>
+<span class="fc" id="L73">        password = args.password</span>
+<span class="fc" id="L74">        username = args.username</span>
+<span class="fc" id="L75">    }</span>
+
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View {
+<span class="fc" id="L82">        _binding = FragmentSignupStep2Binding.inflate(inflater, container, false)</span>
+<span class="fc" id="L83">        return binding.root</span>
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+<span class="fc" id="L87">        super.onViewCreated(view, savedInstanceState)</span>
+
+<span class="fc" id="L89">        initializeComponents()</span>
+<span class="fc" id="L90">        setupCamera()</span>
+<span class="fc" id="L91">        setupObservers()</span>
+<span class="fc" id="L92">        setupButtons()</span>
+
+<span class="fc" id="L94">        startCountdownThenBegin(SignupConstants.COUNTDOWN_DURATION_SECONDS)</span>
+<span class="fc" id="L95">    }</span>
+
+    private fun initializeComponents() {
+<span class="fc" id="L98">        cameraExecutor = Executors.newSingleThreadExecutor()</span>
+<span class="fc" id="L99">        cameraManager = CameraManager(requireContext(), viewLifecycleOwner)</span>
+<span class="fc" id="L100">        trackingLockManager = TrackingLockManager()</span>
+<span class="fc" id="L101">        uiManager = SignupUiManager(binding)</span>
+<span class="fc" id="L102">    }</span>
+
+    private fun setupCamera() {
+<span class="fc" id="L105">        cameraExecutor.execute {</span>
+<span class="fc" id="L106">            poseLandmarkerHelper = PoseLandmarkerHelper(</span>
+<span class="fc" id="L107">                runningMode = RunningMode.LIVE_STREAM,</span>
+<span class="fc" id="L108">                context = requireContext(),</span>
+<span class="fc" id="L109">                poseLandmarkerHelperListener = this</span>
+            )
+<span class="fc" id="L111">        }</span>
+
+<span class="pc bpc" id="L113" title="1 of 2 branches missed.">        if (CameraPermissionHelper.allPermissionsGranted(requireContext())) {</span>
+<span class="fc" id="L114">            startCameraPreview()</span>
+        } else {
+<span class="nc" id="L116">            CameraPermissionHelper.requestPermissions(this)</span>
+        }
+<span class="fc" id="L118">    }</span>
+
+    private fun startCameraPreview() {
+<span class="fc" id="L121">        cameraManager.startCamera(binding.cameraPreview) { error -&gt;</span>
+<span class="nc" id="L122">            showToast(error)</span>
+<span class="nc" id="L123">        }</span>
+<span class="fc" id="L124">    }</span>
+
+    private fun setupObservers() {
+<span class="fc" id="L127">        authViewModel.updateInitialRepsResult.observe(viewLifecycleOwner) { result -&gt;</span>
+<span class="fc" id="L128">            when (result) {</span>
+<span class="pc bpc" id="L129" title="1 of 2 branches missed.">                is NetworkResult.Idle -&gt; Unit</span>
+<span class="pc bpc" id="L130" title="1 of 2 branches missed.">                is NetworkResult.Success -&gt; {</span>
+<span class="fc" id="L131">                    showToast(&quot;Saved: ${result.data.initial_reps}&quot;)</span>
+<span class="fc" id="L132">                    navigateToMainActivity()</span>
+                }
+<span class="nc bnc" id="L134" title="All 2 branches missed.">                is NetworkResult.ServerError -&gt; {</span>
+<span class="nc" id="L135">                    showToast(&quot;Failed: ${result.code}&quot;)</span>
+                }
+<span class="nc" id="L137">                is NetworkResult.NetworkError -&gt; {</span>
+<span class="nc" id="L138">                    showToast(&quot;Network error: ${result.exception.localizedMessage}&quot;)</span>
+                }
+            }
+<span class="fc" id="L141">        }</span>
+<span class="fc" id="L142">    }</span>
+
+    private fun setupButtons() {
+<span class="fc" id="L145">        binding.btnStop.setOnClickListener {</span>
+<span class="fc" id="L146">            pauseAnalysis()</span>
+<span class="fc" id="L147">            stopSession()</span>
+<span class="fc" id="L148">        }</span>
+
+        // 카메라 전환 버튼
+<span class="fc" id="L151">        binding.btnSwitchCamera.setOnClickListener {</span>
+<span class="fc" id="L152">            cameraManager.toggleCamera(</span>
+<span class="fc" id="L153">                previewView = binding.cameraPreview,</span>
+<span class="pc bpc" id="L154" title="1 of 2 branches missed.">                analyzer = if (isAnalyzing) createPoseAnalyzer() else null,</span>
+<span class="nc" id="L155">                onError = { error -&gt; showToast(error) }</span>
+            )
+<span class="fc" id="L157">        }</span>
+<span class="fc" id="L158">    }</span>
+
+    // ================== Countdown &amp; Analysis Control ==================
+
+    private fun startCountdownThenBegin(seconds: Int) {
+<span class="pc bpc" id="L163" title="1 of 2 branches missed.">        if (isCountingDown) return</span>
+<span class="fc" id="L164">        isCountingDown = true</span>
+
+<span class="fc" id="L166">        var remaining = seconds</span>
+<span class="fc" id="L167">        uiManager.updateCountdownText(remaining)</span>
+
+<span class="pc bpc" id="L169" title="1 of 2 branches missed.">        countdownTimer?.cancel()</span>
+<span class="fc" id="L170">        countdownTimer = object : CountDownTimer(</span>
+<span class="fc" id="L171">            seconds * 1000L,</span>
+<span class="fc" id="L172">            SignupConstants.COUNTDOWN_INTERVAL_MS</span>
+        ) {
+            override fun onTick(ms: Long) {
+<span class="fc" id="L175">                uiManager.updateCountdownText(remaining)</span>
+<span class="fc" id="L176">                remaining--</span>
+<span class="fc" id="L177">            }</span>
+
+            override fun onFinish() {
+<span class="fc" id="L180">                uiManager.hideCountdown()</span>
+<span class="fc" id="L181">                isCountingDown = false</span>
+<span class="fc" id="L182">                beginAnalysis()</span>
+<span class="fc" id="L183">            }</span>
+<span class="fc" id="L184">        }.start()</span>
+<span class="fc" id="L185">    }</span>
+
+    private fun beginAnalysis() {
+<span class="fc" id="L188">        isAnalyzing = true</span>
+<span class="fc" id="L189">        counter = SquatCounter().also { it.reset(System.currentTimeMillis()) }</span>
+<span class="fc" id="L190">        trackingLockManager.reset()</span>
+
+<span class="fc" id="L192">        uiManager.updateRepCount(0)</span>
+
+<span class="fc" id="L194">        cameraManager.bindCameraUseCases(</span>
+<span class="fc" id="L195">            previewView = binding.cameraPreview,</span>
+<span class="fc" id="L196">            analyzer = createPoseAnalyzer(),</span>
+<span class="nc" id="L197">            onError = { error -&gt; showToast(error) }</span>
+        )
+<span class="fc" id="L199">    }</span>
+
+    private fun pauseAnalysis() {
+<span class="fc" id="L202">        isAnalyzing = false</span>
+<span class="fc" id="L203">        counter = null</span>
+<span class="fc" id="L204">        trackingLockManager.reset()</span>
+
+<span class="fc" id="L206">        uiManager.clearOverlay()</span>
+
+<span class="fc" id="L208">        cameraManager.bindCameraUseCases(</span>
+<span class="fc" id="L209">            previewView = binding.cameraPreview,</span>
+<span class="fc" id="L210">            analyzer = null,</span>
+<span class="nc" id="L211">            onError = { error -&gt; showToast(error) }</span>
+        )
+<span class="fc" id="L213">    }</span>
+
+    // ================== Pose Detection ==================
+
+    private fun createPoseAnalyzer(): ImageAnalysis.Analyzer {
+<span class="fc" id="L218">        return ImageAnalysis.Analyzer { imageProxy -&gt;</span>
+<span class="fc" id="L219">            detectPose(imageProxy)</span>
+<span class="fc" id="L220">        }</span>
+    }
+
+    private fun detectPose(imageProxy: ImageProxy) {
+<span class="pc bpc" id="L224" title="2 of 4 branches missed.">        if (isAnalyzing &amp;&amp; ::poseLandmarkerHelper.isInitialized) {</span>
+<span class="fc" id="L225">            poseLandmarkerHelper.detectLiveStream(</span>
+<span class="fc" id="L226">                imageProxy = imageProxy,</span>
+<span class="pc bpc" id="L227" title="1 of 2 branches missed.">                isFrontCamera = (cameraManager.lensFacing == androidx.camera.core.CameraSelector.LENS_FACING_FRONT)</span>
+            )
+        } else {
+<span class="nc" id="L230">            imageProxy.close()</span>
+        }
+<span class="fc" id="L232">    }</span>
+
+    override fun onResults(resultBundle: PoseLandmarkerHelper.ResultBundle) {
+<span class="pc bpc" id="L235" title="1 of 2 branches missed.">        activity?.runOnUiThread {</span>
+<span class="fc bfc" id="L236" title="All 2 branches covered.">            if (!isAnalyzing) return@runOnUiThread</span>
+
+<span class="pc bpc" id="L238" title="1 of 2 branches missed.">            val result = resultBundle.results.firstOrNull() ?: return@runOnUiThread</span>
+<span class="pc bpc" id="L239" title="1 of 2 branches missed.">            val landmarks = result.landmarks().firstOrNull() ?: return@runOnUiThread</span>
+
+<span class="pc bpc" id="L241" title="1 of 2 branches missed.">            if (landmarks.size &lt; 33) return@runOnUiThread</span>
+
+            // Update overlay
+<span class="fc" id="L244">            binding.overlay.setResults(</span>
+<span class="fc" id="L245">                result,</span>
+<span class="fc" id="L246">                resultBundle.inputImageHeight,</span>
+<span class="fc" id="L247">                resultBundle.inputImageWidth,</span>
+<span class="fc" id="L248">                RunningMode.LIVE_STREAM</span>
+            )
+<span class="fc" id="L250">            uiManager.setOverlayVisibility(true)</span>
+<span class="fc" id="L251">            binding.overlay.invalidate()</span>
+
+<span class="fc" id="L253">            val now = System.currentTimeMillis()</span>
+
+            // Tracking lock check
+<span class="fc" id="L256">            val lockChange = trackingLockManager.updateLockState(landmarks, now)</span>
+<span class="pc bpc" id="L257" title="3 of 4 branches missed.">            when (lockChange) {</span>
+                TrackingLockManager.LockStateChange.LOCKED -&gt; {
+<span class="nc" id="L259">                    uiManager.showTrackingLockMessage(true)</span>
+<span class="nc" id="L260">                    return@runOnUiThread</span>
+                }
+                TrackingLockManager.LockStateChange.UNLOCKED -&gt; {
+<span class="nc" id="L263">                    uiManager.showTrackingLockMessage(false)</span>
+                }
+                TrackingLockManager.LockStateChange.STILL_LOCKED -&gt; {
+<span class="pc" id="L266">                    return@runOnUiThread</span>
+                }
+                TrackingLockManager.LockStateChange.NO_CHANGE -&gt; {
+                    // Continue
+                }
+            }
+
+<span class="pc bpc" id="L273" title="1 of 2 branches missed.">            if (trackingLockManager.shouldDisarm(now)) return@runOnUiThread</span>
+
+            // Convert landmarks to float array
+<span class="fc" id="L276">            val pts = FloatArray(landmarks.size * 3)</span>
+<span class="fc bfc" id="L277" title="All 2 branches covered.">            for (i in landmarks.indices) {</span>
+<span class="fc" id="L278">                pts[3 * i] = landmarks[i].x()</span>
+<span class="fc" id="L279">                pts[3 * i + 1] = landmarks[i].y()</span>
+<span class="fc" id="L280">                pts[3 * i + 2] = landmarks[i].z()</span>
+            }
+
+<span class="pc bpc" id="L283" title="1 of 2 branches missed.">            counter?.update(pts, now)</span>
+
+<span class="pc bpc" id="L285" title="1 of 2 branches missed.">            val currentCount = counter?.count ?: 0</span>
+<span class="fc" id="L286">            uiManager.updateRepCount(currentCount)</span>
+
+<span class="fc" id="L288">            val previous = lastCount</span>
+<span class="fc bfc" id="L289" title="All 2 branches covered.">            if (currentCount &gt; previous) {</span>
+<span class="fc" id="L290">                showRepPopup(currentCount)</span>
+            }
+<span class="fc" id="L292">            lastCount = currentCount</span>
+<span class="fc" id="L293">        }</span>
+<span class="fc" id="L294">    }</span>
+
+    override fun onError(error: String, errorCode: Int) {
+<span class="nc bnc" id="L297" title="All 2 branches missed.">        activity?.runOnUiThread {</span>
+<span class="nc" id="L298">            showToast(error)</span>
+<span class="nc" id="L299">        }</span>
+<span class="nc" id="L300">    }</span>
+
+    private fun stopSession() {
+<span class="pc bpc" id="L303" title="1 of 2 branches missed.">        val initialCount = binding.tvCountNumber.text.toString().toIntOrNull() ?: 0</span>
+<span class="fc" id="L304">        authViewModel.updateInitialReps(</span>
+<span class="fc" id="L305">            InitialCountRequest(initial_reps = initialCount)</span>
+        )
+<span class="fc" id="L307">    }</span>
+
+    private fun navigateToMainActivity() {
+<span class="fc" id="L310">        try {</span>
+<span class="pc bpc" id="L311" title="1 of 2 branches missed.">            if (::poseLandmarkerHelper.isInitialized) {</span>
+<span class="fc" id="L312">                poseLandmarkerHelper.clearPoseLandmarker()</span>
+            }
+<span class="nc" id="L314">        } catch (e: Exception) {</span>
+<span class="nc" id="L315">            Log.e(TAG, &quot;Error clearing poseLandmarker&quot;, e)</span>
+        } finally {
+<span class="fc" id="L317">            cameraExecutor.shutdown()</span>
+<span class="pc bpc" id="L318" title="1 of 2 branches missed.">            countdownTimer?.cancel()</span>
+<span class="fc" id="L319">            countdownTimer = null</span>
+
+<span class="pc bpc" id="L321" title="1 of 2 branches missed.">            activity?.let {</span>
+<span class="fc" id="L322">                it.startActivity(Intent(it, MainActivity::class.java))</span>
+<span class="fc" id="L323">                it.finish()</span>
+<span class="fc" id="L324">            }</span>
+<span class="pc" id="L325">        }</span>
+<span class="fc" id="L326">    }</span>
+
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array&lt;String&gt;,
+        grantResults: IntArray
+    ) {
+<span class="nc" id="L333">        super.onRequestPermissionsResult(requestCode, permissions, grantResults)</span>
+<span class="nc bnc" id="L334" title="All 2 branches missed.">        if (requestCode == CameraPermissionHelper.REQUEST_CODE_PERMISSIONS &amp;&amp;</span>
+<span class="nc bnc" id="L335" title="All 2 branches missed.">            CameraPermissionHelper.allPermissionsGranted(requireContext())</span>
+        ) {
+<span class="nc" id="L337">            startCameraPreview()</span>
+<span class="nc" id="L338">            startCountdownThenBegin(SignupConstants.COUNTDOWN_DURATION_SECONDS)</span>
+        }
+<span class="nc" id="L340">    }</span>
+
+    private fun showToast(message: String) {
+<span class="fc" id="L343">        Toast.makeText(requireContext(), message, Toast.LENGTH_SHORT).show()</span>
+<span class="fc" id="L344">    }</span>
+
+    override fun onDestroyView() {
+<span class="fc" id="L347">        super.onDestroyView()</span>
+<span class="pc bpc" id="L348" title="1 of 2 branches missed.">        countdownTimer?.cancel()</span>
+<span class="fc" id="L349">        countdownTimer = null</span>
+<span class="fc" id="L350">        cameraExecutor.shutdown()</span>
+<span class="pc bpc" id="L351" title="1 of 2 branches missed.">        if (::poseLandmarkerHelper.isInitialized) {</span>
+<span class="fc" id="L352">            poseLandmarkerHelper.clearPoseLandmarker()</span>
+        }
+<span class="fc" id="L354">        _binding = null</span>
+<span class="fc" id="L355">    }</span>
+
+    private fun showRepPopup(count: Int) {
+<span class="fc" id="L358">        val popup = binding.tvRepPopup</span>
+<span class="fc" id="L359">        popup.text = count.toString()</span>
+<span class="fc" id="L360">        popup.visibility = View.VISIBLE</span>
+<span class="fc" id="L361">        popup.alpha = 1f</span>
+<span class="fc" id="L362">        popup.scaleX = 1f</span>
+<span class="fc" id="L363">        popup.scaleY = 1f</span>
+
+<span class="fc" id="L365">        popup.animate()</span>
+<span class="fc" id="L366">            .alpha(0f)</span>
+<span class="fc" id="L367">            .scaleX(2f)</span>
+<span class="fc" id="L368">            .scaleY(2f)</span>
+<span class="fc" id="L369">            .setDuration(500)</span>
+<span class="fc" id="L370">            .withEndAction { popup.visibility = View.GONE }</span>
+<span class="fc" id="L371">            .start()</span>
+<span class="fc" id="L372">    }</span>
+
+    companion object {
+        private const val TAG = &quot;SignupStep2&quot;
+
+        private const val ARG_EMAIL = &quot;email&quot;
+        private const val ARG_PASSWORD = &quot;password&quot;
+        private const val ARG_USERNAME = &quot;username&quot;
+
+        fun newInstance(email: String, password: String, username: String): SignupStep2Fragment {
+<span class="nc" id="L382">            val fragment = SignupStep2Fragment()</span>
+<span class="nc" id="L383">            val args = Bundle()</span>
+<span class="nc" id="L384">            args.putString(ARG_EMAIL, email)</span>
+<span class="nc" id="L385">            args.putString(ARG_PASSWORD, password)</span>
+<span class="nc" id="L386">            args.putString(ARG_USERNAME, username)</span>
+<span class="nc" id="L387">            fragment.arguments = args</span>
+<span class="nc" id="L388">            return fragment</span>
+        }
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

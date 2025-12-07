@@ -1,0 +1,152 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>Constants.kt</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">app</a> &gt; <a href="index.source.html" class="el_package">com.fitquest.app.util</a> &gt; <span class="el_source">Constants.kt</span></div><h1>Constants.kt</h1><pre class="source lang-java linenums">package com.fitquest.app.util
+
+import com.fitquest.app.model.Schedule
+import com.fitquest.app.model.Session
+
+enum class TargetType {
+<span class="fc" id="L7">    REPS,</span>
+<span class="fc" id="L8">    DURATION</span>
+}
+
+<span class="fc" id="L11">data class ActivityMetadata(</span>
+<span class="fc" id="L12">    val label: String,</span>
+<span class="fc" id="L13">    val emoji: String,</span>
+<span class="fc" id="L14">    val targetType: TargetType</span>
+)
+
+object ActivityUtils {
+    // Key: lowercase activity name
+<span class="fc" id="L19">    val activityMetadataMap = mapOf(</span>
+<span class="fc" id="L20">        &quot;squat&quot; to ActivityMetadata(</span>
+<span class="fc" id="L21">            label = &quot;Squat&quot;,</span>
+<span class="fc" id="L22">            emoji = &quot;\uD83C\uDFCB\u200D\u2642\uFE0F&quot;, // 🏋️‍♂️</span>
+<span class="fc" id="L23">            targetType = TargetType.REPS</span>
+        ),
+<span class="fc" id="L25">        &quot;plank&quot; to ActivityMetadata(</span>
+<span class="fc" id="L26">            label = &quot;Plank&quot;,</span>
+<span class="fc" id="L27">            emoji = &quot;\uD83E\uDDD8\u200D\u2642\uFE0F&quot;, // 🧘‍♂️</span>
+<span class="fc" id="L28">            targetType = TargetType.DURATION</span>
+        ),
+<span class="fc" id="L30">        &quot;lunge&quot; to ActivityMetadata(</span>
+<span class="fc" id="L31">            label = &quot;Lunge&quot;,</span>
+<span class="fc" id="L32">            emoji = &quot;\uD83E\uDDB5&quot;, // 🦵</span>
+<span class="fc" id="L33">            targetType = TargetType.REPS</span>
+        )
+    )
+
+    fun getLabel(activity: String) =
+<span class="pc bpc" id="L38" title="2 of 4 branches missed.">        activityMetadataMap[activity.lowercase()]?.label ?: activity</span>
+
+    fun getEmoji(activity: String) =
+<span class="pc bpc" id="L41" title="2 of 4 branches missed.">        activityMetadataMap[activity.lowercase()]?.emoji ?: &quot;&quot;</span>
+
+    fun getTargetType(activity: String): TargetType? =
+<span class="pc bpc" id="L44" title="1 of 2 branches missed.">        activityMetadataMap[activity.lowercase()]?.targetType</span>
+
+<span class="fc" id="L46">    fun formatActivitiesSummary(</span>
+        schedules: List&lt;Schedule&gt;,
+<span class="fc" id="L48">        sessions: List&lt;Session&gt; = emptyList()</span>
+    ): String {
+
+<span class="fc" id="L51">        val activityCountMap = mutableMapOf&lt;String, Int&gt;()</span>
+
+<span class="fc" id="L53">        schedules.forEach { schedule -&gt;</span>
+<span class="fc" id="L54">            val key = schedule.activity</span>
+<span class="pc bpc" id="L55" title="1 of 2 branches missed.">            activityCountMap[key] = (activityCountMap[key] ?: 0) + 1</span>
+<span class="fc" id="L56">        }</span>
+
+<span class="fc" id="L58">        sessions.forEach { session -&gt;</span>
+<span class="fc" id="L59">            val key = session.activity</span>
+<span class="pc bpc" id="L60" title="1 of 2 branches missed.">            activityCountMap[key] = (activityCountMap[key] ?: 0) + 1</span>
+<span class="fc" id="L61">        }</span>
+
+<span class="fc" id="L63">        return activityCountMap.entries.joinToString(&quot;, &quot;) { (activity, count) -&gt;</span>
+<span class="pc bpc" id="L64" title="1 of 2 branches missed.">            if (count &gt; 1) &quot;$activity x $count&quot; else activity</span>
+        }
+    }
+
+    fun calculateXp(targetType: TargetType?, actualValue: Int?): Int {
+<span class="fc bfc" id="L69" title="All 2 branches covered.">        val value = actualValue ?: 0</span>
+<span class="pc bpc" id="L70" title="3 of 5 branches missed.">        return when (targetType) {</span>
+<span class="fc" id="L71">            TargetType.REPS -&gt; value * 10</span>
+<span class="nc" id="L72">            TargetType.DURATION -&gt; value</span>
+<span class="nc" id="L73">            else -&gt; 0</span>
+        }
+    }
+
+    fun calculateXp(activity: String, actualValue: Int?): Int {
+<span class="nc" id="L78">        val targetType = getTargetType(activity)</span>
+<span class="nc" id="L79">        return calculateXp(targetType, actualValue)</span>
+    }
+
+    fun calculateTotalEarnedXpForSchedules(schedules: List&lt;Schedule&gt;): Int {
+<span class="fc bfc" id="L83" title="All 2 branches covered.">        return schedules.sumOf { calculateEarnedXpForSchedule(it) }</span>
+    }
+
+    fun calculateTotalEarnedXpForSessions(sessions: List&lt;Session&gt;): Int {
+<span class="fc bfc" id="L87" title="All 2 branches covered.">        return sessions.sumOf { calculateEarnedXpForSession(it) }</span>
+    }
+
+    fun calculateTargetXp(schedule: Schedule): Int {
+<span class="fc" id="L91">        val targetType = getTargetType(schedule.activity)</span>
+<span class="pc bpc" id="L92" title="1 of 2 branches missed.">        val actualValue = if (targetType == TargetType.REPS) schedule.repsTarget else schedule.durationTarget</span>
+<span class="fc" id="L93">        return calculateXp(targetType, actualValue)</span>
+    }
+
+    fun calculateTotalTargetXp(schedules: List&lt;Schedule&gt;): Int {
+<span class="fc bfc" id="L97" title="All 2 branches covered.">        return schedules.sumOf { calculateTargetXp(it) }</span>
+    }
+
+    fun calculateEarnedXpForSchedule(schedule: Schedule): Int {
+<span class="fc" id="L101">        val targetType = getTargetType(schedule.activity)</span>
+<span class="pc bpc" id="L102" title="1 of 2 branches missed.">        val actualValue = if (targetType == TargetType.REPS) schedule.repsDone else schedule.durationDone</span>
+<span class="fc" id="L103">        return calculateXp(targetType, actualValue)</span>
+    }
+
+    fun calculateEarnedXpForSession(session: Session): Int {
+<span class="fc" id="L107">        val targetType = getTargetType(session.activity)</span>
+<span class="pc bpc" id="L108" title="1 of 2 branches missed.">        val actualValue = if (targetType == TargetType.REPS) session.repsCount else session.duration</span>
+<span class="fc" id="L109">        return calculateXp(targetType, actualValue)</span>
+    }
+
+<span class="nc" id="L112">    fun calculateTotalEarnedXp(</span>
+        schedules: List&lt;Schedule&gt;,
+<span class="nc" id="L114">        sessions: List&lt;Session&gt; = emptyList()</span>
+    ): Int {
+<span class="fc" id="L116">        return calculateTotalEarnedXpForSchedules(schedules) + calculateTotalEarnedXpForSessions(sessions)</span>
+    }
+
+    fun calculateCompletionPercent(schedule: Schedule): Int {
+<span class="fc" id="L120">        val targetType = getTargetType(schedule.activity)</span>
+
+<span class="fc" id="L122">        val done: Int?</span>
+<span class="fc" id="L123">        val target: Int?</span>
+
+<span class="pc bpc" id="L125" title="3 of 5 branches missed.">        when (targetType) {</span>
+            TargetType.REPS -&gt; {
+<span class="fc" id="L127">                done = schedule.repsDone</span>
+<span class="fc" id="L128">                target = schedule.repsTarget</span>
+            }
+            TargetType.DURATION -&gt; {
+<span class="nc" id="L131">                done = schedule.durationDone</span>
+<span class="nc" id="L132">                target = schedule.durationTarget</span>
+            }
+<span class="nc" id="L134">            else -&gt; return 0</span>
+        }
+
+<span class="pc bpc" id="L137" title="5 of 6 branches missed.">        return if (done != null &amp;&amp; target != null &amp;&amp; target &gt; 0) {</span>
+<span class="nc" id="L138">            (done * 100) / target</span>
+        } else {
+<span class="fc" id="L140">            0</span>
+        }
+    }
+
+    fun calculateAverageCompletionPercent(schedules: List&lt;Schedule&gt;): Int {
+<span class="pc bpc" id="L145" title="1 of 2 branches missed.">        if (schedules.isEmpty()) return 0</span>
+
+<span class="fc bfc" id="L147" title="All 2 branches covered.">        val totalPercent = schedules.sumOf { calculateCompletionPercent(it) }</span>
+
+<span class="fc" id="L149">        return totalPercent / schedules.size</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

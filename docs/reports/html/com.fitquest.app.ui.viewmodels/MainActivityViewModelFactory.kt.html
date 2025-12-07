@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>MainActivityViewModelFactory.kt</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">app</a> &gt; <a href="index.source.html" class="el_package">com.fitquest.app.ui.viewmodels</a> &gt; <span class="el_source">MainActivityViewModelFactory.kt</span></div><h1>MainActivityViewModelFactory.kt</h1><pre class="source lang-java linenums">package com.fitquest.app.ui.viewmodels
+
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
+import com.fitquest.app.data.remote.DailySummaryApiService
+import com.fitquest.app.data.remote.ScheduleApiService
+import com.fitquest.app.repository.DailySummaryRepository
+import com.fitquest.app.repository.ScheduleRepository
+
+<span class="fc" id="L10">class MainActivityViewModelFactory(</span>
+<span class="fc" id="L11">    private val scheduleApiService: ScheduleApiService,</span>
+<span class="fc" id="L12">    private val dailySummaryApiService: DailySummaryApiService</span>
+) : ViewModelProvider.Factory {
+
+    override fun &lt;T : ViewModel&gt; create(modelClass: Class&lt;T&gt;): T {
+<span class="pc bpc" id="L16" title="1 of 2 branches missed.">        if (modelClass.isAssignableFrom(MainActivityViewModel::class.java)) {</span>
+<span class="fc" id="L17">            val scheduleRepository = ScheduleRepository(scheduleApiService)</span>
+<span class="fc" id="L18">            val dailySummaryRepository = DailySummaryRepository(dailySummaryApiService)</span>
+            @Suppress(&quot;UNCHECKED_CAST&quot;)
+<span class="fc" id="L20">            return MainActivityViewModel(scheduleRepository, dailySummaryRepository) as T</span>
+        }
+<span class="nc" id="L22">        throw IllegalArgumentException(&quot;Unknown ViewModel class: ${modelClass.name}&quot;)</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>LungeCounter.kt</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">app</a> &gt; <a href="index.source.html" class="el_package">com.fitquest.app.ui.coachutils.counter</a> &gt; <span class="el_source">LungeCounter.kt</span></div><h1>LungeCounter.kt</h1><pre class="source lang-java linenums">package com.fitquest.app.ui.coachutils.counter
+
+import kotlin.math.acos
+import kotlin.math.abs
+import kotlin.math.sqrt
+
+
+<span class="fc" id="L8">class LungeCounter : BaseCounter() {</span>
+
+<span class="fc" id="L10">    enum class Phase { UP, DOWN_REACHED }</span>
+
+<span class="fc" id="L12">    override var count: Int = 0</span>
+<span class="fc" id="L13">    override var phase: String = &quot;UP&quot;</span>
+
+    // ★ 런지 시작 시간 기록용
+    private var repStartMs = 0L
+
+    // ★ 최소 런지 시간: 500ms 미만이면 가짜로 판단
+<span class="fc" id="L19">    private val minimumRepDuration = 500L</span>
+
+<span class="fc" id="L21">    private var phaseState = Phase.UP</span>
+        set(value) {
+<span class="fc" id="L23">            field = value</span>
+<span class="fc" id="L24">            phase = value.name</span>
+<span class="fc" id="L25">        }</span>
+
+    private var lastUpdateMs = 0L
+
+    override fun reset(nowMs: Long) {
+<span class="fc" id="L30">        count = 0</span>
+<span class="fc" id="L31">        phaseState = Phase.UP</span>
+<span class="fc" id="L32">        lastUpdateMs = nowMs</span>
+<span class="fc" id="L33">    }</span>
+
+
+    override fun update(points: FloatArray, nowMs: Long) {
+<span class="pc bpc" id="L37" title="1 of 2 branches missed.">        if (points.size &lt; 33 * 3) return</span>
+
+<span class="pc bpc" id="L39" title="1 of 2 branches missed.">        if (lastUpdateMs == 0L) lastUpdateMs = nowMs</span>
+<span class="fc" id="L40">        lastUpdateMs = nowMs</span>
+
+        fun v(i: Int) = doubleArrayOf(
+<span class="fc" id="L43">            points[i * 3].toDouble(),</span>
+<span class="fc" id="L44">            points[i * 3 + 1].toDouble(),</span>
+<span class="fc" id="L45">            points[i * 3 + 2].toDouble()</span>
+<span class="fc" id="L46">        )</span>
+
+        fun sub(a: DoubleArray, b: DoubleArray) =
+<span class="fc" id="L49">            doubleArrayOf(a[0] - b[0], a[1] - b[1], a[2] - b[2])</span>
+
+        fun dot(a: DoubleArray, b: DoubleArray) =
+<span class="fc" id="L52">            a[0] * b[0] + a[1] * b[1] + a[2] * b[2]</span>
+
+        fun nrm(a: DoubleArray): Double {
+<span class="fc" id="L55">            val t = sqrt(dot(a, a))</span>
+<span class="pc bpc" id="L56" title="1 of 2 branches missed.">            return if (t &lt; 1e-8) 1e-8 else t</span>
+        }
+
+        fun angle(a: DoubleArray, b: DoubleArray, c: DoubleArray): Double {
+<span class="fc" id="L60">            val v1 = sub(a, b)</span>
+<span class="fc" id="L61">            val v2 = sub(c, b)</span>
+<span class="fc" id="L62">            val cosT = (dot(v1, v2) / (nrm(v1) * nrm(v2))).coerceIn(-1.0, 1.0)</span>
+<span class="fc" id="L63">            return Math.toDegrees(acos(cosT))</span>
+        }
+
+
+        /** 1. 앞/뒷다리 자동판정 */
+<span class="fc" id="L68">        val ankleL = v(27)</span>
+<span class="fc" id="L69">        val ankleR = v(28)</span>
+
+<span class="fc" id="L71">        val isLeftBackLeg =</span>
+<span class="fc bfc" id="L72" title="All 2 branches covered.">            (ankleL[2] &gt; ankleR[2]) ||</span>
+<span class="fc bfc" id="L73" title="All 2 branches covered.">                    (ankleL[1] &lt; ankleR[1])</span>
+
+<span class="fc bfc" id="L75" title="All 2 branches covered.">        val hipBack = if (isLeftBackLeg) v(23) else v(24)</span>
+<span class="fc bfc" id="L76" title="All 2 branches covered.">        val kneeBack = if (isLeftBackLeg) v(25) else v(26)</span>
+<span class="fc bfc" id="L77" title="All 2 branches covered.">        val ankleBack = if (isLeftBackLeg) v(27) else v(28)</span>
+
+        /** 2. 무릎 각도 */
+<span class="fc" id="L80">        val kneeAngle = angle(hipBack, kneeBack, ankleBack)</span>
+
+
+        /** 3. FSM */
+<span class="fc bfc" id="L84" title="All 2 branches covered.">        when (phaseState) {</span>
+
+            Phase.UP -&gt; {
+<span class="fc bfc" id="L87" title="All 2 branches covered.">                if (kneeAngle &lt; 120.0) {</span>
+<span class="fc" id="L88">                    repStartMs = nowMs</span>
+<span class="fc" id="L89">                    phaseState = Phase.DOWN_REACHED</span>
+                }
+            }
+
+            Phase.DOWN_REACHED -&gt; {
+
+<span class="fc bfc" id="L95" title="All 2 branches covered.">                if (kneeAngle &gt; 150.0) {</span>
+<span class="fc" id="L96">                    val repDuration = nowMs - repStartMs</span>
+<span class="fc bfc" id="L97" title="All 2 branches covered.">                    if (repDuration &gt;= minimumRepDuration) {</span>
+<span class="fc" id="L98">                        count++</span>
+                    }
+<span class="fc" id="L100">                    phaseState = Phase.UP</span>
+                }
+            }
+        }
+<span class="fc" id="L104">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

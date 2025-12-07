@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>CoachConstants.kt</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">app</a> &gt; <a href="index.source.html" class="el_package">com.fitquest.app.ui.fragments.coach</a> &gt; <span class="el_source">CoachConstants.kt</span></div><h1>CoachConstants.kt</h1><pre class="source lang-java linenums">package com.fitquest.app.ui.fragments.coach
+
+object CoachConstants {
+    // Countdown
+    const val COUNTDOWN_DURATION_SECONDS = 10
+    const val COUNTDOWN_INTERVAL_MS = 1000L
+
+    // Tracking lock FSM
+    const val VIS_THRESH = 0.95f
+<span class="fc" id="L10">    val LOWER_NEEDED = intArrayOf(23, 24, 25, 26, 27, 28)</span>
+    const val LOWER_REQUIRED = 5
+    const val BAD_VIS_LIMIT = 12
+    const val GOOD_VIS_LIMIT = 12
+    const val DISARM_MS_AFTER_UNLOCK = 300L
+
+    // Messages
+    const val COACH_MSG_IDLE = &quot;Position yourself in frame&quot;
+    const val COACH_MSG_ANALYZING = &quot;Analyzing form... 🔍&quot;
+    const val COACH_MSG_READY = &quot;Get ready... ⏳&quot;
+    const val COACH_MSG_STEP_BACK = &quot;STEP BACK&quot;
+
+    // Photo capture
+    const val MIN_CAPTURE_INTERVAL_MS = 3000L
+    const val PLANK_CAPTURE_INTERVAL_MS = 15000L
+    const val FILE_PREFIX_BOTTOM_REP = &quot;aicoach_bottom_rep_&quot;
+    const val FILE_EXTENSION = &quot;.jpg&quot;
+
+    // Rep popup animation
+    const val REP_POPUP_DURATION_MS = 600L
+    const val REP_POPUP_SCALE = 1.4f
+
+    // Arguments
+    const val ARG_SCHEDULE_ID = &quot;scheduleId&quot;
+    const val ARG_ACTIVITY_KEY = &quot;activityKey&quot;
+    const val ARG_REPS_TARGET = &quot;repsTarget&quot;
+    const val ARG_DURATION_TARGET = &quot;durationTarget&quot;
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

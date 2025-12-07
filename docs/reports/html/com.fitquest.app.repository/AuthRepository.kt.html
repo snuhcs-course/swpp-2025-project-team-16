@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>AuthRepository.kt</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">app</a> &gt; <a href="index.source.html" class="el_package">com.fitquest.app.repository</a> &gt; <span class="el_source">AuthRepository.kt</span></div><h1>AuthRepository.kt</h1><pre class="source lang-java linenums">package com.fitquest.app.repository
+
+import android.content.Context
+import com.fitquest.app.data.remote.AuthApiService
+import com.fitquest.app.data.remote.TokenManager
+import com.fitquest.app.model.login.EmailCheckResponse
+import com.fitquest.app.model.login.InitialCountRequest
+import com.fitquest.app.model.login.InitialCountResponse
+import com.fitquest.app.model.login.LoginRequest
+import com.fitquest.app.model.login.LoginResponse
+import com.fitquest.app.model.login.SignupRequest
+import com.fitquest.app.model.login.SignupResponse
+import retrofit2.Response
+
+<span class="fc" id="L15">class AuthRepository(private val service: AuthApiService, private val context: Context) {</span>
+    suspend fun signup(request: SignupRequest): Response&lt;SignupResponse&gt; =
+<span class="fc" id="L17">        service.signup(request)</span>
+
+    suspend fun login(request: LoginRequest): Response&lt;LoginResponse&gt; =
+<span class="fc" id="L20">        service.login(request)</span>
+
+    suspend fun checkEmail(request: Map&lt;String, String&gt;): Response&lt;EmailCheckResponse&gt; =
+<span class="fc" id="L23">        service.checkEmail(request)</span>
+
+    suspend fun updateInitialReps(body: InitialCountRequest): Response&lt;InitialCountResponse&gt; {
+<span class="fc" id="L26">        return service.updateInitialReps(body)</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

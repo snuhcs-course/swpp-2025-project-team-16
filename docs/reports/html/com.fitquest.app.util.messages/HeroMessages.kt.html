@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>HeroMessages.kt</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">app</a> &gt; <a href="index.source.html" class="el_package">com.fitquest.app.util.messages</a> &gt; <span class="el_source">HeroMessages.kt</span></div><h1>HeroMessages.kt</h1><pre class="source lang-java linenums">package com.fitquest.app.util.messages
+
+object HeroMessages {
+<span class="fc" id="L4">    data class Message(val text: String, val emoji: String)</span>
+
+<span class="fc" id="L6">    private val messages = listOf(</span>
+<span class="fc" id="L7">        Message(&quot;Level up today, warrior&quot;, &quot;\uD83C\uDFC6&quot;),   // 🏆</span>
+<span class="fc" id="L8">        Message(&quot;Conquer your limits&quot;, &quot;\u2694\uFE0F&quot;),       // ⚔️</span>
+<span class="fc" id="L9">        Message(&quot;Every step counts&quot;, &quot;\uD83D\uDC63&quot;),        // 👣</span>
+<span class="fc" id="L10">        Message(&quot;Strength is earned, not given&quot;, &quot;\uD83D\uDCAA&quot;), // 💪</span>
+<span class="fc" id="L11">        Message(&quot;Your journey, your glory&quot;, &quot;\u2728&quot;),       // ✨</span>
+<span class="fc" id="L12">        Message(&quot;Keep pushing forward&quot;, &quot;\uD83D\uDE80&quot;),    // 🚀</span>
+<span class="fc" id="L13">        Message(&quot;Victory favors the bold&quot;, &quot;\uD83C\uDFC6&quot;), // 🏆</span>
+<span class="fc" id="L14">        Message(&quot;Forge your strength&quot;, &quot;\uD83D\uDD28&quot;),      // 🔨</span>
+<span class="fc" id="L15">        Message(&quot;Rise stronger than yesterday&quot;, &quot;\uD83C\uDF1F&quot;), // 🌟</span>
+<span class="fc" id="L16">        Message(&quot;Your next quest awaits&quot;, &quot;\u2694\uFE0F&quot;),   // ⚔️</span>
+<span class="fc" id="L17">        Message(&quot;The path to power continues&quot;, &quot;\uD83D\uDC51&quot;),   // 👑</span>
+<span class="fc" id="L18">        Message(&quot;Unbreakable spirit&quot;, &quot;\uD83D\uDEE1\uFE0F&quot;), // 🛡️</span>
+<span class="fc" id="L19">        Message(&quot;Sweat is your armor&quot;, &quot;\uD83E\uDDBE&quot;),     // 🦾</span>
+<span class="fc" id="L20">        Message(&quot;Pain is temporary&quot;, &quot;\u23F3&quot;),              // ⏳</span>
+<span class="fc" id="L21">        Message(&quot;Become the champion&quot;, &quot;\uD83E\uDD47&quot;),      // 🥇</span>
+<span class="fc" id="L22">        Message(&quot;Defy the odds&quot;, &quot;\uD83C\uDFB2&quot;),            // 🎲</span>
+    )
+
+<span class="fc" id="L25">    fun random(): Message = messages.random()</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

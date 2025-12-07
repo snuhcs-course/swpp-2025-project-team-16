@@ -1,0 +1,264 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ProfileFragment.kt</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">app</a> &gt; <a href="index.source.html" class="el_package">com.fitquest.app.ui.fragments</a> &gt; <span class="el_source">ProfileFragment.kt</span></div><h1>ProfileFragment.kt</h1><pre class="source lang-java linenums">package com.fitquest.app.ui.fragments
+
+import android.os.Bundle
+import android.view.*
+import android.widget.*
+import androidx.fragment.app.Fragment
+import androidx.fragment.app.viewModels
+import androidx.lifecycle.lifecycleScope
+import androidx.recyclerview.widget.LinearLayoutManager
+import com.fitquest.app.R
+import com.fitquest.app.data.remote.RetrofitClient
+import com.fitquest.app.data.remote.ServiceLocator
+import com.fitquest.app.data.remote.UserApiService
+import com.fitquest.app.databinding.FragmentProfileBinding
+import com.fitquest.app.databinding.ItemExercisedoneBinding
+import com.fitquest.app.databinding.LayoutHistoryDetailBinding
+import com.fitquest.app.model.DailyHistoryItem
+import com.fitquest.app.model.Schedule
+import com.fitquest.app.model.Session
+import com.fitquest.app.ui.adapters.HistoryAdapter
+import com.fitquest.app.ui.viewmodels.HistoryViewModel
+import com.fitquest.app.ui.viewmodels.HistoryViewModelFactory
+import com.fitquest.app.ui.viewmodels.UserViewModel
+import com.fitquest.app.ui.viewmodels.UserViewModelFactory
+import com.fitquest.app.util.ActivityUtils.calculateAverageCompletionPercent
+import com.fitquest.app.util.ActivityUtils.calculateCompletionPercent
+import com.fitquest.app.util.ActivityUtils.calculateEarnedXpForSchedule
+import com.fitquest.app.util.ActivityUtils.calculateEarnedXpForSession
+import com.fitquest.app.util.ActivityUtils.calculateTotalEarnedXp
+import com.fitquest.app.util.ActivityUtils.getEmoji
+import com.fitquest.app.util.DateUtils.formatDate
+import com.fitquest.app.util.DateUtils.formatTotalTime
+import com.google.android.material.button.MaterialButton
+import com.google.android.material.bottomsheet.BottomSheetDialog
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.launch
+import org.threeten.bp.LocalTime
+
+<span class="fc" id="L39">class ProfileFragment() : Fragment() {</span>
+
+    private var _binding: FragmentProfileBinding? = null
+<span class="fc" id="L42">    private val binding get() = _binding!!</span>
+<span class="fc" id="L43">    private val historyViewModel: HistoryViewModel by viewModels {</span>
+<span class="fc" id="L44">        HistoryViewModelFactory(ServiceLocator.dailySummaryApiService, ServiceLocator.scheduleApiService,</span>
+<span class="fc" id="L45">            ServiceLocator.sessionApiService)</span>
+    }
+
+<span class="fc" id="L48">    private val userViewModel: UserViewModel by viewModels {</span>
+<span class="fc" id="L49">        UserViewModelFactory(ServiceLocator.userApiService)</span>
+    }
+
+    private lateinit var historyAdapter: HistoryAdapter
+
+    private lateinit var rankOverlay: View
+    private lateinit var btnViewRankings: MaterialButton
+    private lateinit var rankListContainer: LinearLayout
+
+    // podium (top3)
+    private lateinit var tvFirstName: TextView
+    private lateinit var tvSecondName: TextView
+    private lateinit var tvThirdName: TextView
+
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
+<span class="fc" id="L64">        _binding = FragmentProfileBinding.inflate(inflater, container, false)</span>
+<span class="fc" id="L65">        return binding.root</span>
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+<span class="fc" id="L69">        super.onViewCreated(view, savedInstanceState)</span>
+
+<span class="fc" id="L71">        historyAdapter = HistoryAdapter { dailyItem -&gt; showHistoryDetails(dailyItem) }</span>
+<span class="fc" id="L72">        binding.recyclerHistory.layoutManager = LinearLayoutManager(context)</span>
+<span class="fc" id="L73">        binding.recyclerHistory.adapter = historyAdapter</span>
+
+<span class="fc" id="L75">        historyViewModel.dailyHistories.observe(viewLifecycleOwner) { dailyItems -&gt;</span>
+<span class="fc" id="L76">            historyAdapter.submitList(dailyItems)</span>
+<span class="pc bpc" id="L77" title="1 of 2 branches missed.">            binding.tvEmpty.visibility = if (dailyItems.isEmpty()) View.VISIBLE else View.GONE</span>
+<span class="fc" id="L78">        }</span>
+<span class="fc" id="L79">        historyViewModel.loadHistory()</span>
+
+        // 3. 랭킹 관련 UI 초기화 (기존 findViewById 로직 유지)
+<span class="fc" id="L82">        rankOverlay = binding.rankOverlay.root</span>
+<span class="fc" id="L83">        btnViewRankings = binding.btnViewRankings</span>
+<span class="fc" id="L84">        rankListContainer = rankOverlay.findViewById(R.id.rankListContainer)</span>
+
+<span class="fc" id="L86">        tvFirstName = rankOverlay.findViewById(R.id.tvFirstName)</span>
+<span class="fc" id="L87">        tvSecondName = rankOverlay.findViewById(R.id.tvSecondName)</span>
+<span class="fc" id="L88">        tvThirdName = rankOverlay.findViewById(R.id.tvThirdName)</span>
+
+<span class="fc" id="L90">        setupRankButton()</span>
+<span class="fc" id="L91">        observeUserData()</span>
+
+<span class="fc" id="L93">        userViewModel.getProfile()</span>
+<span class="fc" id="L94">        userViewModel.getRankings()</span>
+<span class="fc" id="L95">    }</span>
+
+    private fun observeUserData() {
+<span class="fc" id="L98">        viewLifecycleOwner.lifecycleScope.launch {</span>
+<span class="pc bpc" id="L99" title="1 of 2 branches missed.">            userViewModel.userProfile.collectLatest { user -&gt;</span>
+<span class="fc bfc" id="L100" title="All 2 branches covered.">                user?.let {</span>
+<span class="fc" id="L101">                    binding.statLevel.tvStatRank.text = it.rank.toString()</span>
+<span class="fc" id="L102">                    binding.statLevel.tvStatLevel.text = LevelUtils.calculateLevel(it.xp).toString()</span>
+<span class="fc" id="L103">                    binding.statLevel.tvStatTime.text = formatTotalTime(it.totalTime)</span>
+<span class="fc" id="L104">                    binding.statLevel.tvStatXP.text = it.xp.toString()</span>
+
+<span class="fc" id="L106">                    val (current, max) = LevelUtils.levelProgress(it.xp)</span>
+<span class="fc" id="L107">                    val percent = (current * 100 / max)</span>
+
+<span class="fc" id="L109">                    binding.progressLevel.progress = percent</span>
+<span class="fc" id="L110">                    binding.tvLevelProgress.text = &quot;$percent%&quot;</span>
+<span class="fc" id="L111">                }</span>
+<span class="fc" id="L112">            }</span>
+<span class="nc" id="L113">        }</span>
+
+<span class="fc" id="L115">        viewLifecycleOwner.lifecycleScope.launch {</span>
+<span class="pc bpc" id="L116" title="1 of 2 branches missed.">            userViewModel.rankings.collectLatest { ranks -&gt;</span>
+<span class="fc" id="L117">                rankListContainer.removeAllViews()</span>
+
+<span class="pc bpc" id="L119" title="1 of 4 branches missed.">                tvFirstName.text = &quot;1st • ${ranks.getOrNull(0)?.name ?: &quot;-&quot;}&quot;</span>
+<span class="pc bpc" id="L120" title="3 of 4 branches missed.">                tvSecondName.text = &quot;2nd • ${ranks.getOrNull(1)?.name ?: &quot;-&quot;}&quot;</span>
+<span class="pc bpc" id="L121" title="3 of 4 branches missed.">                tvThirdName.text = &quot;3rd • ${ranks.getOrNull(2)?.name ?: &quot;-&quot;}&quot;</span>
+
+<span class="fc" id="L123">                ranks.drop(3).forEachIndexed { index, rank -&gt;</span>
+<span class="nc" id="L124">                    val tv = TextView(requireContext()).apply {</span>
+<span class="nc" id="L125">                        text = &quot;${index + 4}. ${rank.name} — ${rank.xp} XP&quot;</span>
+<span class="nc" id="L126">                        setTextColor(resources.getColor(R.color.text_primary, null))</span>
+<span class="nc" id="L127">                        textSize = 13f</span>
+<span class="nc" id="L128">                        gravity = android.view.Gravity.CENTER</span>
+<span class="nc" id="L129">                        setPadding(0, 6, 0, 6)</span>
+<span class="nc" id="L130">                    }</span>
+<span class="nc" id="L131">                    rankListContainer.addView(tv)</span>
+<span class="nc" id="L132">                }</span>
+<span class="fc" id="L133">            }</span>
+<span class="nc" id="L134">        }</span>
+<span class="fc" id="L135">    }</span>
+
+    private fun setupRankButton() {
+<span class="fc" id="L138">        btnViewRankings.setOnClickListener {</span>
+<span class="fc" id="L139">            rankOverlay.visibility = View.VISIBLE</span>
+<span class="fc" id="L140">            rankOverlay.alpha = 0f</span>
+<span class="fc" id="L141">            rankOverlay.animate().alpha(1f).setDuration(250).start()</span>
+
+<span class="pc bpc" id="L143" title="1 of 2 branches missed.">            rankOverlay.findViewById&lt;View&gt;(R.id.btnCloseRank)?.setOnClickListener {</span>
+<span class="fc" id="L144">                rankOverlay.animate()</span>
+<span class="fc" id="L145">                    .alpha(0f)</span>
+<span class="fc" id="L146">                    .setDuration(200)</span>
+<span class="fc" id="L147">                    .withEndAction { rankOverlay.visibility = View.GONE }</span>
+<span class="fc" id="L148">                    .start()</span>
+<span class="fc" id="L149">            }</span>
+<span class="fc" id="L150">        }</span>
+<span class="fc" id="L151">    }</span>
+
+    private fun showHistoryDetails(dailyItem: DailyHistoryItem) {
+<span class="fc" id="L154">        val dialog = BottomSheetDialog(requireContext())</span>
+<span class="fc" id="L155">        val detailBinding = LayoutHistoryDetailBinding.inflate(layoutInflater)</span>
+<span class="fc" id="L156">        dialog.setContentView(detailBinding.root)</span>
+
+<span class="fc" id="L158">        detailBinding.tvDayTitle.text = formatDate(dailyItem.date)</span>
+<span class="fc" id="L159">        detailBinding.tvDailySummary.text = dailyItem.summaryText</span>
+<span class="fc" id="L160">        detailBinding.tvTotalXp.text = &quot;+${calculateTotalEarnedXp(dailyItem.schedules, dailyItem.sessions)}&quot;</span>
+//        detailBinding.tvCompletion.text = &quot;+${calculateAverageCompletionPercent(dailyItem.schedules)}&quot;
+<span class="fc" id="L162">        detailBinding.exercisedoneListContainer.removeAllViews()</span>
+
+<span class="fc" id="L164">        val combinedItems = (dailyItem.schedules.map { it as Any } + dailyItem.sessions.map { it as Any })</span>
+<span class="fc" id="L165">            .sortedBy {</span>
+                when(it) {
+                    is Schedule -&gt; it.startTime
+                    is Session -&gt; it.createdAt?.toLocalTime() ?: LocalTime.MIN
+                    else -&gt; LocalTime.MIN
+                }
+            }
+
+<span class="fc" id="L173">        combinedItems.forEach { item -&gt;</span>
+<span class="fc" id="L174">            val itemBinding = ItemExercisedoneBinding.inflate(layoutInflater)</span>
+<span class="fc" id="L175">            when(item) {</span>
+<span class="fc bfc" id="L176" title="All 2 branches covered.">                is Schedule -&gt; {</span>
+<span class="fc" id="L177">                    itemBinding.tvExerciseEmoji.text = getEmoji(item.activity)</span>
+<span class="fc" id="L178">                    itemBinding.tvExerciseName.text = item.activity</span>
+<span class="fc" id="L179">                    val text = when {</span>
+<span class="pc bpc" id="L180" title="1 of 2 branches missed.">                        item.repsTarget != null -&gt; &quot;${item.repsDone} / ${item.repsTarget} reps&quot;</span>
+<span class="pc bpc" id="L181" title="1 of 2 branches missed.">                        item.durationTarget != null -&gt; &quot;${item.durationDone} / ${item.durationTarget} sec&quot;</span>
+<span class="fc" id="L182">                        else -&gt; &quot;&quot;</span>
+                    }
+<span class="fc" id="L184">                    itemBinding.tvExerciseDetails.text = &quot;${item.status}: $text&quot;</span>
+<span class="fc" id="L185">                    itemBinding.tvXp.text = &quot;${calculateEarnedXpForSchedule(item)} XP&quot;</span>
+<span class="fc" id="L186">                    itemBinding.tvPercent.text = &quot;${calculateCompletionPercent(item)} %&quot;</span>
+                }
+<span class="pc bpc" id="L188" title="1 of 2 branches missed.">                is Session -&gt; {</span>
+<span class="fc" id="L189">                    itemBinding.tvExerciseEmoji.text = getEmoji(item.activity)</span>
+<span class="fc" id="L190">                    itemBinding.tvExerciseName.text = item.activity</span>
+<span class="fc" id="L191">                    itemBinding.tvExerciseDetails.text = when {</span>
+<span class="pc bpc" id="L192" title="1 of 2 branches missed.">                        item.repsCount != null -&gt; &quot;${item.repsCount} reps&quot;</span>
+<span class="nc bnc" id="L193" title="All 2 branches missed.">                        item.duration != null -&gt; &quot;${item.duration} sec&quot;</span>
+<span class="nc" id="L194">                        else -&gt; &quot;&quot;</span>
+                    }
+<span class="fc" id="L196">                    itemBinding.tvXp.text = &quot;${calculateEarnedXpForSession(item)} XP&quot;</span>
+<span class="fc" id="L197">                    itemBinding.tvPercent.visibility = View.GONE</span>
+                }
+            }
+<span class="fc" id="L200">            detailBinding.exercisedoneListContainer.addView(itemBinding.root)</span>
+<span class="fc" id="L201">        }</span>
+
+<span class="fc" id="L203">        dialog.show()</span>
+<span class="fc" id="L204">    }</span>
+
+    override fun onDestroyView() {
+<span class="fc" id="L207">        super.onDestroyView()</span>
+<span class="fc" id="L208">        _binding = null</span>
+<span class="fc" id="L209">    }</span>
+
+    object LevelUtils {
+
+        // 1~10 레벨까지의 누적 XP 테이블
+<span class="fc" id="L214">        private val levelTable = listOf(</span>
+<span class="fc" id="L215">            0,    // Lv1</span>
+<span class="fc" id="L216">            100,  // Lv2</span>
+<span class="fc" id="L217">            300,  // Lv3</span>
+<span class="fc" id="L218">            600,  // Lv4</span>
+<span class="fc" id="L219">            1000, // Lv5</span>
+<span class="fc" id="L220">            1500, // Lv6</span>
+<span class="fc" id="L221">            2100, // Lv7</span>
+<span class="fc" id="L222">            2800, // Lv8</span>
+<span class="fc" id="L223">            3600, // Lv9</span>
+<span class="fc" id="L224">            4500  // Lv10</span>
+        )
+
+        fun calculateLevel(xp: Int): Int {
+<span class="pc bpc" id="L228" title="1 of 2 branches missed.">            for (i in levelTable.indices) {</span>
+<span class="fc bfc" id="L229" title="All 2 branches covered.">                if (xp &lt; levelTable[i]) {</span>
+<span class="fc" id="L230">                    return i   // index = level-1</span>
+                }
+            }
+
+<span class="nc" id="L234">            var level = levelTable.size // 즉 10</span>
+<span class="nc" id="L235">            var requiredXp = levelTable.last() // 4500부터 시작</span>
+
+<span class="nc" id="L237">            while (true) {</span>
+<span class="nc" id="L238">                val nextRequired = requiredXp + (level * 100)</span>
+<span class="nc bnc" id="L239" title="All 2 branches missed.">                if (xp &lt; nextRequired) {</span>
+<span class="nc" id="L240">                    return level</span>
+                }
+<span class="nc" id="L242">                requiredXp = nextRequired</span>
+<span class="nc" id="L243">                level++</span>
+            }
+        }
+
+        fun levelProgress(xp: Int): Pair&lt;Int, Int&gt; {
+<span class="fc" id="L248">            var level = 1</span>
+<span class="fc" id="L249">            var requiredXp = 0</span>
+
+<span class="fc" id="L251">            while (true) {</span>
+<span class="fc" id="L252">                val next = requiredXp + (level * 100)</span>
+<span class="pc bpc" id="L253" title="1 of 2 branches missed.">                if (xp &lt; next) {</span>
+<span class="fc" id="L254">                    return Pair(xp - requiredXp, next - requiredXp)</span>
+                }
+<span class="nc" id="L256">                requiredXp = next</span>
+<span class="nc" id="L257">                level++</span>
+            }
+        }
+    }
+
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>UserViewModel.kt</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">app</a> &gt; <a href="index.source.html" class="el_package">com.fitquest.app.ui.viewmodels</a> &gt; <span class="el_source">UserViewModel.kt</span></div><h1>UserViewModel.kt</h1><pre class="source lang-java linenums">package com.fitquest.app.ui.viewmodels
+
+import android.util.Log
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import com.fitquest.app.model.RankResponse
+import com.fitquest.app.model.User
+import com.fitquest.app.repository.UserRepository
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.launch
+
+<span class="fc" id="L13">class UserViewModel(private val repository: UserRepository) : ViewModel() {</span>
+
+<span class="fc" id="L15">    private val _userProfile = MutableStateFlow&lt;User?&gt;(null)</span>
+<span class="fc" id="L16">    val userProfile: StateFlow&lt;User?&gt; = _userProfile</span>
+
+<span class="fc" id="L18">    private val _rankings = MutableStateFlow&lt;List&lt;RankResponse&gt;&gt;(emptyList())</span>
+<span class="fc" id="L19">    val rankings: StateFlow&lt;List&lt;RankResponse&gt;&gt; = _rankings</span>
+
+<span class="fc" id="L21">    private val _error = MutableStateFlow&lt;String?&gt;(null)</span>
+<span class="pc" id="L22">    val error: StateFlow&lt;String?&gt; = _error</span>
+
+    fun getProfile() {
+<span class="fc" id="L25">        viewModelScope.launch {</span>
+<span class="fc" id="L26">            try {</span>
+<span class="fc" id="L27">                val profile = repository.getProfile()</span>
+<span class="fc" id="L28">                _userProfile.value = profile</span>
+<span class="nc" id="L29">            } catch (e: Exception) {</span>
+<span class="nc" id="L30">                _error.value = e.localizedMessage</span>
+            }
+<span class="fc" id="L32">        }</span>
+<span class="fc" id="L33">    }</span>
+
+    fun getRankings() {
+<span class="fc" id="L36">        viewModelScope.launch {</span>
+<span class="fc" id="L37">            try {</span>
+<span class="fc" id="L38">                val response = repository.getRankings()</span>
+<span class="pc bpc" id="L39" title="1 of 2 branches missed.">                if (response.isSuccessful) {</span>
+<span class="pc bpc" id="L40" title="1 of 2 branches missed.">                    _rankings.value = response.body() ?: emptyList()</span>
+                } else {
+<span class="nc" id="L42">                    _error.value = &quot;HTTP ${response.code()}&quot;</span>
+                }
+<span class="nc" id="L44">            } catch (e: Exception) {</span>
+<span class="nc" id="L45">                Log.e(&quot;UserViewModel&quot;, &quot;Failed to fetch rankings: ${e.localizedMessage}&quot;)</span>
+<span class="nc" id="L46">                _error.value = e.localizedMessage</span>
+            }
+<span class="fc" id="L48">        }</span>
+<span class="fc" id="L49">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

@@ -1,0 +1,584 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>AiCoachFragment.kt</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">app</a> &gt; <a href="index.source.html" class="el_package">com.fitquest.app.ui.fragments.coach</a> &gt; <span class="el_source">AiCoachFragment.kt</span></div><h1>AiCoachFragment.kt</h1><pre class="source lang-java linenums">package com.fitquest.app.ui.fragments.coach
+
+import android.os.Bundle
+import android.os.CountDownTimer
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
+import android.widget.Button
+import android.widget.ImageView
+import android.widget.TextView
+import android.widget.Toast
+import androidx.camera.core.ImageAnalysis
+import androidx.camera.core.ImageProxy
+import androidx.core.content.ContextCompat
+import androidx.fragment.app.Fragment
+import androidx.fragment.app.activityViewModels
+import androidx.navigation.fragment.findNavController
+import androidx.recyclerview.widget.RecyclerView
+import androidx.viewpager2.widget.ViewPager2
+import com.fitquest.app.R
+import com.fitquest.app.data.remote.RetrofitClient
+import com.fitquest.app.databinding.FragmentAiCoachBinding
+import com.fitquest.app.model.WorkoutResult
+import com.fitquest.app.ui.coachutils.PoseLandmarkerHelper
+import com.fitquest.app.ui.coachutils.counter.BaseCounter
+import com.fitquest.app.ui.coachutils.counter.LungeCounter
+import com.fitquest.app.ui.coachutils.counter.PlankTimer
+import com.fitquest.app.ui.coachutils.counter.SquatCounter
+import com.fitquest.app.ui.fragments.shared.camera.CameraManager
+import com.fitquest.app.ui.fragments.shared.camera.CameraPermissionHelper
+import com.fitquest.app.ui.fragments.shared.exercise.ExerciseSpinnerManager
+import com.fitquest.app.ui.viewmodels.AiCoachViewModel
+import com.fitquest.app.ui.viewmodels.AiCoachViewModelFactory
+import com.fitquest.app.util.ActivityUtils
+import com.fitquest.app.util.TargetType
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import com.google.mediapipe.tasks.vision.core.RunningMode
+import java.io.File
+import java.util.Locale
+import java.util.concurrent.ExecutorService
+import java.util.concurrent.Executors
+import android.graphics.BitmapFactory
+
+<span class="fc" id="L44">class AiCoachFragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener {</span>
+
+    private var _binding: FragmentAiCoachBinding? = null
+<span class="fc" id="L47">    private val binding get() = _binding!!</span>
+
+<span class="fc" id="L49">    private val coachViewModel: AiCoachViewModel by activityViewModels {</span>
+<span class="fc" id="L50">        AiCoachViewModelFactory(RetrofitClient.sessionApiService)</span>
+    }
+
+    // Managers
+    private lateinit var cameraManager: CameraManager
+    private lateinit var exerciseSpinnerManager: ExerciseSpinnerManager
+    private lateinit var trackingLockManager: TrackingLockManager
+    private lateinit var photoCaptureManager: PhotoCaptureManager
+    private lateinit var confettiManager: ConfettiManager
+    private lateinit var uiManager: CoachUiManager
+
+    // Camera &amp; Pose
+    private lateinit var cameraExecutor: ExecutorService
+    private lateinit var poseLandmarkerHelper: PoseLandmarkerHelper
+
+    // State
+    private var isTraining = false
+    private var isCountingDown = false
+    private var sessionStartTime: Long? = null
+    private var repCount = 0
+    private var points = 0
+
+    private var counter: BaseCounter? = null
+    private var countdownTimer: CountDownTimer? = null
+
+    private lateinit var repPopupText: TextView
+
+    // Schedule info
+    private var scheduleId: Int? = null
+    private var scheduleRepsTarget: Int? = null
+    private var scheduleDurationTarget: Int? = null
+
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View {
+<span class="fc" id="L87">        _binding = FragmentAiCoachBinding.inflate(inflater, container, false)</span>
+<span class="fc" id="L88">        return binding.root</span>
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+<span class="fc" id="L92">        super.onViewCreated(view, savedInstanceState)</span>
+
+<span class="fc" id="L94">        initializeComponents()</span>
+<span class="fc" id="L95">        parseArguments()</span>
+<span class="fc" id="L96">        setupCamera()</span>
+<span class="fc" id="L97">        setupObservers()</span>
+<span class="fc" id="L98">        setupExerciseSpinner()</span>
+<span class="fc" id="L99">        setupButtons()</span>
+<span class="fc" id="L100">        initializeUi()</span>
+<span class="fc" id="L101">    }</span>
+
+    private fun initializeComponents() {
+<span class="fc" id="L104">        repPopupText = binding.root.findViewById(R.id.tvRepPopup)</span>
+
+<span class="fc" id="L106">        cameraExecutor = Executors.newSingleThreadExecutor()</span>
+<span class="fc" id="L107">        cameraManager = CameraManager(requireContext(), viewLifecycleOwner)</span>
+<span class="fc" id="L108">        trackingLockManager = TrackingLockManager()</span>
+<span class="fc" id="L109">        photoCaptureManager = PhotoCaptureManager(requireContext())</span>
+<span class="fc" id="L110">        confettiManager = ConfettiManager(binding.confettiView)</span>
+<span class="fc" id="L111">        uiManager = CoachUiManager(requireContext(), binding)</span>
+
+<span class="fc" id="L113">        exerciseSpinnerManager = ExerciseSpinnerManager(</span>
+<span class="fc" id="L114">            requireContext(),</span>
+<span class="fc" id="L115">            binding.spinnerExercise</span>
+        )
+<span class="fc" id="L117">    }</span>
+
+    private fun parseArguments() {
+<span class="pc bpc" id="L120" title="1 of 2 branches missed.">        arguments?.let {</span>
+<span class="fc bfc" id="L121" title="All 4 branches covered.">            scheduleId = it.getInt(CoachConstants.ARG_SCHEDULE_ID, -1).takeIf { id -&gt; id != -1 }</span>
+<span class="fc bfc" id="L122" title="All 4 branches covered.">            scheduleRepsTarget = it.getInt(CoachConstants.ARG_REPS_TARGET, -1).takeIf { t -&gt; t != -1 }</span>
+<span class="pc bpc" id="L123" title="2 of 4 branches missed.">            scheduleDurationTarget = it.getInt(CoachConstants.ARG_DURATION_TARGET, -1).takeIf { t -&gt; t != -1 }</span>
+
+<span class="pc bpc" id="L125" title="1 of 2 branches missed.">            val scheduledActivity = it.getString(CoachConstants.ARG_ACTIVITY_KEY)?.lowercase()</span>
+<span class="pc bpc" id="L126" title="1 of 2 branches missed.">            if (scheduledActivity != null) {</span>
+<span class="fc" id="L127">                exerciseSpinnerManager.setExercise(scheduledActivity)</span>
+            }
+<span class="fc" id="L129">        }</span>
+<span class="fc" id="L130">    }</span>
+
+    private fun setupCamera() {
+<span class="fc" id="L133">        cameraExecutor.execute {</span>
+<span class="fc" id="L134">            poseLandmarkerHelper = PoseLandmarkerHelper(</span>
+<span class="fc" id="L135">                minPoseDetectionConfidence = coachViewModel.currentMinPoseDetectionConfidence,</span>
+<span class="fc" id="L136">                minPoseTrackingConfidence = coachViewModel.currentMinPoseTrackingConfidence,</span>
+<span class="fc" id="L137">                minPosePresenceConfidence = coachViewModel.currentMinPosePresenceConfidence,</span>
+<span class="fc" id="L138">                currentModel = coachViewModel.currentModel,</span>
+<span class="fc" id="L139">                currentDelegate = coachViewModel.currentDelegate,</span>
+<span class="fc" id="L140">                runningMode = RunningMode.LIVE_STREAM,</span>
+<span class="fc" id="L141">                context = requireContext(),</span>
+<span class="fc" id="L142">                poseLandmarkerHelperListener = this</span>
+            )
+<span class="fc" id="L144">        }</span>
+
+<span class="pc bpc" id="L146" title="1 of 2 branches missed.">        if (CameraPermissionHelper.allPermissionsGranted(requireContext())) {</span>
+<span class="fc" id="L147">            startCameraPreview()</span>
+        } else {
+<span class="nc" id="L149">            CameraPermissionHelper.requestPermissions(this)</span>
+        }
+<span class="fc" id="L151">    }</span>
+
+    private fun startCameraPreview() {
+<span class="fc" id="L154">        cameraManager.startCamera(binding.cameraPreview) { error -&gt;</span>
+<span class="nc" id="L155">            showToast(error)</span>
+<span class="nc" id="L156">        }</span>
+<span class="fc" id="L157">    }</span>
+
+    private fun setupObservers() {
+<span class="fc" id="L160">        coachViewModel.repCount.observe(viewLifecycleOwner) { count -&gt;</span>
+<span class="fc" id="L161">            val targetType = ActivityUtils.getTargetType(exerciseSpinnerManager.getCurrentExercise())</span>
+<span class="fc bfc" id="L162" title="All 2 branches covered.">            if (targetType == TargetType.REPS) {</span>
+<span class="fc" id="L163">                binding.tvRepCount.text = count.toString()</span>
+            }
+<span class="fc" id="L165">        }</span>
+
+<span class="fc" id="L167">        coachViewModel.points.observe(viewLifecycleOwner) { pts -&gt;</span>
+<span class="fc" id="L168">            binding.tvXpPoints.text = &quot;+$pts&quot;</span>
+<span class="fc" id="L169">        }</span>
+
+<span class="fc" id="L171">        coachViewModel.errorMessage.observe(viewLifecycleOwner) { message -&gt;</span>
+<span class="nc bnc" id="L172" title="All 4 branches missed.">            if (message.isNotEmpty()) {</span>
+<span class="nc" id="L173">                showToast(message)</span>
+            }
+<span class="nc" id="L175">        }</span>
+<span class="fc" id="L176">    }</span>
+
+    private fun setupExerciseSpinner() {
+<span class="fc" id="L179">        exerciseSpinnerManager.setup { selectedExercise -&gt;</span>
+<span class="pc bpc" id="L180" title="1 of 2 branches missed.">            if (!isTraining) {</span>
+<span class="fc" id="L181">                uiManager.applyExerciseUi(selectedExercise)</span>
+            }
+<span class="fc" id="L183">        }</span>
+
+<span class="fc" id="L185">        handleScheduleLocking()</span>
+<span class="fc" id="L186">        updateTargetUi()</span>
+<span class="fc" id="L187">    }</span>
+
+    private fun setupButtons() {
+<span class="fc" id="L190">        binding.btnStartWorkout.setOnClickListener {</span>
+<span class="fc" id="L191">            when {</span>
+<span class="fc bfc" id="L192" title="All 2 branches covered.">                isCountingDown -&gt; cancelCountdown()</span>
+<span class="fc bfc" id="L193" title="All 2 branches covered.">                isTraining -&gt; pauseWorkout()</span>
+<span class="fc" id="L194">                else -&gt; startCountdownThenBegin(CoachConstants.COUNTDOWN_DURATION_SECONDS)</span>
+            }
+<span class="fc" id="L196">        }</span>
+
+<span class="fc" id="L198">        binding.btnSwitchCamera.setOnClickListener {</span>
+<span class="fc" id="L199">            cameraManager.toggleCamera(</span>
+<span class="fc" id="L200">                previewView = binding.cameraPreview,</span>
+<span class="fc bfc" id="L201" title="All 2 branches covered.">                analyzer = if (isTraining) createPoseAnalyzer() else null,</span>
+<span class="nc" id="L202">                onError = { error -&gt; showToast(error) }</span>
+            )
+<span class="fc" id="L204">        }</span>
+
+<span class="fc" id="L206">        binding.btnSwitchCamera.setImageResource(R.drawable.ic_switch_camera)</span>
+<span class="fc" id="L207">        androidx.core.widget.ImageViewCompat.setImageTintList(</span>
+<span class="fc" id="L208">            binding.btnSwitchCamera,</span>
+<span class="fc" id="L209">            ContextCompat.getColorStateList(requireContext(), android.R.color.white)</span>
+        )
+<span class="fc" id="L211">    }</span>
+
+    private fun initializeUi() {
+<span class="fc" id="L214">        uiManager.setFeedbackMessage(CoachConstants.COACH_MSG_IDLE)</span>
+<span class="fc" id="L215">        uiManager.applyTrainingButtonStyle(false)</span>
+<span class="fc" id="L216">        uiManager.updateTrainingUiVisibility(false)</span>
+<span class="fc" id="L217">    }</span>
+
+    // ================== Training Control ==================
+
+    private fun startCountdownThenBegin(seconds: Int) {
+<span class="pc bpc" id="L222" title="1 of 2 branches missed.">        if (isCountingDown) return</span>
+<span class="fc" id="L223">        isCountingDown = true</span>
+
+<span class="fc" id="L225">        coachViewModel.setSessionPreparing(true)</span>
+<span class="fc" id="L226">        uiManager.updateCountdownUi(true)</span>
+
+<span class="fc" id="L228">        var remaining = seconds</span>
+<span class="fc bfc" id="L229" title="All 2 branches covered.">        countdownTimer?.cancel()</span>
+<span class="fc" id="L230">        countdownTimer = object : CountDownTimer(</span>
+<span class="fc" id="L231">            seconds * 1000L,</span>
+<span class="fc" id="L232">            CoachConstants.COUNTDOWN_INTERVAL_MS</span>
+        ) {
+            override fun onTick(ms: Long) {
+<span class="fc" id="L235">                uiManager.updateCountdownText(remaining)</span>
+<span class="fc" id="L236">                remaining--</span>
+<span class="fc" id="L237">            }</span>
+
+            override fun onFinish() {
+<span class="fc" id="L240">                coachViewModel.setSessionPreparing(false)</span>
+<span class="fc" id="L241">                uiManager.hideCountdown()</span>
+<span class="fc" id="L242">                isCountingDown = false</span>
+<span class="fc" id="L243">                beginWorkout()</span>
+<span class="fc" id="L244">            }</span>
+<span class="fc" id="L245">        }.start()</span>
+<span class="fc" id="L246">    }</span>
+
+    private fun cancelCountdown() {
+<span class="pc bpc" id="L249" title="1 of 2 branches missed.">        countdownTimer?.cancel()</span>
+<span class="fc" id="L250">        countdownTimer = null</span>
+<span class="fc" id="L251">        isCountingDown = false</span>
+<span class="fc" id="L252">        uiManager.hideCountdown()</span>
+<span class="fc" id="L253">        uiManager.setFeedbackMessage(CoachConstants.COACH_MSG_IDLE)</span>
+<span class="fc" id="L254">        uiManager.applyTrainingButtonStyle(false)</span>
+<span class="fc" id="L255">        uiManager.updateTrainingUiVisibility(false)</span>
+<span class="fc" id="L256">        coachViewModel.cancelCountdown()</span>
+<span class="fc" id="L257">    }</span>
+
+    private fun beginWorkout() {
+<span class="fc" id="L260">        isTraining = true</span>
+<span class="fc" id="L261">        sessionStartTime = System.currentTimeMillis()</span>
+
+<span class="fc" id="L263">        photoCaptureManager.clear()</span>
+<span class="fc" id="L264">        trackingLockManager.reset()</span>
+
+<span class="fc" id="L266">        val activity = exerciseSpinnerManager.getCurrentExercise().lowercase(Locale.getDefault())</span>
+<span class="fc" id="L267">        counter = createCounter(activity)</span>
+
+<span class="fc" id="L269">        coachViewModel.beginTraining(activity, scheduleId)</span>
+<span class="fc" id="L270">        handleScheduleLocking()</span>
+
+<span class="fc" id="L272">        uiManager.setFeedbackMessage(CoachConstants.COACH_MSG_ANALYZING)</span>
+<span class="fc" id="L273">        uiManager.applyTrainingButtonStyle(true)</span>
+<span class="fc" id="L274">        uiManager.updateTrainingUiVisibility(true)</span>
+
+<span class="fc" id="L276">        cameraManager.bindCameraUseCases(</span>
+<span class="fc" id="L277">            previewView = binding.cameraPreview,</span>
+<span class="fc" id="L278">            analyzer = createPoseAnalyzer(),</span>
+<span class="nc" id="L279">            onError = { error -&gt; showToast(error) }</span>
+        )
+<span class="fc" id="L281">    }</span>
+
+    private fun pauseWorkout() {
+<span class="pc bpc" id="L284" title="1 of 2 branches missed.">        if (isCountingDown) cancelCountdown()</span>
+<span class="pc bpc" id="L285" title="1 of 2 branches missed.">        if (!isTraining) return</span>
+
+<span class="fc" id="L287">        isTraining = false</span>
+
+<span class="pc bpc" id="L289" title="1 of 2 branches missed.">        val sessionDurationSec = sessionStartTime?.let {</span>
+<span class="fc" id="L290">            ((System.currentTimeMillis() - it) / 1000L).toInt()</span>
+<span class="nc" id="L291">        } ?: 0</span>
+
+<span class="fc" id="L293">        val workoutResult = createWorkoutResult(sessionDurationSec)</span>
+<span class="fc" id="L294">        coachViewModel.pauseTraining(workoutResult)</span>
+
+<span class="fc" id="L296">        showToast(&quot;Session saved&quot;)</span>
+
+<span class="fc" id="L298">        handleScheduleLocking()</span>
+<span class="fc" id="L299">        showPoseEvalDialogIfAvailable()</span>
+<span class="fc" id="L300">        cleanupAfterWorkout()</span>
+<span class="fc" id="L301">    }</span>
+
+    private fun createCounter(activity: String): BaseCounter {
+<span class="fc" id="L304">        val now = System.currentTimeMillis()</span>
+<span class="pc bpc" id="L305" title="1 of 4 branches missed.">        return when (activity) {</span>
+<span class="fc" id="L306">            &quot;squat&quot; -&gt; SquatCounter().also { it.reset(now) }</span>
+<span class="fc" id="L307">            &quot;plank&quot; -&gt; PlankTimer().also { it.reset(now) }</span>
+<span class="fc" id="L308">            &quot;lunge&quot; -&gt; LungeCounter().also { it.reset(now) }</span>
+<span class="nc" id="L309">            else -&gt; SquatCounter().also { it.reset(now) }</span>
+        }
+    }
+
+    private fun createWorkoutResult(sessionDurationSec: Int): WorkoutResult {
+<span class="fc" id="L314">        val targetType = ActivityUtils.getTargetType(exerciseSpinnerManager.getCurrentExercise())</span>
+<span class="pc bpc" id="L315" title="2 of 5 branches missed.">        return when (targetType) {</span>
+            TargetType.DURATION -&gt; {
+<span class="pc bpc" id="L317" title="2 of 4 branches missed.">                val duration = (counter as? PlankTimer)?.holdSeconds()?.toInt()</span>
+<span class="fc" id="L318">                WorkoutResult(</span>
+<span class="fc" id="L319">                    durationSeconds = duration,</span>
+<span class="fc" id="L320">                    sessionDurationSeconds = sessionDurationSec</span>
+                )
+            }
+            TargetType.REPS, null -&gt; {
+<span class="pc bpc" id="L324" title="1 of 2 branches missed.">                val reps = counter?.count</span>
+<span class="fc" id="L325">                WorkoutResult(</span>
+<span class="fc" id="L326">                    repsCount = reps,</span>
+<span class="fc" id="L327">                    sessionDurationSeconds = sessionDurationSec</span>
+                )
+            }
+        }
+    }
+
+    private fun cleanupAfterWorkout() {
+<span class="fc" id="L334">        uiManager.setFeedbackMessage(CoachConstants.COACH_MSG_IDLE)</span>
+<span class="fc" id="L335">        uiManager.applyTrainingButtonStyle(false)</span>
+<span class="fc" id="L336">        uiManager.updateTrainingUiVisibility(false)</span>
+<span class="fc" id="L337">        uiManager.clearOverlay()</span>
+<span class="fc" id="L338">        uiManager.hideCountdown()</span>
+
+<span class="fc" id="L340">        counter = null</span>
+<span class="fc" id="L341">        trackingLockManager.reset()</span>
+
+<span class="fc" id="L343">        cameraManager.bindCameraUseCases(</span>
+<span class="fc" id="L344">            previewView = binding.cameraPreview,</span>
+<span class="fc" id="L345">            analyzer = null,</span>
+<span class="nc" id="L346">            onError = { error -&gt; showToast(error) }</span>
+        )
+<span class="fc" id="L348">    }</span>
+
+    // ================== Pose Detection ==================
+
+    private fun createPoseAnalyzer(): ImageAnalysis.Analyzer {
+<span class="fc" id="L353">        return ImageAnalysis.Analyzer { imageProxy -&gt;</span>
+<span class="fc" id="L354">            detectPose(imageProxy)</span>
+<span class="fc" id="L355">        }</span>
+    }
+
+    private fun detectPose(imageProxy: ImageProxy) {
+<span class="pc bpc" id="L359" title="2 of 4 branches missed.">        if (isTraining &amp;&amp; ::poseLandmarkerHelper.isInitialized) {</span>
+<span class="fc" id="L360">            poseLandmarkerHelper.detectLiveStream(</span>
+<span class="fc" id="L361">                imageProxy = imageProxy,</span>
+<span class="pc bpc" id="L362" title="1 of 2 branches missed.">                isFrontCamera = (cameraManager.lensFacing == androidx.camera.core.CameraSelector.LENS_FACING_FRONT)</span>
+            )
+        } else {
+<span class="nc" id="L365">            imageProxy.close()</span>
+        }
+<span class="fc" id="L367">    }</span>
+
+    override fun onResults(resultBundle: PoseLandmarkerHelper.ResultBundle) {
+<span class="pc bpc" id="L370" title="1 of 2 branches missed.">        activity?.runOnUiThread {</span>
+<span class="fc bfc" id="L371" title="All 2 branches covered.">            if (!isTraining) return@runOnUiThread</span>
+
+<span class="pc bpc" id="L373" title="1 of 2 branches missed.">            val result = resultBundle.results.firstOrNull() ?: return@runOnUiThread</span>
+<span class="pc bpc" id="L374" title="1 of 2 branches missed.">            val landmarks = result.landmarks().firstOrNull() ?: return@runOnUiThread</span>
+
+<span class="pc bpc" id="L376" title="1 of 2 branches missed.">            if (landmarks.size &lt; 33) return@runOnUiThread</span>
+
+<span class="fc" id="L378">            binding.overlay.setResults(</span>
+<span class="fc" id="L379">                result,</span>
+<span class="fc" id="L380">                resultBundle.inputImageHeight,</span>
+<span class="fc" id="L381">                resultBundle.inputImageWidth,</span>
+<span class="fc" id="L382">                RunningMode.LIVE_STREAM</span>
+            )
+<span class="fc" id="L384">            binding.overlay.invalidate()</span>
+
+<span class="fc" id="L386">            val now = System.currentTimeMillis()</span>
+
+            // Tracking lock check
+<span class="fc" id="L389">            val lockChange = trackingLockManager.updateLockState(landmarks, now)</span>
+<span class="fc bfc" id="L390" title="All 4 branches covered.">            when (lockChange) {</span>
+                TrackingLockManager.LockStateChange.LOCKED -&gt; {
+<span class="fc" id="L392">                    uiManager.showTrackingLockMessage(true)</span>
+<span class="fc" id="L393">                    return@runOnUiThread</span>
+                }
+                TrackingLockManager.LockStateChange.UNLOCKED -&gt; {
+<span class="fc" id="L396">                    uiManager.showTrackingLockMessage(false)</span>
+                }
+                TrackingLockManager.LockStateChange.STILL_LOCKED -&gt; {
+<span class="fc" id="L399">                    return@runOnUiThread</span>
+                }
+                TrackingLockManager.LockStateChange.NO_CHANGE -&gt; {
+                    // Continue
+                }
+            }
+
+<span class="fc bfc" id="L406" title="All 2 branches covered.">            if (trackingLockManager.shouldDisarm(now)) return@runOnUiThread</span>
+
+            // Convert landmarks to float array
+<span class="fc" id="L409">            val pts = FloatArray(landmarks.size * 3)</span>
+<span class="fc bfc" id="L410" title="All 2 branches covered.">            for (i in landmarks.indices) {</span>
+<span class="fc" id="L411">                pts[3 * i] = landmarks[i].x()</span>
+<span class="fc" id="L412">                pts[3 * i + 1] = landmarks[i].y()</span>
+<span class="fc" id="L413">                pts[3 * i + 2] = landmarks[i].z()</span>
+            }
+
+<span class="pc bpc" id="L416" title="1 of 2 branches missed.">            counter?.update(pts, now)</span>
+
+<span class="pc bpc" id="L418" title="1 of 2 branches missed.">            val currentCount = counter?.count ?: 0</span>
+<span class="pc bpc" id="L419" title="1 of 2 branches missed.">            val currentPhase = counter?.phase</span>
+
+            // Photo capture
+<span class="fc" id="L422">            photoCaptureManager.captureIfNeeded(</span>
+<span class="fc" id="L423">                imageCapture = cameraManager.getImageCapture(),</span>
+<span class="fc" id="L424">                executor = ContextCompat.getMainExecutor(requireContext()),</span>
+<span class="fc" id="L425">                exerciseName = exerciseSpinnerManager.getCurrentExercise(),</span>
+<span class="fc" id="L426">                currentRep = currentCount,</span>
+<span class="fc" id="L427">                phase = currentPhase</span>
+            )
+
+<span class="fc" id="L430">            updateRepCount(currentCount)</span>
+<span class="pc bpc" id="L431" title="1 of 2 branches missed.">            binding.tvFeedback.text = &quot;Phase: ${currentPhase ?: &quot;-&quot;}&quot;</span>
+<span class="fc" id="L432">        }</span>
+<span class="fc" id="L433">    }</span>
+
+    override fun onError(error: String, errorCode: Int) {
+        // Handle error if needed
+<span class="nc" id="L437">    }</span>
+
+    // ================== UI Updates ==================
+
+    private fun updateRepCount(count: Int) {
+<span class="fc" id="L442">        val prev = repCount</span>
+<span class="fc" id="L443">        repCount = count</span>
+
+<span class="pc bpc" id="L445" title="1 of 2 branches missed.">        val strategy = counter ?: return</span>
+
+<span class="fc" id="L447">        points = strategy.getXpPoints()</span>
+<span class="fc" id="L448">        coachViewModel.updateRepCount(count)</span>
+
+<span class="fc" id="L450">        binding.tvRepCount.text = strategy.getDisplayText()</span>
+<span class="fc" id="L451">        binding.tvXpPoints.text = &quot;+$points&quot;</span>
+
+<span class="fc bfc" id="L453" title="All 2 branches covered.">        if (strategy.shouldShowRepPopup(prev, isTraining)) {</span>
+<span class="fc" id="L454">            uiManager.showRepPopup(repPopupText, count)</span>
+<span class="fc" id="L455">            checkMilestones(count)</span>
+        }
+<span class="fc" id="L457">    }</span>
+
+    private fun checkMilestones(count: Int) {
+<span class="pc bpc" id="L460" title="2 of 8 branches missed.">        if (isTraining &amp;&amp; scheduleRepsTarget != null &amp;&amp; count == scheduleRepsTarget) {</span>
+<span class="fc" id="L461">            confettiManager.showGoalAchieved()</span>
+<span class="fc bfc" id="L462" title="All 2 branches covered.">        } else if (count % 10 == 0) {</span>
+<span class="fc" id="L463">            confettiManager.showMilestone10()</span>
+<span class="fc bfc" id="L464" title="All 2 branches covered.">        } else if (count % 5 == 0) {</span>
+<span class="fc" id="L465">            confettiManager.showMilestone()</span>
+        }
+<span class="fc" id="L467">    }</span>
+
+    private fun handleScheduleLocking() {
+<span class="fc bfc" id="L470" title="All 2 branches covered.">        val isScheduled = scheduleId != null</span>
+
+<span class="fc bfc" id="L472" title="All 2 branches covered.">        if (isScheduled) {</span>
+<span class="pc bpc" id="L473" title="2 of 4 branches missed.">            val scheduledActivity = arguments?.getString(CoachConstants.ARG_ACTIVITY_KEY)?.lowercase()</span>
+<span class="pc bpc" id="L474" title="1 of 2 branches missed.">            if (scheduledActivity != null) {</span>
+<span class="fc" id="L475">                exerciseSpinnerManager.setExercise(scheduledActivity)</span>
+            }
+        }
+
+<span class="fc bfc" id="L479" title="All 4 branches covered.">        exerciseSpinnerManager.setEnabled(!isScheduled &amp;&amp; !isTraining)</span>
+<span class="fc" id="L480">    }</span>
+
+    private fun updateTargetUi() {
+<span class="fc" id="L483">        uiManager.updateTargetUi(</span>
+<span class="fc bfc" id="L484" title="All 2 branches covered.">            isScheduled = scheduleId != null,</span>
+<span class="fc" id="L485">            exerciseName = exerciseSpinnerManager.getCurrentExercise(),</span>
+<span class="fc" id="L486">            repsTarget = scheduleRepsTarget,</span>
+<span class="fc" id="L487">            durationTarget = scheduleDurationTarget</span>
+        )
+<span class="fc" id="L489">    }</span>
+
+    private fun showPoseEvalDialogIfAvailable() {
+<span class="fc" id="L492">        val photos = photoCaptureManager.getPhotos()</span>
+<span class="pc bpc" id="L493" title="1 of 2 branches missed.">        if (photos.isEmpty()) return</span>
+
+<span class="fc" id="L495">        val dialogView = layoutInflater.inflate(R.layout.dialog_pose_eval_preview, null)</span>
+<span class="fc" id="L496">        val viewPager = dialogView.findViewById&lt;ViewPager2&gt;(R.id.viewPagerPosePhotos)</span>
+<span class="fc" id="L497">        val tvIndicator = dialogView.findViewById&lt;TextView&gt;(R.id.tvPageIndicator)</span>
+<span class="fc" id="L498">        val btnLater = dialogView.findViewById&lt;Button&gt;(R.id.btnLater)</span>
+<span class="fc" id="L499">        val btnEvaluate = dialogView.findViewById&lt;Button&gt;(R.id.btnEvaluate)</span>
+
+<span class="fc" id="L501">        val adapter = PosePhotoPagerAdapter(photos)</span>
+<span class="fc" id="L502">        viewPager.adapter = adapter</span>
+
+<span class="fc" id="L504">        var selectedIndex = 0</span>
+
+        fun updateIndicator(position: Int) {
+<span class="fc" id="L507">            tvIndicator.text = &quot;${position + 1} / ${photos.size}&quot;</span>
+<span class="fc" id="L508">        }</span>
+
+<span class="fc" id="L510">        updateIndicator(0)</span>
+
+<span class="fc" id="L512">        viewPager.registerOnPageChangeCallback(object : ViewPager2.OnPageChangeCallback() {</span>
+            override fun onPageSelected(position: Int) {
+<span class="fc" id="L514">                selectedIndex = position</span>
+<span class="fc" id="L515">                updateIndicator(position)</span>
+<span class="fc" id="L516">            }</span>
+        })
+
+<span class="fc" id="L519">        val dialog = MaterialAlertDialogBuilder(requireContext())</span>
+<span class="fc" id="L520">            .setView(dialogView)</span>
+<span class="fc" id="L521">            .setCancelable(true)</span>
+<span class="fc" id="L522">            .create()</span>
+
+<span class="fc" id="L524">        btnLater.setOnClickListener {</span>
+<span class="fc" id="L525">            dialog.dismiss()</span>
+<span class="fc" id="L526">        }</span>
+
+<span class="fc" id="L528">        btnEvaluate.setOnClickListener {</span>
+<span class="fc" id="L529">            dialog.dismiss()</span>
+<span class="fc" id="L530">            val chosenFile = photos.getOrNull(selectedIndex)</span>
+<span class="pc bpc" id="L531" title="1 of 2 branches missed.">            if (chosenFile != null) {</span>
+<span class="fc" id="L532">                navigateToPoseWithPhoto(chosenFile)</span>
+            }
+<span class="fc" id="L534">        }</span>
+
+<span class="fc" id="L536">        dialog.show()</span>
+<span class="fc" id="L537">    }</span>
+
+    private fun navigateToPoseWithPhoto(photo: File) {
+<span class="fc" id="L540">        val bundle = Bundle().apply {</span>
+<span class="fc" id="L541">            putString(&quot;poseImagePath&quot;, photo.absolutePath)</span>
+<span class="fc" id="L542">            putString(&quot;poseExerciseKey&quot;, exerciseSpinnerManager.getCurrentExercise())</span>
+<span class="fc" id="L543">        }</span>
+<span class="fc" id="L544">        findNavController().navigate(R.id.poseFragment, bundle)</span>
+<span class="fc" id="L545">    }</span>
+
+<span class="fc" id="L547">    private inner class PosePhotoPagerAdapter(</span>
+<span class="fc" id="L548">        private val photos: List&lt;File&gt;</span>
+<span class="fc" id="L549">    ) : RecyclerView.Adapter&lt;PosePhotoPagerAdapter.PhotoViewHolder&gt;() {</span>
+
+<span class="fc" id="L551">        inner class PhotoViewHolder(val imageView: ImageView) : RecyclerView.ViewHolder(imageView)</span>
+
+        override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): PhotoViewHolder {
+<span class="fc" id="L554">            val imageView = ImageView(parent.context).apply {</span>
+<span class="fc" id="L555">                layoutParams = ViewGroup.LayoutParams(</span>
+<span class="fc" id="L556">                    ViewGroup.LayoutParams.MATCH_PARENT,</span>
+<span class="fc" id="L557">                    ViewGroup.LayoutParams.MATCH_PARENT</span>
+                )
+<span class="fc" id="L559">                scaleType = ImageView.ScaleType.CENTER_CROP</span>
+<span class="fc" id="L560">            }</span>
+<span class="fc" id="L561">            return PhotoViewHolder(imageView)</span>
+        }
+
+<span class="fc" id="L564">        override fun getItemCount(): Int = photos.size</span>
+
+        override fun onBindViewHolder(holder: PhotoViewHolder, position: Int) {
+<span class="fc" id="L567">            val file = photos[position]</span>
+<span class="fc" id="L568">            val bitmap = BitmapFactory.decodeFile(file.absolutePath)</span>
+<span class="fc" id="L569">            holder.imageView.setImageBitmap(bitmap)</span>
+<span class="fc" id="L570">        }</span>
+    }
+
+    private fun showToast(message: String) {
+<span class="fc" id="L574">        Toast.makeText(requireContext(), message, Toast.LENGTH_SHORT).show()</span>
+<span class="fc" id="L575">    }</span>
+
+    override fun onDestroyView() {
+<span class="fc" id="L578">        super.onDestroyView()</span>
+<span class="pc bpc" id="L579" title="1 of 2 branches missed.">        countdownTimer?.cancel()</span>
+<span class="fc" id="L580">        cameraExecutor.shutdown()</span>
+<span class="fc" id="L581">        _binding = null</span>
+<span class="fc" id="L582">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

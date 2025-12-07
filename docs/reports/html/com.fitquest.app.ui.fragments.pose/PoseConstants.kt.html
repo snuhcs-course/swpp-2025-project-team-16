@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>PoseConstants.kt</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">app</a> &gt; <a href="index.source.html" class="el_package">com.fitquest.app.ui.fragments.pose</a> &gt; <span class="el_source">PoseConstants.kt</span></div><h1>PoseConstants.kt</h1><pre class="source lang-java linenums">package com.fitquest.app.ui.fragments.pose
+
+object PoseConstants {
+    const val REQUEST_CODE_PERMISSIONS = 10
+
+    // Camera settings
+    const val DEFAULT_EXERCISE = &quot;squat&quot;
+
+    // Countdown
+    const val COUNTDOWN_DURATION_MS = 10_000L
+    const val COUNTDOWN_INTERVAL_MS = 1_000L
+    const val COUNTDOWN_INITIAL_SECONDS = 10
+
+    // Loading progress
+    const val LOADING_DURATION_MS = 60_000L
+    const val LOADING_INTERVAL_MS = 1_000L
+    const val LOADING_TARGET_PROGRESS = 90
+    const val LOADING_MAX_PROGRESS = 100
+
+    // Image processing
+    const val IMAGE_MAX_SIDE_PX = 720
+    const val IMAGE_JPEG_QUALITY = 85
+
+    // File naming
+    const val FILE_PREFIX_CAMERA = &quot;pose_&quot;
+    const val FILE_PREFIX_GALLERY = &quot;gallery_&quot;
+    const val FILE_PREFIX_PROCESSED = &quot;pose_processed_&quot;
+    const val FILE_EXTENSION = &quot;.jpg&quot;
+
+    // Permissions
+<span class="nc" id="L31">    val REQUIRED_PERMISSIONS = arrayOf(android.Manifest.permission.CAMERA)</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

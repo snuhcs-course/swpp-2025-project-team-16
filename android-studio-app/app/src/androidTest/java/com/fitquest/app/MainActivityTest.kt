@@ -112,6 +112,7 @@ class MainActivityTest {
             )
         onView(withId(R.id.btnStartSession)).perform(click())
         onView(withId(R.id.btnStartWorkout)).perform(click())
+        Thread.sleep(15000)
         onView(withId(R.id.btnSwitchCamera)).perform(click())
         onView(withId(R.id.btnStartWorkout)).perform(click())
     }
@@ -134,6 +135,7 @@ class MainActivityTest {
         onView(withId(R.id.btnStartWorkout)).perform(click())
         onView(withId(R.id.btnSwitchCamera)).perform(click())
         onView(withId(R.id.btnSwitchCamera)).perform(click())
+        Thread.sleep(15000)
         onView(withId(R.id.btnStartWorkout)).perform(click())
         onView(withId(R.id.bottomNavigation))
             .perform(clickBottomNavigationItem(R.id.profileFragment))
@@ -164,6 +166,7 @@ class MainActivityTest {
         onView(withId(R.id.btnSwitchCamera)).perform(click())
         onView(withId(R.id.btnSwitchCamera)).perform(click())
         onView(withId(R.id.btnCapture)).perform(click())
+        Thread.sleep(15000)
         onView(withId(R.id.btnUpload)).perform(click())
 
     }

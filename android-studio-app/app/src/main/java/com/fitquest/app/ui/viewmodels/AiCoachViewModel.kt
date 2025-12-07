@@ -29,16 +29,12 @@ class AiCoachViewModel(
 
     // ✅ 세션 준비 중 상태 추가 (카운트다운 포함)
     private val _sessionPreparing = MutableLiveData<Boolean>(false)
-    val sessionPreparing: LiveData<Boolean> = _sessionPreparing
 
     private val _currentSessionId = MutableLiveData<Int?>(null)
-    val currentSessionId: LiveData<Int?> = _currentSessionId
 
     private val _selectedExercise = MutableLiveData<String>("")
-    val selectedExercise: LiveData<String> = _selectedExercise
 
     private val _isTraining = MutableLiveData<Boolean>(false)
-    val isTraining: LiveData<Boolean> = _isTraining
 
     private val _repCount = MutableLiveData<Int>(0)
     val repCount: LiveData<Int> = _repCount
@@ -47,14 +43,10 @@ class AiCoachViewModel(
     val points: LiveData<Int> = _points
 
     private val _feedback = MutableLiveData<String>("")
-    val feedback: LiveData<String> = _feedback
 
     // ✅ API 오류 메시지 전용 LiveData 추가 (Fragment에서 Toast 띄우기 위함)
     private val _errorMessage = MutableLiveData<String>()
     val errorMessage: LiveData<String> = _errorMessage
-
-    private val _formScore = MutableLiveData<Int>(0)
-    val formScore: LiveData<Int> = _formScore
 
     private val _sessionActive = MutableLiveData(false)
     val sessionActive: LiveData<Boolean> = _sessionActive
@@ -167,21 +159,6 @@ class AiCoachViewModel(
         // Duration 기반 운동(Plank)은 count가 초 단위로 올라가지만, XP는 서버가 계산하도록 둡니다.
     }
 
-    fun updateFormFeedback(feedback: String, score: Int) {
-        _feedback.value = feedback
-        _formScore.value = score
-    }
-
-    private fun saveWorkoutSession() {
-        val exercise = _selectedExercise.value ?: ""
-        val reps = _repCount.value ?: 0
-        val xp = _points.value ?: 0
-        val avgScore = _formScore.value ?: 0
-
-        // TODO: backend/local DB 저장
-        // exercise, reps, xp, avgScore, timestamp 등
-    }
-
     // ==========================
     // Pose Landmarker settings
     // (원래 MainViewModel가 하던 일)
@@ -202,18 +179,4 @@ class AiCoachViewModel(
     val currentMinPoseTrackingConfidence: Float get() = _minPoseTrackingConfidence
     val currentMinPosePresenceConfidence: Float get() = _minPosePresenceConfidence
 
-    fun setDelegate(delegate: Int) { _delegate = delegate }
-    fun setModel(model: Int) { _model = model }
-
-    fun setMinPoseDetectionConfidence(v: Float) {
-        _minPoseDetectionConfidence = v
-    }
-
-    fun setMinPoseTrackingConfidence(v: Float) {
-        _minPoseTrackingConfidence = v
-    }
-
-    fun setMinPosePresenceConfidence(v: Float) {
-        _minPosePresenceConfidence = v
-    }
 }

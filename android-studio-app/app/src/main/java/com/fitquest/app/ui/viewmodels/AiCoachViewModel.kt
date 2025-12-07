@@ -50,6 +50,7 @@ class AiCoachViewModel(
 
     private val _sessionActive = MutableLiveData(false)
     val sessionActive: LiveData<Boolean> = _sessionActive
+    private val _formScore = MutableLiveData<Int>(0)
 
     // ✅ 세션 준비 상태 설정 (카운트다운 시작)
     fun setSessionPreparing(preparing: Boolean) {

@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>PoseViewModel.kt</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">app</a> &gt; <a href="index.source.html" class="el_package">com.fitquest.app.ui.viewmodels</a> &gt; <span class="el_source">PoseViewModel.kt</span></div><h1>PoseViewModel.kt</h1><pre class="source lang-java linenums">package com.fitquest.app.ui.viewmodels
+
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import com.fitquest.app.model.NetworkResult
+import com.fitquest.app.model.pose.PoseUploadRequest
+import com.fitquest.app.model.pose.PoseUploadResponse
+import com.fitquest.app.repository.PoseAnalysisRepository
+import kotlinx.coroutines.launch
+
+<span class="fc" id="L13">class PoseViewModel(</span>
+<span class="fc" id="L14">    private val repository: PoseAnalysisRepository</span>
+<span class="fc" id="L15">) : ViewModel() {</span>
+
+<span class="fc" id="L17">    private val _poseAnalysisResult = MutableLiveData&lt;NetworkResult&lt;PoseUploadResponse&gt;&gt;()</span>
+<span class="fc" id="L18">    val poseAnalysisResult: LiveData&lt;NetworkResult&lt;PoseUploadResponse&gt;&gt; = _poseAnalysisResult</span>
+
+    fun uploadPose(request: PoseUploadRequest) {
+<span class="fc" id="L21">        viewModelScope.launch {</span>
+<span class="fc" id="L22">            _poseAnalysisResult.value = NetworkResult.Idle</span>
+<span class="fc" id="L23">            try {</span>
+<span class="fc" id="L24">                val response = repository.uploadPose(request)</span>
+<span class="pc bpc" id="L25" title="1 of 2 branches missed.">                if (response.isSuccessful) {</span>
+<span class="fc" id="L26">                    val body = response.body()</span>
+<span class="pc bpc" id="L27" title="1 of 2 branches missed.">                    if (body != null) {</span>
+<span class="fc" id="L28">                        _poseAnalysisResult.value = NetworkResult.Success(body)</span>
+                    } else {
+<span class="nc" id="L30">                        _poseAnalysisResult.value = NetworkResult.ServerError(response.code(), &quot;Empty response body&quot;)</span>
+                    }
+                } else {
+<span class="nc" id="L33">                    _poseAnalysisResult.value = NetworkResult.ServerError(response.code(), response.message())</span>
+                }
+<span class="fc" id="L35">            } catch (e: Exception) {</span>
+<span class="fc" id="L36">                e.printStackTrace()</span>
+<span class="fc" id="L37">                _poseAnalysisResult.value = NetworkResult.NetworkError(e)</span>
+            }
+<span class="fc" id="L39">        }</span>
+<span class="fc" id="L40">    }</span>
+
+    fun resetPoseAnalysisResult() {
+<span class="fc" id="L43">        _poseAnalysisResult.value = NetworkResult.Idle</span>
+<span class="fc" id="L44">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

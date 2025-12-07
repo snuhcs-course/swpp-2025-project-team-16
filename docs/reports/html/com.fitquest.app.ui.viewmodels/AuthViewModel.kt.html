@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>AuthViewModel.kt</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">app</a> &gt; <a href="index.source.html" class="el_package">com.fitquest.app.ui.viewmodels</a> &gt; <span class="el_source">AuthViewModel.kt</span></div><h1>AuthViewModel.kt</h1><pre class="source lang-java linenums">package com.fitquest.app.ui.viewmodels
+
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import com.fitquest.app.model.NetworkResult
+import com.fitquest.app.model.login.EmailCheckResponse
+import com.fitquest.app.model.login.InitialCountRequest
+import com.fitquest.app.model.login.InitialCountResponse
+import com.fitquest.app.model.login.LoginRequest
+import com.fitquest.app.model.login.LoginResponse
+import com.fitquest.app.model.login.SignupRequest
+import com.fitquest.app.model.login.SignupResponse
+import com.fitquest.app.repository.AuthRepository
+import kotlinx.coroutines.launch
+
+
+<span class="fc" id="L19">class AuthViewModel(private val repository: AuthRepository) : ViewModel() {</span>
+    // -------------------- Login &amp; Signup 상태 --------------------
+<span class="pc" id="L21">    val email = MutableLiveData&lt;String&gt;()</span>
+<span class="pc" id="L22">    val password = MutableLiveData&lt;String&gt;()</span>
+<span class="pc" id="L23">    val name = MutableLiveData&lt;String&gt;()</span>
+
+    // -------------------- API 결과 LiveData --------------------
+<span class="fc" id="L26">    private val _signupResult = MutableLiveData&lt;NetworkResult&lt;SignupResponse&gt;&gt;()</span>
+<span class="fc" id="L27">    val signupResult: LiveData&lt;NetworkResult&lt;SignupResponse&gt;&gt; = _signupResult</span>
+
+<span class="fc" id="L29">    private val _loginResult = MutableLiveData&lt;NetworkResult&lt;LoginResponse&gt;&gt;()</span>
+<span class="fc" id="L30">    val loginResult: LiveData&lt;NetworkResult&lt;LoginResponse&gt;&gt; = _loginResult</span>
+
+<span class="fc" id="L32">    private val _checkEmailResult = MutableLiveData&lt;NetworkResult&lt;EmailCheckResponse&gt;&gt;()</span>
+<span class="fc" id="L33">    val checkEmailResult: LiveData&lt;NetworkResult&lt;EmailCheckResponse&gt;&gt; = _checkEmailResult</span>
+
+<span class="fc" id="L35">    private val _updateInitialRepsResult = MutableLiveData&lt;NetworkResult&lt;InitialCountResponse&gt;&gt;()</span>
+<span class="fc" id="L36">    val updateInitialRepsResult: LiveData&lt;NetworkResult&lt;InitialCountResponse&gt;&gt; = _updateInitialRepsResult</span>
+
+    fun signup(request: SignupRequest) {
+<span class="fc" id="L39">        viewModelScope.launch {</span>
+<span class="fc" id="L40">            try {</span>
+<span class="fc" id="L41">                val response = repository.signup(request)</span>
+<span class="fc bfc" id="L42" title="All 2 branches covered.">                if (response.isSuccessful) {</span>
+<span class="fc" id="L43">                    val body = response.body()</span>
+<span class="pc bpc" id="L44" title="2 of 8 branches missed.">                    if (body != null &amp;&amp; !body.token.isNullOrEmpty()) {</span>
+<span class="fc" id="L45">                        _signupResult.value = NetworkResult.Success(body)</span>
+                    } else {
+<span class="fc" id="L47">                        _signupResult.value = NetworkResult.ServerError(response.code(), &quot;Empty response body&quot;)</span>
+                    }
+                } else {
+<span class="fc" id="L50">                    _signupResult.value = NetworkResult.ServerError(response.code(), response.message())</span>
+                }
+<span class="nc" id="L52">            } catch (e: Exception) {</span>
+<span class="nc" id="L53">                e.printStackTrace()</span>
+<span class="nc" id="L54">                _signupResult.value = NetworkResult.NetworkError(e)</span>
+            }
+<span class="fc" id="L56">        }</span>
+<span class="fc" id="L57">    }</span>
+
+    fun login(request: LoginRequest) {
+<span class="fc" id="L60">        viewModelScope.launch {</span>
+<span class="fc" id="L61">            try {</span>
+<span class="fc" id="L62">                val response = repository.login(request)</span>
+<span class="pc bpc" id="L63" title="1 of 2 branches missed.">                if (response.isSuccessful) {</span>
+<span class="fc" id="L64">                    val body = response.body()</span>
+<span class="pc bpc" id="L65" title="4 of 8 branches missed.">                    if (body != null &amp;&amp; !body.token.isNullOrEmpty()) {</span>
+<span class="fc" id="L66">                        _loginResult.value = NetworkResult.Success(body)</span>
+                    } else {
+<span class="nc" id="L68">                        _loginResult.value = NetworkResult.ServerError(</span>
+<span class="nc" id="L69">                            code = response.code(),</span>
+<span class="nc bnc" id="L70" title="All 4 branches missed.">                            message = body?.error ?: &quot;Invalid credentials&quot;</span>
+                        )
+                    }
+                } else {
+<span class="nc" id="L74">                    _loginResult.value = NetworkResult.ServerError(</span>
+<span class="nc" id="L75">                        code = response.code(),</span>
+<span class="nc" id="L76">                        message = &quot;Server error: ${response.code()}&quot;</span>
+                    )
+                }
+<span class="nc" id="L79">            } catch (e: Exception) {</span>
+<span class="nc" id="L80">                e.printStackTrace()</span>
+<span class="nc" id="L81">                _loginResult.value = NetworkResult.NetworkError(e)</span>
+            }
+<span class="fc" id="L83">        }</span>
+<span class="fc" id="L84">    }</span>
+
+    fun checkEmail(request: Map&lt;String, String&gt;) {
+<span class="fc" id="L87">        viewModelScope.launch {</span>
+<span class="fc" id="L88">            try {</span>
+<span class="fc" id="L89">                val response = repository.checkEmail(request)</span>
+<span class="fc bfc" id="L90" title="All 2 branches covered.">                if (response.isSuccessful) {</span>
+<span class="fc" id="L91">                    val body = response.body()</span>
+<span class="pc bpc" id="L92" title="1 of 2 branches missed.">                    if (body != null) {</span>
+<span class="fc" id="L93">                        _checkEmailResult.value = NetworkResult.Success(body)</span>
+                    } else {
+<span class="nc" id="L95">                        _checkEmailResult.value = NetworkResult.ServerError(response.code(), &quot;Empty response body&quot;)</span>
+                    }
+                } else {
+<span class="fc" id="L98">                    _checkEmailResult.value = NetworkResult.ServerError(response.code(), response.message())</span>
+                }
+<span class="nc" id="L100">            } catch (e: Exception) {</span>
+<span class="nc" id="L101">                e.printStackTrace()</span>
+<span class="nc" id="L102">                _checkEmailResult.value = NetworkResult.NetworkError(e)</span>
+            }
+<span class="fc" id="L104">        }</span>
+<span class="fc" id="L105">    }</span>
+
+    fun updateInitialReps(request: InitialCountRequest) {
+<span class="fc" id="L108">        viewModelScope.launch {</span>
+<span class="fc" id="L109">            try {</span>
+<span class="fc" id="L110">                val response = repository.updateInitialReps(request)</span>
+<span class="pc bpc" id="L111" title="2 of 4 branches missed.">                if (response.isSuccessful &amp;&amp; response.body() != null) {</span>
+<span class="fc" id="L112">                    _updateInitialRepsResult.value = NetworkResult.Success(response.body()!!)</span>
+                } else {
+<span class="nc" id="L114">                    _updateInitialRepsResult.value = NetworkResult.ServerError(response.code(), response.message())</span>
+                }
+<span class="nc" id="L116">            } catch (e: Exception) {</span>
+<span class="nc" id="L117">                e.printStackTrace()</span>
+<span class="nc" id="L118">                _updateInitialRepsResult.value = NetworkResult.NetworkError(e)</span>
+            }
+<span class="fc" id="L120">        }</span>
+<span class="fc" id="L121">    }</span>
+
+    fun resetCheckEmailResult() {
+<span class="fc" id="L124">        _checkEmailResult.value = NetworkResult.Idle</span>
+<span class="fc" id="L125">    }</span>
+
+    fun resetSignupResult() {
+<span class="fc" id="L128">        _signupResult.value = NetworkResult.Idle</span>
+<span class="fc" id="L129">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ExerciseSpinnerManager.kt</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">app</a> &gt; <a href="index.source.html" class="el_package">com.fitquest.app.ui.fragments.shared.exercise</a> &gt; <span class="el_source">ExerciseSpinnerManager.kt</span></div><h1>ExerciseSpinnerManager.kt</h1><pre class="source lang-java linenums">package com.fitquest.app.ui.fragments.shared.exercise
+
+import android.content.Context
+import android.view.View
+import android.widget.AdapterView
+import android.widget.ArrayAdapter
+import android.widget.Spinner
+import com.fitquest.app.util.ActivityUtils
+
+<span class="fc" id="L10">class ExerciseSpinnerManager(</span>
+<span class="fc" id="L11">    private val context: Context,</span>
+<span class="fc" id="L12">    private val spinner: Spinner</span>
+) {
+<span class="fc" id="L14">    private val activityKeys = ActivityUtils.activityMetadataMap.keys.toList()</span>
+<span class="fc" id="L15">    private val exerciseListWithEmoji = ActivityUtils.activityMetadataMap.values.map { metadata -&gt;</span>
+<span class="fc" id="L16">        &quot;${metadata.emoji} ${metadata.label}&quot;</span>
+    }
+
+<span class="pc bpc" id="L19" title="1 of 2 branches missed.">    var selectedExercise: String = activityKeys.firstOrNull() ?: &quot;squat&quot;</span>
+        private set
+
+    private var onExerciseSelected: ((String) -&gt; Unit)? = null
+
+<span class="fc" id="L24">    fun setup(</span>
+<span class="fc" id="L25">        initialExercise: String? = null,</span>
+        onSelected: (String) -&gt; Unit
+    ) {
+<span class="fc" id="L28">        this.onExerciseSelected = onSelected</span>
+
+<span class="fc" id="L30">        val adapter = ArrayAdapter(</span>
+<span class="fc" id="L31">            context,</span>
+<span class="fc" id="L32">            android.R.layout.simple_spinner_dropdown_item,</span>
+<span class="fc" id="L33">            exerciseListWithEmoji</span>
+        )
+<span class="fc" id="L35">        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)</span>
+<span class="fc" id="L36">        spinner.adapter = adapter</span>
+
+<span class="fc" id="L38">        spinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {</span>
+            override fun onItemSelected(
+                parent: AdapterView&lt;*&gt;?,
+                v: View?,
+                pos: Int,
+                id: Long
+            ) {
+<span class="fc bfc" id="L45" title="All 2 branches covered.">                if (!spinner.isEnabled) return</span>
+
+<span class="pc bpc" id="L47" title="1 of 2 branches missed.">                val key = activityKeys.getOrNull(pos) ?: &quot;squat&quot;</span>
+<span class="fc" id="L48">                selectedExercise = key.lowercase()</span>
+<span class="pc bpc" id="L49" title="1 of 2 branches missed.">                onExerciseSelected?.invoke(selectedExercise)</span>
+<span class="fc" id="L50">            }</span>
+
+            override fun onNothingSelected(parent: AdapterView&lt;*&gt;?) {
+<span class="nc bnc" id="L53" title="All 2 branches missed.">                selectedExercise = activityKeys.firstOrNull() ?: &quot;squat&quot;</span>
+<span class="nc" id="L54">            }</span>
+        }
+
+<span class="pc bpc" id="L57" title="1 of 2 branches missed.">        if (initialExercise != null) {</span>
+<span class="nc" id="L58">            setExercise(initialExercise)</span>
+        }
+<span class="fc" id="L60">    }</span>
+
+    fun setExercise(exerciseKey: String) {
+<span class="fc" id="L63">        val index = activityKeys.indexOf(exerciseKey)</span>
+<span class="pc bpc" id="L64" title="1 of 2 branches missed.">        if (index &gt;= 0) {</span>
+<span class="fc" id="L65">            spinner.setSelection(index)</span>
+<span class="fc" id="L66">            selectedExercise = exerciseKey.lowercase()</span>
+        }
+<span class="fc" id="L68">    }</span>
+
+    fun setEnabled(enabled: Boolean) {
+<span class="fc" id="L71">        spinner.isEnabled = enabled</span>
+<span class="fc bfc" id="L72" title="All 2 branches covered.">        spinner.alpha = if (enabled) 1.0f else 0.5f</span>
+<span class="fc" id="L73">    }</span>
+
+<span class="fc" id="L75">    fun getCurrentExercise(): String = selectedExercise</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

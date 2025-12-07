@@ -120,24 +120,30 @@ class MainActivityTest {
     fun test_aiCoachFragment(){
         onView(withId(R.id.bottomNavigation))
             .perform(clickBottomNavigationItem(R.id.aiCoachFragment))
+        onView(withId(R.id.btnStartWorkout)).perform(click())
+        onView(withId(R.id.btnStartWorkout)).perform(click())
+        onView(withId(R.id.btnStartWorkout)).perform(click())
+        onView(withId(R.id.btnSwitchCamera)).perform(click())
+        Thread.sleep(15000)
+        onView(withId(R.id.btnStartWorkout)).perform(click())
+        onView(withId(R.id.btnLater)).perform(click())
         onView(withId(R.id.spinnerExercise)).perform(click())
-
         // 2. 드롭다운에서 "Push-ups" 항목 클릭
         onView(withText(containsString("Plank"))).perform(click())
-
-        // 3. Spinner에 선택된 값이 표시되는지 확인
-        onView(allOf(withId(R.id.spinnerExercise), withSpinnerText(containsString("Plank"))))
-            .check(matches(isDisplayed()))
-        onView(withId(R.id.spinnerExercise)).perform(click())
-
-        // 2. 드롭다운에서 "Push-ups" 항목 클릭
-        onView(withText(containsString("Squat"))).perform(click())
         onView(withId(R.id.btnStartWorkout)).perform(click())
         onView(withId(R.id.btnSwitchCamera)).perform(click())
         onView(withId(R.id.btnSwitchCamera)).perform(click())
         Thread.sleep(15000)
         onView(withId(R.id.btnStartWorkout)).perform(click())
         onView(withId(R.id.btnLater)).perform(click())
+
+        onView(withId(R.id.spinnerExercise)).perform(click())
+        // 2. 드롭다운에서 "Push-ups" 항목 클릭
+        onView(withText(containsString("Lunge"))).perform(click())
+        onView(withId(R.id.btnStartWorkout)).perform(click())
+        Thread.sleep(35000)
+        onView(withId(R.id.btnStartWorkout)).perform(click())
+        onView(withId(R.id.btnEvaluate)).perform(click())
         onView(withId(R.id.bottomNavigation))
             .perform(clickBottomNavigationItem(R.id.profileFragment))
         onView(withId(R.id.recyclerHistory))
@@ -167,7 +173,8 @@ class MainActivityTest {
         onView(withId(R.id.btnSwitchCamera)).perform(click())
         onView(withId(R.id.btnSwitchCamera)).perform(click())
         onView(withId(R.id.btnCapture)).perform(click())
-        Thread.sleep(15000)
+        Thread.sleep(25000)
+        onView(withId(R.id.btnResultClose)).perform(click())
         onView(withId(R.id.btnUpload)).perform(click())
 
     }

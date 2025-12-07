@@ -18,6 +18,7 @@ import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import com.fitquest.app.data.remote.RetrofitClient
+import com.fitquest.app.data.remote.ServiceLocator
 import com.fitquest.app.databinding.FragmentPoseBinding
 import com.fitquest.app.model.NetworkResult
 import com.fitquest.app.model.pose.PoseUploadResponse
@@ -37,7 +38,7 @@ class PoseFragment : Fragment() {
     private val binding get() = _binding!!
 
     private val viewModel: PoseViewModel by viewModels {
-        PoseViewModelFactory(RetrofitClient.poseAnalysisApiService)
+        PoseViewModelFactory(ServiceLocator.poseAnalysisApiService)
     }
 
     private lateinit var cameraManager: CameraManager

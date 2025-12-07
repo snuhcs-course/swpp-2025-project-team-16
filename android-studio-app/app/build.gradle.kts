@@ -3,6 +3,9 @@ plugins {
     id("org.jetbrains.kotlin.android")
     id("kotlin-parcelize")
     id("androidx.navigation.safeargs.kotlin")
+    id("jacoco")
+
+
 }
 
 android {
@@ -20,6 +23,11 @@ android {
     }
 
     buildTypes {
+        getByName("debug") {
+            // 최신 AGP에서는 testCoverageEnabled 제거됨
+            // rootcoverage 플러그인이 커버리지 수집을 담당
+            isTestCoverageEnabled=true
+        }
         debug{
             isMinifyEnabled=false
         }
@@ -49,43 +57,92 @@ android {
     }
 
     testOptions {
+        managedDevices {
+            devices {
+                // Kotlin DSL에서는 create<ManagedVirtualDevice>("이름") 으로 정의
+                create<com.android.build.api.dsl.ManagedVirtualDevice>("pixel6") {
+                    device = "Pixel 6"
+                    apiLevel = 33
+                    systemImageSource = "google-atd"
+                }
+            }
+        }
+
+
         unitTests {
             isIncludeAndroidResources = true
         }
     }
 
     tasks.register<JacocoReport>("jacocoAndroidTestReport") {
-        // 기기/에뮬레이터 테스트 실행 후 리포트 생성
-        dependsOn("connectedDebugAndroidTest")
+        dependsOn(":app:connectedDebugAndroidTest")
 
         reports {
             xml.required.set(true)
             html.required.set(true)
         }
 
-        // 소스 디렉터리 (Java + Kotlin)
-        sourceDirectories.setFrom(
-            files("src/main/java", "src/main/kotlin")
+        val fileFilter = listOf(
+            "**/R.class",
+            "**/R$*.class",
+            "**/BuildConfig.*",
+            "**/Manifest*.*",
+            "**/*Test*.*"
         )
 
-        // 클래스 디렉터리 (AGP 버전에 따라 경로 달라질 수 있음)
-        classDirectories.setFrom(
-            fileTree("$buildDir/intermediates/classes/debug") {
-                exclude(
-                    "**/R.class", "**/R$*.class",
-                    "**/BuildConfig.*", "**/Manifest*.*",
-                    "android/**/*.*"
-                )
-            },
-            fileTree("$buildDir/tmp/kotlin-classes/debug") // Kotlin 클래스
+        // Kotlin 클래스와 Java 클래스 디렉토리 모두 잡아줍니다
+        val kotlinDebugTree = fileTree("${project(":app").buildDir}/tmp/kotlin-classes/debug") {
+            exclude(fileFilter)
+        }
+        val javaDebugTree = fileTree("${project(":app").buildDir}/intermediates/javac/debug/classes") {
+            exclude(fileFilter)
+        }
+
+
+        val mainSrc = "${project(":app").projectDir}/src/main/java"
+
+        sourceDirectories.setFrom(files(mainSrc))
+        classDirectories.setFrom(files(kotlinDebugTree, javaDebugTree))
+
+        // 여기서 coverage.ec 파일을 읽어옵니다
+        executionData.setFrom(fileTree("${project(":app").buildDir}/outputs/code_coverage/debugAndroidTest/connected/SM-S918N - 13") {
+            include("coverage.ec")
+        })
+    }
+
+    tasks.register<JacocoReport>("pixel6DebugAndroidTestCoverage") {
+        reports {
+            xml.required.set(true)
+            html.required.set(true)
+        }
+
+        val fileFilter = listOf(
+            "**/R.class",
+            "**/R$*.class",
+            "**/BuildConfig.*",
+            "**/Manifest*.*",
+            "**/*Test*.*"
         )
 
-        // 실행 데이터 (.ec 파일)
-        executionData.setFrom(
-            fileTree("$buildDir/outputs/code_coverage/debugAndroidTest/connected") {
-                include("*.ec")
-            }
-        )
+        // Kotlin 클래스와 Java 클래스 디렉토리 모두 잡아줍니다
+        val kotlinDebugTree = fileTree("${project(":app").buildDir}/tmp/kotlin-classes/debug") {
+            exclude(fileFilter)
+        }
+        val javaDebugTree = fileTree("${project(":app").buildDir}/intermediates/javac/debug/compileDebugJavaWithJavac/classes") {
+            exclude(fileFilter)
+        }
+
+
+        val mainSrc = "${project(":app").projectDir}/src/main/java"
+
+        sourceDirectories.setFrom(files(mainSrc))
+        classDirectories.setFrom(files(kotlinDebugTree, javaDebugTree))
+
+        // 여기서 coverage.ec 파일을 읽어옵니다
+        executionData.setFrom(fileTree(rootProject.projectDir) {
+            include("**/coverage.ec")
+        })
+
     }
 
 }

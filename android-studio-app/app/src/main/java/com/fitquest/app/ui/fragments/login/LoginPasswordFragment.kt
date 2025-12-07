@@ -12,6 +12,7 @@ import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import com.fitquest.app.MainActivity
 import com.fitquest.app.data.remote.RetrofitClient
+import com.fitquest.app.data.remote.ServiceLocator
 import com.fitquest.app.data.remote.TokenManager
 import com.fitquest.app.databinding.FragmentLoginPasswordBinding
 import com.fitquest.app.model.NetworkResult
@@ -25,7 +26,7 @@ class LoginPasswordFragment : Fragment() {
     private val binding get() = _binding!!
 
     private val authViewModel: AuthViewModel by viewModels {
-        AuthViewModelFactory(RetrofitClient.authApiService, requireContext())
+        AuthViewModelFactory(ServiceLocator.authApiService, requireContext())
     }
 
     private val args: LoginPasswordFragmentArgs by navArgs()

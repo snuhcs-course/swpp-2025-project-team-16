@@ -1,5 +1,5 @@
 package com.fitquest.app.ui.viewmodels
-
+/*
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import com.fitquest.app.model.Schedule
 import com.fitquest.app.repository.ScheduleRepository

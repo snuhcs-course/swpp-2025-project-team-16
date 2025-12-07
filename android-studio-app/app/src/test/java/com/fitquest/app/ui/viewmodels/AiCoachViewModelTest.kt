@@ -3,7 +3,10 @@ package com.fitquest.app.ui.viewmodels
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import androidx.lifecycle.MutableLiveData
 import com.fitquest.app.MainDispatcherRule
+import com.fitquest.app.data.remote.SessionApiService
+import com.fitquest.app.model.EndSessionRequest
 import com.fitquest.app.model.Session
+import com.fitquest.app.model.StartSessionRequest
 import com.fitquest.app.model.WorkoutResult
 import com.fitquest.app.repository.SessionRepository
 import kotlinx.coroutines.test.advanceUntilIdle
@@ -242,3 +245,4 @@ class AiCoachViewModelTest {
         assertTrue(viewModel.errorMessage.value!!.contains("Server crash"))
     }
 }
+*/

@@ -11,7 +11,7 @@ import com.fitquest.app.model.login.SignupResponse
 import okhttp3.ResponseBody.Companion.toResponseBody
 import retrofit2.Response
 
-abstract class FakeApiService: AuthApiService {
+class FakeApiService: AuthApiService {
     override suspend fun signup(request: SignupRequest): Response<SignupResponse> {
         return when (request.name) {
             "test" -> Response.success(SignupResponse("well","Not Null"))

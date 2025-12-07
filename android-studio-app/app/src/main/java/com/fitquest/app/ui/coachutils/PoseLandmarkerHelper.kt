@@ -3,8 +3,6 @@ package com.fitquest.app.ui.coachutils
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.Matrix
-import android.media.MediaMetadataRetriever
-import android.net.Uri
 import android.os.SystemClock
 import android.util.Log
 import androidx.annotation.VisibleForTesting
@@ -46,10 +44,6 @@ class PoseLandmarkerHelper(
     fun clearPoseLandmarker() {
         poseLandmarker?.close()
         poseLandmarker = null
-    }
-
-    fun isClose(): Boolean {
-        return poseLandmarker == null
     }
 
     /**
@@ -173,112 +167,6 @@ class PoseLandmarkerHelper(
 
     // 비디오 파일, 스틸 이미지용 detectVideoFile(), detectImage() 등은
     // 원본 그대로 유지. 필요 없으면 나중에 정리해도 됨.
-
-    fun detectVideoFile(
-        videoUri: Uri,
-        inferenceIntervalMs: Long
-    ): ResultBundle? {
-        if (runningMode != RunningMode.VIDEO) {
-            throw IllegalArgumentException(
-                "detectVideoFile() called while not in VIDEO mode."
-            )
-        }
-
-        val startTime = SystemClock.uptimeMillis()
-
-        var didErrorOccurred = false
-
-        val retriever = MediaMetadataRetriever()
-        retriever.setDataSource(context, videoUri)
-        val videoLengthMs =
-            retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION)
-                ?.toLong()
-
-        val firstFrame = retriever.getFrameAtTime(0)
-        val width = firstFrame?.width
-        val height = firstFrame?.height
-
-        if ((videoLengthMs == null) || (width == null) || (height == null)) return null
-
-        val resultList = mutableListOf<PoseLandmarkerResult>()
-        val numberOfFrameToRead = videoLengthMs.div(inferenceIntervalMs)
-
-        for (i in 0..numberOfFrameToRead) {
-            val timestampMs = i * inferenceIntervalMs
-
-            retriever
-                .getFrameAtTime(
-                    timestampMs * 1000,
-                    MediaMetadataRetriever.OPTION_CLOSEST
-                )
-                ?.let { frame ->
-                    val argb8888Frame =
-                        if (frame.config == Bitmap.Config.ARGB_8888) frame
-                        else frame.copy(Bitmap.Config.ARGB_8888, false)
-
-                    val mpImage = BitmapImageBuilder(argb8888Frame).build()
-
-                    poseLandmarker?.detectForVideo(mpImage, timestampMs)
-                        ?.let { detectionResult ->
-                            resultList.add(detectionResult)
-                        } ?: run {
-                        didErrorOccurred = true
-                        poseLandmarkerHelperListener?.onError(
-                            "ResultBundle could not be returned in detectVideoFile"
-                        )
-                    }
-                }
-                ?: run {
-                    didErrorOccurred = true
-                    poseLandmarkerHelperListener?.onError(
-                        "Frame could not be retrieved when detecting in video."
-                    )
-                }
-        }
-
-        retriever.release()
-
-        val inferenceTimePerFrameMs =
-            (SystemClock.uptimeMillis() - startTime).div(numberOfFrameToRead)
-
-        return if (didErrorOccurred) {
-            null
-        } else {
-            ResultBundle(
-                resultList,
-                inferenceTimePerFrameMs,
-                height,
-                width
-            )
-        }
-    }
-
-    fun detectImage(image: Bitmap): ResultBundle? {
-        if (runningMode != RunningMode.IMAGE) {
-            throw IllegalArgumentException(
-                "detectImage() called while not in IMAGE mode."
-            )
-        }
-
-        val startTime = SystemClock.uptimeMillis()
-
-        val mpImage = BitmapImageBuilder(image).build()
-
-        poseLandmarker?.detect(mpImage)?.also { landmarkResult ->
-            val inferenceTimeMs = SystemClock.uptimeMillis() - startTime
-            return ResultBundle(
-                listOf(landmarkResult),
-                inferenceTimeMs,
-                image.height,
-                image.width
-            )
-        }
-
-        poseLandmarkerHelperListener?.onError(
-            "Pose Landmarker failed to detect."
-        )
-        return null
-    }
 
     private fun returnLivestreamResult(
         result: PoseLandmarkerResult,

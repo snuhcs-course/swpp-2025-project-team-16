@@ -10,6 +10,7 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
 import com.fitquest.app.data.remote.RetrofitClient
+import com.fitquest.app.data.remote.ServiceLocator
 import com.fitquest.app.databinding.FragmentLoginEmailBinding
 import com.fitquest.app.model.NetworkResult
 import com.fitquest.app.ui.viewmodels.AuthViewModel
@@ -25,7 +26,7 @@ class LoginEmailFragment : Fragment() {
     private val binding get() = _binding!!
 
     private val viewModel: AuthViewModel by viewModels {
-        AuthViewModelFactory(RetrofitClient.authApiService, requireContext())
+        AuthViewModelFactory(ServiceLocator.authApiService, requireContext())
     }
 
     private lateinit var emailInput: TextInputEditText

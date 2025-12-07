@@ -12,12 +12,13 @@ import androidx.test.ext.junit.rules.ActivityScenarioRule
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.MediumTest
 import androidx.test.rule.GrantPermissionRule
-import com.fitquest.app.data.remote.ApiService
-import com.fitquest.app.data.remote.EmailCheckResponse
-import com.fitquest.app.data.remote.LoginRequest
-import com.fitquest.app.data.remote.LoginResponse
+import com.fitquest.app.data.remote.AuthApiService
+import com.fitquest.app.data.remote.DailySummaryApiService
+import com.fitquest.app.data.remote.PoseAnalysisApiService
 import com.fitquest.app.data.remote.ScheduleApiService
 import com.fitquest.app.data.remote.ServiceLocator
+import com.fitquest.app.data.remote.SessionApiService
+import com.fitquest.app.data.remote.UserApiService
 import com.fitquest.app.model.Schedule
 import com.fitquest.app.ui.fragments.login.LoginEmailFragment
 //import kotlinx.coroutines.test.runTest
@@ -46,17 +47,25 @@ class LoginActivityTest {
             android.Manifest.permission.CAMERA
         )
 
-    private val mockApiService: ApiService= FakeApiService()
-    private val mockScheduleApiService: ScheduleApiService= FakeScheduleApiService()
+    private val mockApiService: AuthApiService = FakeApiService()
+    private val mockScheduleApiService: ScheduleApiService = FakeScheduleApiService()
+    private val mockSessionApiService: SessionApiService = FakeSessionApiService()
+    private val mockUserApiService: UserApiService = FakeUserApiService()
+    private val mockDailySummaryApiService: DailySummaryApiService = FakeDailySummaryService()
+    private val mockPoseAnalysisApiService: PoseAnalysisApiService =FakePoseAnalysisApiService()
 
     @Before
     fun setUp(){
-        ServiceLocator.apiService=mockScheduleApiService
-        ServiceLocator.authApiService=mockApiService
+        ServiceLocator.authApiService = mockApiService
+        ServiceLocator.scheduleApiService = mockScheduleApiService
+        ServiceLocator.sessionApiService = mockSessionApiService
+        ServiceLocator.userApiService = mockUserApiService
+        ServiceLocator.dailySummaryApiService=mockDailySummaryApiService
+        ServiceLocator.poseAnalysisApiService=mockPoseAnalysisApiService
     }
 
     @Test
-    fun test_testScenario() {
+    fun test_admin() {
 
         //이메일 입력
         onView(withId(R.id.btnEmailCheckQuest)).perform(click())
@@ -74,41 +83,39 @@ class LoginActivityTest {
         //비밀번호 입력 성공
         onView(withId(R.id.etPassword)).perform(typeText("0000"), closeSoftKeyboard())
         onView(withId(R.id.btnPasswordLogin)).perform(click())
-
-
     }
 
     @Test
-    fun test_LoginEmailFragment_UI_components_are_displayed() {
-        onView(withId(R.id.etEmail)).perform(typeText("snu@snu.com"))
+    fun test_preregistered() {
+        onView(withId(R.id.etEmail)).perform(typeText("snu@snu.com"),closeSoftKeyboard())
         onView(withId(R.id.btnEmailCheckQuest)).perform(click())
-        onView(withId(R.id.etPassword)).perform(typeText("0001"))
+        onView(withId(R.id.etPassword)).perform(typeText("0001"),closeSoftKeyboard())
         onView(withId(R.id.btnPasswordLogin)).perform(click())
 
-        onView(withId(R.id.etPassword)).perform(typeText("0000"))
+        onView(withId(R.id.etPassword)).perform(typeText("0000"),closeSoftKeyboard())
         onView(withId(R.id.btnPasswordLogin)).perform(click())
     }
 
     @Test
-    fun test_navigateToPasswordStep_when_email_exists() {
+    fun test_login_error() {
 
-        onView(withId(R.id.etEmail)).perform(typeText("snu@snu.com"))
+        onView(withId(R.id.etEmail)).perform(typeText("snu@snu.com"),closeSoftKeyboard())
 
         onView(withId(R.id.btnEmailCheckQuest)).perform(click())
 
-        onView(withId(R.id.etPassword)).perform(typeText("error"))
+        onView(withId(R.id.etPassword)).perform(typeText("error"),closeSoftKeyboard())
         onView(withId(R.id.btnPasswordLogin)).perform(click())
 
     }
     @Test
-    fun test_navigateToPasswordStep_when_email_does_not_exist()  {
+    fun test_email_error()  {
 
-        onView(withId(R.id.etEmail)).perform(typeText("error@error.com"))
+        onView(withId(R.id.etEmail)).perform(typeText("error@error.com"),closeSoftKeyboard())
         onView(withId(R.id.btnEmailCheckQuest)).perform(click())
 
     }
     @Test
-    fun test_navigateToSignUpStep_when_email_does_not_exist()  {
+    fun test_signup()  {
 
         onView(withId(R.id.etEmail)).perform(typeText("signup@signup.com"), closeSoftKeyboard())
         onView(withId(R.id.btnEmailCheckQuest)).perform(click())
@@ -130,23 +137,25 @@ class LoginActivityTest {
         onView(withId(R.id.etConfirmPassword)).perform(typeText("123456"), closeSoftKeyboard())
         //정상
         onView(withId(R.id.btnContinue)).perform(click())
+        onView(withId(R.id.btnSwitchCamera)).perform(click())
+        Thread.sleep(15000)
         onView(withId(R.id.btnStop)).perform(click())
     }
 
     @Test
-    fun test_navigateToSignUpStep_when_error()  {
+    fun test_signup_error()  {
 
-        onView(withId(R.id.etEmail)).perform(typeText("signup@signup.com"))
+        onView(withId(R.id.etEmail)).perform(typeText("signup@signup.com"),closeSoftKeyboard())
         onView(withId(R.id.btnEmailCheckQuest)).perform(click())
 
-        onView(withId(R.id.etHeroName)).perform(typeText("error"))
+        onView(withId(R.id.etHeroName)).perform(typeText("error"),closeSoftKeyboard())
         // password 입력
 
-        onView(withId(R.id.etPassword)).perform(typeText("123456"))
-        onView(withId(R.id.etConfirmPassword)).perform(typeText("123456"))
+        onView(withId(R.id.etPassword)).perform(typeText("123456"),closeSoftKeyboard())
+        onView(withId(R.id.etConfirmPassword)).perform(typeText("123456"),closeSoftKeyboard())
         //정상
         onView(withId(R.id.btnContinue)).perform(click())
-        onView(withId(R.id.etHeroName)).perform(typeText("else"))
+        onView(withId(R.id.etHeroName)).perform(typeText("else"),closeSoftKeyboard())
         onView(withId(R.id.btnContinue)).perform(click())
 
     }

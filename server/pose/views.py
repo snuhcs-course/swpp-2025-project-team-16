@@ -1,64 +1,60 @@
-# pose/views.py
-import json, os, subprocess, tempfile
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+from rest_framework import status
+import json, os, subprocess, tempfile, base64, uuid
 from pathlib import Path
-from django.http import JsonResponse, HttpResponseBadRequest
-from django.views.decorators.http import require_POST
-from django.views.decorators.csrf import csrf_exempt
 from django.conf import settings
+from django.http import JsonResponse, HttpResponseBadRequest
+from django.core.files.base import ContentFile
+from django.utils import timezone
 
-@csrf_exempt
-@require_POST
-def evaluate_posture(request):
-    # 1) 입력 검증
-    try:
-        payload_text = request.body.decode("utf-8")
-        json.loads(payload_text)
-    except Exception as e:
-        return HttpResponseBadRequest(f"Invalid JSON: {e}")
+from .models import PoseAnalysis
+from .serializers import PoseAnalysisSerializer
 
-    # 2) 설정
+
+# -----------------------------------
+# Helper: 포즈 분석 subprocess 실행
+# -----------------------------------
+def run_pose_analysis(payload: dict):
     conda_exe   = getattr(settings, "CONDA_EXE", "conda")
-    env_name    = getattr(settings, "POSE_ENV", "")                # 예: "vlm"
-    python_path = getattr(settings, "POSE_PYTHON_PATH", "")        # 예: "/home/team16/swpp-2025-project-team-16"
-    entry       = getattr(settings, "POSE_ENTRY", "")              # 예: "pose_vlm.inference"
-    timeout_s   = int(getattr(settings, "POSE_TIMEOUT", 180))
-
-    if not env_name or not entry:
-        return JsonResponse({"error": "Server misconfigured: POSE_ENV/POSE_ENTRY missing."}, status=500)
-    if not python_path:
-        return JsonResponse({"error": "Server misconfigured: POSE_PYTHON_PATH missing."}, status=500)
-
-    # 3) 환경변수 구성 (여기에 PYTHONPATH 넣기)
+    env_name    = getattr(settings, "POSE_ENV", "")
+    python_path = getattr(settings, "POSE_PYTHON_PATH", "")
+    entry       = getattr(settings, "POSE_ENTRY", "")
+    timeout_s   = int(getattr(settings, "POSE_TIMEOUT", 300))
+    # print(payload)
     env = os.environ.copy()
     env.setdefault("PYTHONUNBUFFERED", "1")
-    # 프로젝트 루트가 sys.path에 들어가도록 설정
-    # 기존
-    env["PYTHONPATH"] = python_path + (os.pathsep + env["PYTHONPATH"] if "PYTHONPATH" in env else "")
+    env["PYTHONPATH"] = python_path
 
-    # 수정: rtmpose3d의 '부모' 경로도 추가
-    extra_paths = [
-        os.path.join(python_path, "pose_vlm", "rtmpose3d"),  # <- 중요: 부모 경로
-    ]
-    env["PYTHONPATH"] = os.pathsep.join(
-        [python_path, *extra_paths, env.get("PYTHONPATH", "")]
-)
-
+    extra_paths = [os.path.join(python_path, "pose_vlm", "rtmpose3d")]
+    env["PYTHONPATH"] = os.pathsep.join([python_path, *extra_paths, env.get("PYTHONPATH", "")])
 
     with tempfile.TemporaryDirectory(prefix="pose_eval_") as tdir:
         tdirp = Path(tdir)
         out_path = tdirp / "result.json"
         in_path  = tdirp / "request.json"
+        in_path.write_text(json.dumps(payload), encoding="utf-8")
 
-        # 요청 바디 그대로 임시 파일에 기록 (이미 위에서 유효성 검증 완료)
-        in_path.write_text(payload_text, encoding="utf-8")
-
-        # 모듈을 파일 입력 방식으로 실행 (STDIN 사용 안 함)
         cmd = [
             conda_exe, "run", "-n", env_name,
             "python", "-m", entry,
             "--infile", str(in_path),
             "--out", str(out_path),
         ]
+
+
+        # error_log_path = "/home/team16/error.log"
+
+        # with open(error_log_path, "w") as err_file:
+        #     proc = subprocess.run(
+        #         cmd,
+        #         stdout=subprocess.PIPE,   # stdout은 메모리로
+        #         stderr=err_file,          # stderr은 파일로! 🔥 핵심
+        #         timeout=timeout_s,
+        #         env=env,
+        #         text=True,
+        #     )
 
         try:
             proc = subprocess.run(
@@ -67,12 +63,17 @@ def evaluate_posture(request):
                 stderr=subprocess.PIPE,
                 timeout=timeout_s,
                 env=env,
-                text=True,  # stdout/stderr를 문자열로 받기
+                text=True,
             )
         except subprocess.TimeoutExpired:
             return JsonResponse({"error": f"Evaluation timed out after {timeout_s}s."}, status=504)
 
         if proc.returncode != 0:
+            # print("STDOUT:")
+            # print(proc.stdout)
+            # print("STDERR:")
+            # print(proc.stderr)
+            # print("================================")
             return JsonResponse({
                 "error": "External evaluation failed.",
                 "stderr": proc.stderr[-4000:],
@@ -82,16 +83,14 @@ def evaluate_posture(request):
         if out_path.exists():
             try:
                 data = json.loads(out_path.read_text(encoding="utf-8"))
-
-                return JsonResponse(data, status=200)
+                return data
             except Exception:
                 raw = out_path.read_text(encoding="utf-8", errors="replace")
                 return JsonResponse({"error": "Result file is not valid JSON.", "raw_head": raw[:1000]}, status=500)
-
-        raw_out = proc.stdout
+        # fallback: stdout 마지막 JSON 시도
         try:
-            data = _extract_last_json(raw_out)
-            return JsonResponse(data, status=200)
+            data = _extract_last_json(proc.stdout)
+            return data
         except Exception:
             return JsonResponse({
                 "error": "Result file not found and stdout has no valid JSON.",
@@ -110,3 +109,73 @@ def _extract_last_json(text: str):
             except Exception:
                 continue
     raise ValueError("No valid JSON object found")
+
+# -----------------------------------
+# PoseAnalysis Upload
+# -----------------------------------
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def evaluate_posture(request):
+    user = request.user
+    data = request.data
+
+    image_base64 = data.get("image_base64")
+    category     = data.get("category")
+    schedule_id  = data.get("schedule_id")
+    session_id   = data.get("session_id")
+
+    if not image_base64 or not category:
+        return Response(
+            {"error": "image_base64 and category are required."},
+            status=status.HTTP_400_BAD_REQUEST)
+
+    try:
+        payload = {
+            "image_base64": image_base64,
+            "category": category
+        }
+
+        result = run_pose_analysis(payload)
+
+        if "error" in result:
+            return Response({"error": result["error"]}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+        pose_data = result.get("pose_data", {})
+        summary   = result.get("summary", {})
+
+        img_data = base64.b64decode(image_base64.split(",")[-1])
+        filename = f"{uuid.uuid4().hex}_{timezone.now().strftime('%Y%m%d%H%M%S')}.jpg"
+        file_path = os.path.join(settings.MEDIA_ROOT, "pose_images", filename)
+        os.makedirs(os.path.dirname(file_path), exist_ok=True)
+        with open(file_path, "wb") as f:
+            f.write(img_data)
+
+        image_url = request.build_absolute_uri(settings.MEDIA_URL + "pose_images/" + filename)
+        # image_url = os.path.join(settings.MEDIA_URL, "pose_images", filename)
+
+        pose_analysis = PoseAnalysis.objects.create(
+            user=user,
+            schedule_id=schedule_id,
+            session_id=session_id,
+            activity=category,
+            image_url=image_url,
+            pose_data=pose_data,
+            ai_comment=summary
+        )
+
+        serializer = PoseAnalysisSerializer(pose_analysis)
+        serializer_data = serializer.data
+        serializer_data_ai_comment = serializer_data.get("ai_comment", {})
+
+        response_data = {
+            "id": serializer_data.get("id"),
+            "good_points": serializer_data_ai_comment.get("good_points"),
+            "improvement_points": serializer_data_ai_comment.get("improvement_points"),
+            "improvement_methods": serializer_data_ai_comment.get("improvement_methods")
+        }
+
+        return Response(response_data, status=status.HTTP_201_CREATED)
+
+    except Exception as e:
+        return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

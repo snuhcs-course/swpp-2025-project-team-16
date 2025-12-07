@@ -56,7 +56,7 @@
         android:orientation="horizontal"
         android:gravity="center"
         android:layout_marginHorizontal="8dp"
-        android:layout_marginTop="8dp"
+        android:layout_marginTop="-8dp"
         app:layout_constraintTop_toBottomOf="@id/headerContainer"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent">
@@ -71,6 +71,49 @@
 
     </LinearLayout>
 
+    <!-- ===== Level Progress Bar ===== -->
+    <LinearLayout
+        android:id="@+id/levelProgressContainer"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:layout_marginTop="3dp"
+        android:layout_marginHorizontal="20dp"
+        app:layout_constraintTop_toBottomOf="@id/statsContainer"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <TextView
+            android:id="@+id/tvLevelProgressLabel"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Progress to Next Level"
+            android:textColor="@color/text_secondary"
+            android:textSize="12sp"
+            android:layout_marginBottom="4dp" />
+
+        <ProgressBar
+            android:id="@+id/progressLevel"
+            style="?android:attr/progressBarStyleHorizontal"
+            android:layout_width="match_parent"
+            android:layout_height="8dp"
+            android:progressDrawable="@drawable/level_progress_drawable"
+            android:max="100"
+            android:progress="50"
+            android:scaleY="1.2"/>
+
+        <TextView
+            android:id="@+id/tvLevelProgress"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="50%"
+            android:textColor="@color/cyan"
+            android:textSize="12sp"
+            android:layout_gravity="end"
+            android:layout_marginTop="4dp" />
+    </LinearLayout>
+
+
     <com.google.android.material.button.MaterialButton
         android:id="@+id/btnViewRankings"
         android:layout_width="wrap_content"
@@ -80,7 +123,7 @@
         android:textColor="@android:color/white"
         android:textSize="13sp"
         android:textStyle="bold"
-        android:layout_marginTop="10dp"
+        android:layout_marginTop="41dp"
         android:layout_marginBottom="4dp"
         app:cornerRadius="10dp"
         android:paddingHorizontal="18dp"
@@ -94,12 +137,16 @@
         android:id="@+id/tvHistoryTitle"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="History"
+        android:drawableStart="@drawable/ic_updownarrow"
+        android:drawablePadding="8dp"
+        android:drawableTint="?attr/colorOnBackground"
+        android:text="Conquest History"
         android:textColor="@color/text_primary"
         android:textStyle="bold"
-        android:textSize="16sp"
-        android:layout_marginStart="20dp"
-        android:layout_marginTop="30dp"
+        android:textSize="12sp"
+        android:gravity="center_vertical"
+        android:layout_marginStart="5dp"
+        android:layout_marginTop="64dp"
         app:layout_constraintTop_toBottomOf="@id/statsContainer"
         app:layout_constraintStart_toStartOf="parent" />
 
@@ -108,7 +155,6 @@
         android:id="@+id/historyFrame"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_marginTop="20dp"
         app:layout_constraintTop_toBottomOf="@id/tvHistoryTitle"
         app:layout_constraintBottom_toBottomOf="parent">
 
@@ -118,26 +164,25 @@
             android:layout_width="4dp"
             android:layout_height="match_parent"
             android:layout_gravity="center_horizontal"
-            android:background="@drawable/gradient_timeline_vertical"
-            android:elevation="2dp" />
+            android:background="@drawable/gradient_timeline_vertical" />
 
-        <!-- Scrollable Timeline -->
-        <ScrollView
-            android:id="@+id/scrollHistory"
+        <!-- RecyclerView: 스크롤 담당 -->
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/recyclerHistory"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:overScrollMode="never"
-            android:fillViewport="true">
+            android:clipToPadding="false"
+            android:paddingVertical="24dp" />
 
-            <LinearLayout
-                android:id="@+id/historyContainer"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:paddingVertical="24dp">
-                <!-- 동적으로 item_historynode 추가 -->
-            </LinearLayout>
-        </ScrollView>
+        <TextView
+            android:id="@+id/tvEmpty"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="No history available"
+            android:textColor="@color/text_secondary"
+            android:textSize="16sp"
+            android:layout_gravity="center"
+            android:visibility="gone"/>
     </FrameLayout>
 
     <include

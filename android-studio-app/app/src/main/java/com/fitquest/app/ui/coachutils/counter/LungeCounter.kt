@@ -12,6 +12,12 @@ class LungeCounter : BaseCounter() {
     override var count: Int = 0
     override var phase: String = "UP"
 
+    // ★ 런지 시작 시간 기록용
+    private var repStartMs = 0L
+
+    // ★ 최소 런지 시간: 500ms 미만이면 가짜로 판단
+    private val minimumRepDuration = 500L
+
     private var phaseState = Phase.UP
         set(value) {
             field = value
@@ -79,13 +85,18 @@ class LungeCounter : BaseCounter() {
 
             Phase.UP -> {
                 if (kneeAngle < 120.0) {
+                    repStartMs = nowMs
                     phaseState = Phase.DOWN_REACHED
                 }
             }
 
             Phase.DOWN_REACHED -> {
+
                 if (kneeAngle > 150.0) {
-                    count++
+                    val repDuration = nowMs - repStartMs
+                    if (repDuration >= minimumRepDuration) {
+                        count++
+                    }
                     phaseState = Phase.UP
                 }
             }

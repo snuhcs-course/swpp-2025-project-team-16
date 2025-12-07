@@ -13,6 +13,7 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 from pathlib import Path
 import os
 from dotenv import load_dotenv
+from datetime import timedelta
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -38,6 +39,7 @@ ALLOWED_HOSTS = ["127.0.0.1", "localhost", "10.0.2.2", "147.46.78.29"]
 # Application definition
 
 INSTALLED_APPS = [
+    'pose',
     'schedule',
     'accounts',
     'django.contrib.admin',
@@ -95,6 +97,11 @@ DATABASES = {
         'OPTIONS': {
             'unix_socket': '/tmp/mysql.sock',
             'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
+            'charset': 'utf8mb4',
+        },
+        'TEST': {
+            'CHARSET': 'utf8mb4',
+            'COLLATION': 'utf8mb4_unicode_ci',
         },
     }
 }
@@ -146,6 +153,11 @@ REST_FRAMEWORK = {
     ),
 }
 
+SIMPLE_JWT = {
+    'ACCESS_TOKEN_LIFETIME': timedelta(hours=2),
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=7),
+}
+
 
 CONDA_EXE = "/home/team16/anaconda3/bin/conda"  # 예시
 POSE_PYTHON_PATH = "/home/team16/swpp-2025-project-team-16"
@@ -157,3 +169,6 @@ POSE_TIMEOUT = 180                                # 초 (작업 길면 늘리세
 CELERY_BROKER_URL = "redis://localhost:6379/0"
 CELERY_RESULT_BACKEND = "redis://localhost:6379/0"
 CELERY_TIMEZONE = "Asia/Seoul"
+
+MEDIA_ROOT = os.path.join(BASE_DIR, "media")
+MEDIA_URL = "/media/"

@@ -15,7 +15,7 @@ import cv2
 class EvalRequest(BaseModel):
     image_base64: Optional[str] = None      # 기본: base64
     image_path: Optional[str] = None        # 테스트 대체 입력(선택)
-    category: str = Field(..., description="e.xg., 'squat'")
+    category: str = Field(..., description="e.xg., 'squat', 'lunge', 'plank'")
 
 
 # ======== 출력 도우미 ========
@@ -92,35 +92,13 @@ def main():
     # 추론 실행
     try:
         vlm = VLMService()
-        result_summary = pose_evaluation_pipeline(vlm, req.image_base64, category=req.category)
+        result = pose_evaluation_pipeline(vlm, req.image_base64, category=req.category)
 
-        # 호환: dict이면 통일된 키 사용, 문자열이면 summary로 래핑
         resp: Dict[str, Any]
-        if isinstance(result_summary, dict):
-            # 가능한 키들 정규화
-            good = result_summary.get("good_points") or result_summary.get("good") or []
-            bad  = result_summary.get("improvement_points") or result_summary.get("bad") or []
-            meth = result_summary.get("improvement_methods") or result_summary.get("methods") or []
-            # # 문자열일 수도 있으니 안전 처리
-            # if isinstance(good, str): good = [good]
-            # if isinstance(bad, str):  bad = [bad]
-            # if isinstance(meth, str): meth = [meth]
-
-            resp = {
-                "status": "success",
-                "good_points": good,
-                "improvement_points": bad,
-                "improvement_methods": meth,
-            }
-            # # 추가 필드가 있으면 그대로 보존
-            # for k, v in result_summary.items():
-            #     if k not in resp:
-            #         resp[k] = v
-        else:
-            resp = {
-                "status": "success",
-                "summary": str(result_summary)
-            }
+        resp = {
+            "pose_data": result.get("pose_data"),   # joint_angles, keypoints_2d
+            "summary": result.get("summary"),       # good_points, improvement_points, improvement_methods
+        }
 
         _emit_json(resp, args.out)
     except Exception as e:

@@ -43,10 +43,10 @@
                 <!-- Logo -->
                 <ImageView
                     android:id="@+id/ivLogo"
-                    android:layout_width="64dp"
-                    android:layout_height="64dp"
-                    android:layout_marginBottom="16dp"
-                    android:src="@drawable/ic_fitquest_logo_rounded"
+                    android:layout_width="128dp"
+                    android:layout_height="96dp"
+                    android:layout_marginBottom="1dp"
+                    android:src="@drawable/logo_trans"
                     android:contentDescription="FitQuest Logo" />
 
                 <!-- Title -->

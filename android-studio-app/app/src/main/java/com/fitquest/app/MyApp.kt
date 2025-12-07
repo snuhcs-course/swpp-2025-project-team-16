@@ -1,7 +1,7 @@
 package com.fitquest.app
 
 import android.app.Application
-import com.jakewharton.threetenabp.AndroidThreeTen
+import android.content.Intent
 
 class MyApp : Application() {
 
@@ -14,7 +14,15 @@ class MyApp : Application() {
         super.onCreate()
         instance = this
 
-        // ThreeTenABP 초기화
-        AndroidThreeTen.init(this)
+        CurrentActivityHelper.init(this)
+    }
+
+    fun goToLogin() {
+        val currentActivity = CurrentActivityHelper.currentActivity ?: return
+
+        val intent = Intent(currentActivity, LoginActivity::class.java)
+        intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or
+                Intent.FLAG_ACTIVITY_CLEAR_TASK
+        currentActivity.startActivity(intent)
     }
 }

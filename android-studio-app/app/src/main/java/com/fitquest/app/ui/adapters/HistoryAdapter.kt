@@ -3,47 +3,61 @@ package com.fitquest.app.ui.adapters
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.TextView
+import androidx.recyclerview.widget.DiffUtil
+import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
-import com.fitquest.app.R
-import com.fitquest.app.model.WorkoutHistory
+import com.fitquest.app.databinding.ItemHistorynodeBinding
+import com.fitquest.app.model.DailyHistoryItem
+import com.fitquest.app.util.ActivityUtils.calculateAverageCompletionPercent
+import com.fitquest.app.util.ActivityUtils.calculateTotalEarnedXp
+import com.fitquest.app.util.ActivityUtils.formatActivitiesSummary
+import com.fitquest.app.util.DateUtils.formatDate
 
-/**
- * Adapter for displaying workout history in the Profile screen
- */
 class HistoryAdapter(
-    private val workoutHistory: List<WorkoutHistory>,
-    private val onHistoryClick: (WorkoutHistory) -> Unit
-) : RecyclerView.Adapter<HistoryAdapter.HistoryViewHolder>() {
+    private val onItemClick: (DailyHistoryItem) -> Unit
+) : ListAdapter<DailyHistoryItem, HistoryAdapter.HistoryViewHolder>(DiffCallback()) {
 
-    class HistoryViewHolder(view: View) : RecyclerView.ViewHolder(view) {
-        val dateText: TextView = view.findViewById(R.id.tvDate)
-        val pointsText: TextView = view.findViewById(R.id.tvXpEarned)
-        val scoreText: TextView = view.findViewById(R.id.tvDuration)
-        val exerciseCountText: TextView = view.findViewById(R.id.tvExerciseCount)
+    inner class HistoryViewHolder(private val binding: ItemHistorynodeBinding) :
+        RecyclerView.ViewHolder(binding.root) {
+
+        fun bind(dailyItem: DailyHistoryItem, position: Int) {
+
+            val rightCardBinding = binding.summaryCardRight
+            val leftCardBinding = binding.summaryCardLeft
+
+            if (position % 2 == 0) {
+                leftCardBinding.root.visibility = View.GONE
+                rightCardBinding.root.visibility = View.VISIBLE
+            } else {
+                leftCardBinding.root.visibility = View.VISIBLE
+                rightCardBinding.root.visibility = View.GONE
+            }
+
+            val currentCardBinding = if (position % 2 == 0) rightCardBinding else leftCardBinding
+
+            currentCardBinding.tvDate.text = formatDate(dailyItem.date)
+            currentCardBinding.tvWorkoutSummary.text = formatActivitiesSummary(dailyItem.schedules, dailyItem.sessions)
+            currentCardBinding.tvXp.text = "+${calculateTotalEarnedXp(dailyItem.schedules, dailyItem.sessions)} XP"
+            currentCardBinding.tvPercent.text = "${calculateAverageCompletionPercent(dailyItem.schedules)} %"
+
+            binding.root.setOnClickListener { onItemClick(dailyItem) }
+        }
+    }
+
+    class DiffCallback : DiffUtil.ItemCallback<DailyHistoryItem>() {
+        override fun areItemsTheSame(oldItem: DailyHistoryItem, newItem: DailyHistoryItem) =
+            oldItem.date == newItem.date
+
+        override fun areContentsTheSame(oldItem: DailyHistoryItem, newItem: DailyHistoryItem) =
+            oldItem == newItem
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): HistoryViewHolder {
-        val view = LayoutInflater.from(parent.context)
-            .inflate(R.layout.item_history, parent, false)
-        return HistoryViewHolder(view)
+        val binding = ItemHistorynodeBinding.inflate(LayoutInflater.from(parent.context), parent, false)
+        return HistoryViewHolder(binding)
     }
 
     override fun onBindViewHolder(holder: HistoryViewHolder, position: Int) {
-        val history = workoutHistory[position]
-        
-        holder.dateText.text = history.date
-        holder.pointsText.text = "${history.points} pts"
-        holder.scoreText.text = "${history.aiScore}%"
-        holder.exerciseCountText.text = "${history.exercises.size} exercises"
-        
-        holder.itemView.setOnClickListener {
-            onHistoryClick(history)
-        }
-        
-        // TODO: Add visual indicators (flag icons, badges)
-        // TODO: Display emojis from exercises
+        holder.bind(getItem(position), position)
     }
-
-    override fun getItemCount() = workoutHistory.size
 }

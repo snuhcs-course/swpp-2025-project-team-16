@@ -4,30 +4,23 @@
     android:id="@+id/nav_graph"
     app:startDestination="@id/journeyFragment">
 
-    <!-- Journey Fragment -->
     <fragment
         android:id="@+id/journeyFragment"
         android:name="com.fitquest.app.ui.fragments.JourneyFragment"
-        android:label="Journey" />
-
-    <!-- Schedule Fragment -->
-    <fragment
-        android:id="@+id/scheduleFragment"
-        android:name="com.fitquest.app.ui.fragments.ScheduleFragment"
-        android:label="Schedule">
+        android:label="Journey">
         <action
-            android:id="@+id/action_scheduleFragment_to_aiCoachFragment"
+            android:id="@+id/action_journeyFragment_to_aiCoachFragment"
             app:destination="@id/aiCoachFragment"
             app:enterAnim="@android:anim/slide_in_left"
             app:exitAnim="@android:anim/slide_out_right"
             app:popEnterAnim="@android:anim/slide_in_left"
             app:popExitAnim="@android:anim/slide_out_right" />
     </fragment>
-
     <!-- AI Coach Fragment -->
+
     <fragment
         android:id="@+id/aiCoachFragment"
-        android:name="com.fitquest.app.ui.fragments.AiCoachFragment"
+        android:name="com.fitquest.app.ui.fragments.coach.AiCoachFragment"
         android:label="AI Coach">
         <argument
             android:name="scheduleId"
@@ -47,13 +40,11 @@
             android:defaultValue="-1"/>
     </fragment>
 
-    <!-- Pose Fragment -->
     <fragment
         android:id="@+id/poseFragment"
-        android:name="com.fitquest.app.ui.fragments.PoseFragment"
+        android:name="com.fitquest.app.ui.fragments.pose.PoseFragment"
         android:label="Pose" />
 
-    <!-- Profile Fragment -->
     <fragment
         android:id="@+id/profileFragment"
         android:name="com.fitquest.app.ui.fragments.ProfileFragment"

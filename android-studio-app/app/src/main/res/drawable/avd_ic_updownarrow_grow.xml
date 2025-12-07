@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<animated-vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:drawable="@drawable/ic_updownarrow">
+
+    <target
+        android:name="g"
+        android:animation="@animator/avd_grow_scale" />
+</animated-vector>

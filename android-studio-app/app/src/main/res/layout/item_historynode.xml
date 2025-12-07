@@ -25,7 +25,7 @@
     <include
         layout="@layout/item_history"
         android:id="@+id/summaryCardRight"
-        android:layout_width="wrap_content"
+        android:layout_width="286dp"
         android:layout_height="wrap_content"
         android:layout_toRightOf="@id/nodeCircle"
         android:layout_marginStart="5dp"
@@ -36,7 +36,7 @@
     <include
         layout="@layout/item_history"
         android:id="@+id/summaryCardLeft"
-        android:layout_width="wrap_content"
+        android:layout_width="286dp"
         android:layout_height="wrap_content"
         android:layout_toLeftOf="@id/nodeCircle"
         android:layout_marginStart="8dp"

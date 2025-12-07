@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/nav_login"
+    app:startDestination="@id/loginEmailFragment">
+
+    <fragment
+        android:id="@+id/loginEmailFragment"
+        android:name="com.fitquest.app.ui.fragments.login.LoginEmailFragment"
+        android:label="Login Email">
+        <action
+            android:id="@+id/action_loginEmailFragment_to_loginPasswordFragment"
+            app:destination="@id/loginPasswordFragment"
+            app:enterAnim="@anim/slide_in_left"
+            app:exitAnim="@anim/slide_out_right"
+            app:popEnterAnim="@anim/slide_in_left"
+            app:popExitAnim="@anim/slide_out_right" />
+        <action
+            android:id="@+id/action_loginEmailFragment_to_signupStep1Fragment"
+            app:destination="@id/signupStep1Fragment"
+            app:enterAnim="@anim/slide_in_left"
+            app:exitAnim="@anim/slide_out_right"
+            app:popEnterAnim="@anim/slide_in_left"
+            app:popExitAnim="@anim/slide_out_right" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/loginPasswordFragment"
+        android:name="com.fitquest.app.ui.fragments.login.LoginPasswordFragment"
+        android:label="Login Password">
+        <!-- LoginEmailFragment에서 email 전달 -->
+        <argument
+            android:name="email"
+            app:argType="string" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/signupStep1Fragment"
+        android:name="com.fitquest.app.ui.fragments.login.SignupStep1Fragment"
+        android:label="Signup Step 1">
+        <!-- LoginEmailFragment에서 email 전달 -->
+        <argument
+            android:name="email"
+            app:argType="string" />
+        <action
+            android:id="@+id/action_signupStep1Fragment_to_signupStep2Fragment"
+            app:destination="@id/signupStep2Fragment"
+            app:enterAnim="@anim/slide_in_left"
+            app:exitAnim="@anim/slide_out_right"
+            app:popEnterAnim="@anim/slide_in_left"
+            app:popExitAnim="@anim/slide_out_right" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/signupStep2Fragment"
+        android:name="com.fitquest.app.ui.fragments.login.SignupStep2Fragment"
+        android:label="Signup Step 2">
+        <!-- Step1에서 전달되는 데이터 -->
+        <argument
+            android:name="email"
+            app:argType="string" />
+        <argument
+            android:name="password"
+            app:argType="string" />
+        <argument
+            android:name="username"
+            app:argType="string" />
+    </fragment>
+
+</navigation>

@@ -84,86 +84,86 @@ class OverlayView(context: Context, attrs: AttributeSet?) : View(context, attrs)
             }
         }
 
-        // 2) 각도 계산용 주요 관절들
-        val landmarks = poseLandmarkerResult.landmarks().getOrNull(0) ?: return
-
-        val lShoulder = landmarks[11]; val rShoulder = landmarks[12]
-        val lElbow    = landmarks[13]; val rElbow    = landmarks[14]
-        val lWrist    = landmarks[15]; val rWrist    = landmarks[16]
-
-        val lHip      = landmarks[23]; val rHip      = landmarks[24]
-        val lKnee     = landmarks[25]; val rKnee     = landmarks[26]
-        val lAnkle    = landmarks[27]; val rAnkle    = landmarks[28]
-
-        fun mid(
-            a: com.google.mediapipe.tasks.components.containers.NormalizedLandmark,
-            b: com.google.mediapipe.tasks.components.containers.NormalizedLandmark
-        ) = floatArrayOf((a.x() + b.x()) / 2f, (a.y() + b.y()) / 2f, (a.z() + b.z()) / 2f)
-
-        val shoulderMid = mid(lShoulder, rShoulder)
-        val hipMid = mid(lHip, rHip)
-        val kneeMid = mid(lKnee, rKnee) // currently unused but kept for possible core angle calc
-
-        // 3) 간단한 2D 각도(팔꿈치, 무릎, 몸통 굴곡 등)
-        val leftElbowAngle = calculateAngle2D(
-            lShoulder.x(), lShoulder.y(),
-            lElbow.x(), lElbow.y(),
-            lWrist.x(), lWrist.y()
-        )
-        val rightElbowAngle = calculateAngle2D(
-            rShoulder.x(), rShoulder.y(),
-            rElbow.x(), rElbow.y(),
-            rWrist.x(), rWrist.y()
-        )
-        val leftKneeAngle = calculateAngle2D(
-            lHip.x(), lHip.y(),
-            lKnee.x(), lKnee.y(),
-            lAnkle.x(), lAnkle.y()
-        )
-        val rightKneeAngle = calculateAngle2D(
-            rHip.x(), rHip.y(),
-            rKnee.x(), rKnee.y(),
-            rAnkle.x(), rAnkle.y()
-        )
-        val flexAngle = calculateAngle2D(
-            shoulderMid[0], shoulderMid[1],
-            hipMid[0], hipMid[1],
-            kneeMid[0], kneeMid[1]
-        )
-
-        // 4) 텍스트 스타일
-        val textPaint = Paint().apply {
-            color = Color.WHITE
-            textSize = 40f
-            style = Paint.Style.FILL
-            isAntiAlias = true
-        }
-
-        fun Canvas.drawAngleAtPivot(
-            p: com.google.mediapipe.tasks.components.containers.NormalizedLandmark,
-            text: String
-        ) {
-            drawText(
-                text,
-                p.x() * imageWidth * scaleFactor + offsetX,
-                p.y() * imageHeight * scaleFactor + offsetY - 20f,
-                textPaint
-            )
-        }
-
-        // 팔꿈치/무릎 각도 라벨
-        canvas.drawAngleAtPivot(lElbow,  "${leftElbowAngle.toInt()}°")
-        canvas.drawAngleAtPivot(rElbow,  "${rightElbowAngle.toInt()}°")
-        canvas.drawAngleAtPivot(lKnee,   "${leftKneeAngle.toInt()}°")
-        canvas.drawAngleAtPivot(rKnee,   "${rightKneeAngle.toInt()}°")
-
-        // 코어 굴곡(Flex) 각도 라벨
-        canvas.drawText(
-            "Flex: ${flexAngle.toInt()}°",
-            hipMid[0] * imageWidth * scaleFactor + offsetX,
-            hipMid[1] * imageHeight * scaleFactor + offsetY - 60f,
-            textPaint
-        )
+//        // 2) 각도 계산용 주요 관절들
+//        val landmarks = poseLandmarkerResult.landmarks().getOrNull(0) ?: return
+//
+//        val lShoulder = landmarks[11]; val rShoulder = landmarks[12]
+//        val lElbow    = landmarks[13]; val rElbow    = landmarks[14]
+//        val lWrist    = landmarks[15]; val rWrist    = landmarks[16]
+//
+//        val lHip      = landmarks[23]; val rHip      = landmarks[24]
+//        val lKnee     = landmarks[25]; val rKnee     = landmarks[26]
+//        val lAnkle    = landmarks[27]; val rAnkle    = landmarks[28]
+//
+//        fun mid(
+//            a: com.google.mediapipe.tasks.components.containers.NormalizedLandmark,
+//            b: com.google.mediapipe.tasks.components.containers.NormalizedLandmark
+//        ) = floatArrayOf((a.x() + b.x()) / 2f, (a.y() + b.y()) / 2f, (a.z() + b.z()) / 2f)
+//
+//        val shoulderMid = mid(lShoulder, rShoulder)
+//        val hipMid = mid(lHip, rHip)
+//        val kneeMid = mid(lKnee, rKnee) // currently unused but kept for possible core angle calc
+//
+//        // 3) 간단한 2D 각도(팔꿈치, 무릎, 몸통 굴곡 등)
+//        val leftElbowAngle = calculateAngle2D(
+//            lShoulder.x(), lShoulder.y(),
+//            lElbow.x(), lElbow.y(),
+//            lWrist.x(), lWrist.y()
+//        )
+//        val rightElbowAngle = calculateAngle2D(
+//            rShoulder.x(), rShoulder.y(),
+//            rElbow.x(), rElbow.y(),
+//            rWrist.x(), rWrist.y()
+//        )
+//        val leftKneeAngle = calculateAngle2D(
+//            lHip.x(), lHip.y(),
+//            lKnee.x(), lKnee.y(),
+//            lAnkle.x(), lAnkle.y()
+//        )
+//        val rightKneeAngle = calculateAngle2D(
+//            rHip.x(), rHip.y(),
+//            rKnee.x(), rKnee.y(),
+//            rAnkle.x(), rAnkle.y()
+//        )
+//        val flexAngle = calculateAngle2D(
+//            shoulderMid[0], shoulderMid[1],
+//            hipMid[0], hipMid[1],
+//            kneeMid[0], kneeMid[1]
+//        )
+//
+//        // 4) 텍스트 스타일
+//        val textPaint = Paint().apply {
+//            color = Color.WHITE
+//            textSize = 40f
+//            style = Paint.Style.FILL
+//            isAntiAlias = true
+//        }
+//
+//        fun Canvas.drawAngleAtPivot(
+//            p: com.google.mediapipe.tasks.components.containers.NormalizedLandmark,
+//            text: String
+//        ) {
+//            drawText(
+//                text,
+//                p.x() * imageWidth * scaleFactor + offsetX,
+//                p.y() * imageHeight * scaleFactor + offsetY - 20f,
+//                textPaint
+//            )
+//        }
+//
+//        // 팔꿈치/무릎 각도 라벨
+//        canvas.drawAngleAtPivot(lElbow,  "${leftElbowAngle.toInt()}°")
+//        canvas.drawAngleAtPivot(rElbow,  "${rightElbowAngle.toInt()}°")
+//        canvas.drawAngleAtPivot(lKnee,   "${leftKneeAngle.toInt()}°")
+//        canvas.drawAngleAtPivot(rKnee,   "${rightKneeAngle.toInt()}°")
+//
+//        // 코어 굴곡(Flex) 각도 라벨
+//        canvas.drawText(
+//            "Flex: ${flexAngle.toInt()}°",
+//            hipMid[0] * imageWidth * scaleFactor + offsetX,
+//            hipMid[1] * imageHeight * scaleFactor + offsetY - 60f,
+//            textPaint
+//        )
     }
 
     /**

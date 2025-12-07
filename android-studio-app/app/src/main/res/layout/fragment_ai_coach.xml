@@ -7,7 +7,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/background_dark"
-    tools:context=".ui.fragments.AiCoachFragment">
+    tools:context=".ui.fragments.coach.AiCoachFragment">
 
     <LinearLayout
         android:id="@+id/headerContainer"
@@ -437,6 +437,18 @@
                     app:layout_constraintEnd_toEndOf="parent"
                     tools:visibility="visible"
                     tools:text="5" />
+
+                <nl.dionsegijn.konfetti.xml.KonfettiView
+                    android:id="@+id/confettiView"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:clickable="false"
+                    android:focusable="false"
+                    android:visibility="visible"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent" />
 
             </androidx.constraintlayout.widget.ConstraintLayout>
         </androidx.constraintlayout.widget.ConstraintLayout>

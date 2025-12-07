@@ -1,25 +1,55 @@
 package com.fitquest.app.ui.fragments
 
-import android.os.Build
 import android.os.Bundle
-import android.util.Log
 import android.view.*
 import android.widget.*
-import androidx.annotation.RequiresApi
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
+import androidx.recyclerview.widget.LinearLayoutManager
 import com.fitquest.app.R
 import com.fitquest.app.data.remote.RetrofitClient
-import com.fitquest.app.data.remote.UserStatsResponse
-import com.fitquest.app.model.Exercise
+import com.fitquest.app.data.remote.ServiceLocator
+import com.fitquest.app.databinding.FragmentProfileBinding
+import com.fitquest.app.databinding.ItemExercisedoneBinding
+import com.fitquest.app.databinding.LayoutHistoryDetailBinding
+import com.fitquest.app.model.DailyHistoryItem
+import com.fitquest.app.model.Schedule
+import com.fitquest.app.model.Session
+import com.fitquest.app.ui.adapters.HistoryAdapter
+import com.fitquest.app.ui.viewmodels.HistoryViewModel
+import com.fitquest.app.ui.viewmodels.HistoryViewModelFactory
+import com.fitquest.app.ui.viewmodels.UserViewModel
+import com.fitquest.app.ui.viewmodels.UserViewModelFactory
+import com.fitquest.app.util.ActivityUtils.calculateAverageCompletionPercent
+import com.fitquest.app.util.ActivityUtils.calculateCompletionPercent
+import com.fitquest.app.util.ActivityUtils.calculateEarnedXpForSchedule
+import com.fitquest.app.util.ActivityUtils.calculateEarnedXpForSession
+import com.fitquest.app.util.ActivityUtils.calculateTotalEarnedXp
+import com.fitquest.app.util.ActivityUtils.getEmoji
+import com.fitquest.app.util.DateUtils.formatDate
+import com.fitquest.app.util.DateUtils.formatTotalTime
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.bottomsheet.BottomSheetDialog
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
-import org.threeten.bp.LocalDate
+import java.time.LocalTime
 
-class ProfileFragment : Fragment() {
+class ProfileFragment() : Fragment() {
 
-    private lateinit var historyContainer: LinearLayout
+    private var _binding: FragmentProfileBinding? = null
+    private val binding get() = _binding!!
+    private val historyViewModel: HistoryViewModel by viewModels {
+        HistoryViewModelFactory(ServiceLocator.dailySummaryApiService, ServiceLocator.scheduleApiService,
+            ServiceLocator.sessionApiService)
+    }
+
+    private val userViewModel: UserViewModel by viewModels {
+        UserViewModelFactory(ServiceLocator.userApiService)
+    }
+
+    private lateinit var historyAdapter: HistoryAdapter
+
     private lateinit var rankOverlay: View
     private lateinit var btnViewRankings: MaterialButton
     private lateinit var rankListContainer: LinearLayout
@@ -29,118 +59,78 @@ class ProfileFragment : Fragment() {
     private lateinit var tvSecondName: TextView
     private lateinit var tvThirdName: TextView
 
-    // ======= Dummy History (임시) =======
-    data class HistoryDay(
-        val date: String,
-        val xp: String,
-        val percent: String,
-        val time: String,
-        val exercises: List<Exercise>
-    )
-
-    private fun fetchHistoryFromServer() {
-        val prefs = requireContext().getSharedPreferences("auth", 0)
-        val token = prefs.getString("token", null) ?: return
-
-        lifecycleScope.launch {
-            try {
-                val response = RetrofitClient.profileApiService.getUserHistory("Bearer $token")
-                if (response.isSuccessful) {
-                    val historyList = response.body() ?: emptyList()
-
-                    // ✅ 오늘 날짜
-                    val today = LocalDate.now()
-
-                    // ✅ 오늘 포함 "이전" 데이터만 필터링
-                    val filtered = historyList.filter { item ->
-                        try {
-                            val date = LocalDate.parse(item.date)
-                            !date.isAfter(today)   // 오늘 이후면 제외
-                        } catch (e: Exception) {
-                            false // 날짜 파싱 실패 시 제외
-                        }
-                    }
-
-                    // ✅ UI용 매핑
-                    val mappedList = filtered.map { item ->
-                        HistoryDay(
-                            date = item.date,
-                            xp = "+200 XP",  // 서버 XP 미구현 시 임시값
-                            percent = "100%",
-                            time = "${item.start_time?.substring(0, 5)} - ${item.end_time?.substring(0, 5)}",
-                            exercises = listOf(
-                                Exercise("🏋️", item.name, "done", "+100 XP", accuracy = "100%", duration =  "30 min")
-                            )
-                        )
-                    }
-
-                    updateHistoryUI(mappedList)
-                } else {
-                    Log.e("HistoryFetch", "Error: ${response.code()}")
-                }
-            } catch (e: Exception) {
-                Log.e("HistoryFetch", "Network error: ${e.localizedMessage}")
-            }
-        }
-    }
-
-
-    private fun updateHistoryUI(data: List<HistoryDay>) {
-        val inflater = LayoutInflater.from(requireContext())
-        historyContainer.removeAllViews()
-
-        data.forEachIndexed { index, history ->
-            val nodeView = inflater.inflate(R.layout.item_historynode, historyContainer, false)
-            val leftCard = nodeView.findViewById<View>(R.id.summaryCardLeft)
-            val rightCard = nodeView.findViewById<View>(R.id.summaryCardRight)
-            val activeCard = if (index % 2 == 0) rightCard else leftCard
-            val inactiveCard = if (index % 2 == 0) leftCard else rightCard
-            inactiveCard.visibility = View.GONE
-            activeCard.visibility = View.VISIBLE
-
-            val tvDate = activeCard.findViewById<TextView>(R.id.tvDate)
-            val tvXp = activeCard.findViewById<TextView>(R.id.tvXp)
-            val tvPercent = activeCard.findViewById<TextView>(R.id.tvPercent)
-            val tvTime = activeCard.findViewById<TextView>(R.id.tvTime)
-
-            tvDate.text = history.date
-            tvXp.text = history.xp
-            tvPercent.text = history.percent
-            tvTime.text = history.time
-
-            activeCard.setOnClickListener { showDayDetail(history) }
-            historyContainer.addView(nodeView)
-        }
-    }
-
-    override fun onCreateView(
-        inflater: LayoutInflater,
-        container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ): View {
-        return inflater.inflate(R.layout.fragment_profile, container, false)
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
+        _binding = FragmentProfileBinding.inflate(inflater, container, false)
+        return binding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        historyContainer = view.findViewById(R.id.historyContainer)
-        rankOverlay = view.findViewById(R.id.rankOverlay)
-        btnViewRankings = view.findViewById(R.id.btnViewRankings)
+        historyAdapter = HistoryAdapter { dailyItem -> showHistoryDetails(dailyItem) }
+        binding.recyclerHistory.layoutManager = LinearLayoutManager(context)
+        binding.recyclerHistory.adapter = historyAdapter
+
+        historyViewModel.dailyHistories.observe(viewLifecycleOwner) { dailyItems ->
+            historyAdapter.submitList(dailyItems)
+            binding.tvEmpty.visibility = if (dailyItems.isEmpty()) View.VISIBLE else View.GONE
+        }
+        historyViewModel.loadHistory()
+
+        // 3. 랭킹 관련 UI 초기화 (기존 findViewById 로직 유지)
+        rankOverlay = binding.rankOverlay.root
+        btnViewRankings = binding.btnViewRankings
         rankListContainer = rankOverlay.findViewById(R.id.rankListContainer)
 
-        // podium 이름 3개 찾기
         tvFirstName = rankOverlay.findViewById(R.id.tvFirstName)
         tvSecondName = rankOverlay.findViewById(R.id.tvSecondName)
         tvThirdName = rankOverlay.findViewById(R.id.tvThirdName)
 
-        fetchHistoryFromServer()
         setupRankButton()
-        fetchUserStats()
+        observeUserData()
+
+        userViewModel.getProfile()
+        userViewModel.getRankings()
     }
 
-    private fun fetchUserStats() {
-        // TODO: 나중에 구현
+    private fun observeUserData() {
+        viewLifecycleOwner.lifecycleScope.launch {
+            userViewModel.userProfile.collectLatest { user ->
+                user?.let {
+                    binding.statLevel.tvStatRank.text = it.rank.toString()
+                    binding.statLevel.tvStatLevel.text = LevelUtils.calculateLevel(it.xp).toString()
+                    binding.statLevel.tvStatTime.text = formatTotalTime(it.totalTime)
+                    binding.statLevel.tvStatXP.text = it.xp.toString()
+
+                    val (current, max) = LevelUtils.levelProgress(it.xp)
+                    val percent = (current * 100 / max)
+
+                    binding.progressLevel.progress = percent
+                    binding.tvLevelProgress.text = "$percent%"
+                }
+            }
+        }
+
+        viewLifecycleOwner.lifecycleScope.launch {
+            userViewModel.rankings.collectLatest { ranks ->
+                rankListContainer.removeAllViews()
+
+                tvFirstName.text = "1st • ${ranks.getOrNull(0)?.name ?: "-"}"
+                tvSecondName.text = "2nd • ${ranks.getOrNull(1)?.name ?: "-"}"
+                tvThirdName.text = "3rd • ${ranks.getOrNull(2)?.name ?: "-"}"
+
+                ranks.drop(3).forEachIndexed { index, rank ->
+                    val tv = TextView(requireContext()).apply {
+                        text = "${index + 4}. ${rank.name} — ${rank.xp} XP"
+                        setTextColor(resources.getColor(R.color.text_primary, null))
+                        textSize = 13f
+                        gravity = android.view.Gravity.CENTER
+                        setPadding(0, 6, 0, 6)
+                    }
+                    rankListContainer.addView(tv)
+                }
+            }
+        }
     }
 
     private fun setupRankButton() {
@@ -148,8 +138,6 @@ class ProfileFragment : Fragment() {
             rankOverlay.visibility = View.VISIBLE
             rankOverlay.alpha = 0f
             rankOverlay.animate().alpha(1f).setDuration(250).start()
-
-            fetchRankData() // 서버 요청
 
             rankOverlay.findViewById<View>(R.id.btnCloseRank)?.setOnClickListener {
                 rankOverlay.animate()
@@ -161,75 +149,114 @@ class ProfileFragment : Fragment() {
         }
     }
 
-    private fun fetchRankData() {
-        val prefs = requireContext().getSharedPreferences("auth", 0)
-        val token = prefs.getString("token", null) ?: return
+    private fun showHistoryDetails(dailyItem: DailyHistoryItem) {
+        val dialog = BottomSheetDialog(requireContext())
+        val detailBinding = LayoutHistoryDetailBinding.inflate(layoutInflater)
+        dialog.setContentView(detailBinding.root)
 
-        lifecycleScope.launch {
-            try {
-                val response = RetrofitClient.profileApiService.getRankings("Bearer $token")
-                if (response.isSuccessful) {
-                    val ranks = response.body() ?: emptyList()
+        detailBinding.tvDayTitle.text = formatDate(dailyItem.date)
+        detailBinding.tvDailySummary.text = dailyItem.summaryText
+        detailBinding.tvTotalXp.text = "+${calculateTotalEarnedXp(dailyItem.schedules, dailyItem.sessions)}"
+//        detailBinding.tvCompletion.text = "+${calculateAverageCompletionPercent(dailyItem.schedules)}"
+        detailBinding.exercisedoneListContainer.removeAllViews()
 
-                    // Clear existing
-                    rankListContainer.removeAllViews()
-
-                    // 상위 3명 podium
-                    if (ranks.isNotEmpty()) {
-                        tvFirstName.text = "1st • ${ranks.getOrNull(0)?.name ?: "-"}"
-                        tvSecondName.text = "2nd • ${ranks.getOrNull(1)?.name ?: "-"}"
-                        tvThirdName.text = "3rd • ${ranks.getOrNull(2)?.name ?: "-"}"
-                    }
-
-                    // 4등 이후 리스트
-                    val inflater = LayoutInflater.from(requireContext())
-                    for (i in 3 until ranks.size) {
-                        val rank = ranks[i]
-                        val tv = TextView(requireContext()).apply {
-                            text = "${rank.rank}. ${rank.name} — ${rank.xp} XP"
-                            setTextColor(resources.getColor(R.color.text_primary, null))
-                            textSize = 13f
-                            gravity = Gravity.CENTER
-                            setPadding(0, 6, 0, 6)
-                        }
-                        rankListContainer.addView(tv)
-                    }
-                } else {
-                    Log.e("RankFetch", "HTTP ${response.code()}")
+        val combinedItems = (dailyItem.schedules.map { it as Any } + dailyItem.sessions.map { it as Any })
+            .sortedBy {
+                when(it) {
+                    is Schedule -> it.startTime
+                    is Session -> it.createdAt?.toLocalTime() ?: LocalTime.MIN
+                    else -> LocalTime.MIN
                 }
-            } catch (e: Exception) {
-                Log.e("RankFetch", "Error: ${e.localizedMessage}")
             }
-        }
-    }
 
-    private fun showDayDetail(history: HistoryDay) {
-        val dialog = BottomSheetDialog(requireContext(), R.style.BottomSheetDialogTheme)
-        val view = LayoutInflater.from(requireContext())
-            .inflate(R.layout.layout_history_detail, null)
-        dialog.setContentView(view)
-
-        view.findViewById<TextView>(R.id.tvDayTitle).text = history.date
-        view.findViewById<TextView>(R.id.tvTotalXp).text = history.xp
-        view.findViewById<TextView>(R.id.tvCompletion).text = history.percent
-        view.findViewById<TextView>(R.id.tvTotalTime).text = history.time
-
-        val container = view.findViewById<LinearLayout>(R.id.exercisedoneListContainer)
-        container.removeAllViews()
-
-        history.exercises.forEach { ex ->
-            val item = LayoutInflater.from(requireContext())
-                .inflate(R.layout.item_exercisedone, container, false)
-            item.findViewById<TextView>(R.id.tvExerciseEmoji).text = ex.emoji
-            item.findViewById<TextView>(R.id.tvExerciseName).text = ex.name
-            item.findViewById<TextView>(R.id.tvExerciseDetails).text = "Completed: ${ex.done}"
-            item.findViewById<TextView>(R.id.tvXp).text = ex.xp
-            item.findViewById<TextView>(R.id.tvPercent).text = ex.accuracy
-            item.findViewById<TextView>(R.id.tvTime).text = ex.duration
-            container.addView(item)
+        combinedItems.forEach { item ->
+            val itemBinding = ItemExercisedoneBinding.inflate(layoutInflater)
+            when(item) {
+                is Schedule -> {
+                    itemBinding.tvExerciseEmoji.text = getEmoji(item.activity)
+                    itemBinding.tvExerciseName.text = item.activity
+                    val text = when {
+                        item.repsTarget != null -> "${item.repsDone} / ${item.repsTarget} reps"
+                        item.durationTarget != null -> "${item.durationDone} / ${item.durationTarget} sec"
+                        else -> ""
+                    }
+                    itemBinding.tvExerciseDetails.text = "${item.status}: $text"
+                    itemBinding.tvXp.text = "${calculateEarnedXpForSchedule(item)} XP"
+                    itemBinding.tvPercent.text = "${calculateCompletionPercent(item)} %"
+                }
+                is Session -> {
+                    itemBinding.tvExerciseEmoji.text = getEmoji(item.activity)
+                    itemBinding.tvExerciseName.text = item.activity
+                    itemBinding.tvExerciseDetails.text = when {
+                        item.repsCount != null -> "${item.repsCount} reps"
+                        item.duration != null -> "${item.duration} sec"
+                        else -> ""
+                    }
+                    itemBinding.tvXp.text = "${calculateEarnedXpForSession(item)} XP"
+                    itemBinding.tvPercent.visibility = View.GONE
+                }
+            }
+            detailBinding.exercisedoneListContainer.addView(itemBinding.root)
         }
 
         dialog.show()
     }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
+    }
+
+    object LevelUtils {
+
+        // 1~10 레벨까지의 누적 XP 테이블
+        private val levelTable = listOf(
+            0,    // Lv1
+            100,  // Lv2
+            300,  // Lv3
+            600,  // Lv4
+            1000, // Lv5
+            1500, // Lv6
+            2100, // Lv7
+            2800, // Lv8
+            3600, // Lv9
+            4500  // Lv10
+        )
+
+        fun calculateLevel(xp: Int): Int {
+            for (i in levelTable.indices) {
+                if (xp < levelTable[i]) {
+                    return i   // index = level-1
+                }
+            }
+
+            var level = levelTable.size // 즉 10
+            var requiredXp = levelTable.last() // 4500부터 시작
+
+            while (true) {
+                val nextRequired = requiredXp + (level * 100)
+                if (xp < nextRequired) {
+                    return level
+                }
+                requiredXp = nextRequired
+                level++
+            }
+        }
+
+        fun levelProgress(xp: Int): Pair<Int, Int> {
+            var level = 1
+            var requiredXp = 0
+
+            while (true) {
+                val next = requiredXp + (level * 100)
+                if (xp < next) {
+                    return Pair(xp - requiredXp, next - requiredXp)
+                }
+                requiredXp = next
+                level++
+            }
+        }
+    }
+
 
 }

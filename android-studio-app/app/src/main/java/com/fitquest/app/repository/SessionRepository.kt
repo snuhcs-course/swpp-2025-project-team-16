@@ -1,14 +1,16 @@
 package com.fitquest.app.repository
 
-import com.fitquest.app.data.remote.EndSessionRequest
-import com.fitquest.app.data.remote.RetrofitClient
-import com.fitquest.app.data.remote.StartSessionRequest
+import com.fitquest.app.data.remote.SessionApiService
+import com.fitquest.app.model.EndSessionRequest
 import com.fitquest.app.model.Session
+import com.fitquest.app.model.StartSessionRequest
 import retrofit2.HttpException
 import java.io.IOException
 
-class SessionRepository {
-    private val service = RetrofitClient.sessionApiService
+class SessionRepository(private val service: SessionApiService) {
+
+    suspend fun getSessions(): List<Session> =
+        service.getSessions()
 
     suspend fun startSession(activity: String, scheduleId: Int?): Result<Session> {
         return try {
@@ -26,9 +28,13 @@ class SessionRepository {
         }
     }
 
-    suspend fun endSession(sessionId: Int, repsCount: Int?, duration: Int?): Result<Session> {
+    suspend fun endSession(sessionId: Int, repsCount: Int?, duration: Int?, sessionDurationSeconds: Int): Result<Session> {
         return try {
-            val req = EndSessionRequest(reps_count = repsCount, duration = duration)
+            val req = EndSessionRequest(
+                reps_count = repsCount,
+                duration = duration,
+                session_duration_seconds = sessionDurationSeconds
+            )
             val response = service.endSession(sessionId, req)
             if (response.isSuccessful) {
                 Result.success(response.body()!!)

@@ -10,15 +10,14 @@
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
         android:fullBackupContent="@xml/backup_rules"
-        android:icon="@drawable/ic_fitquest_logo"
+        android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
-        android:roundIcon="@drawable/ic_fitquest_logo_rounded"
+        android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.FitQuest"
         android:usesCleartextTraffic="true"
         tools:targetApi="31">
 
-        <!-- 로그인 액티비티를 앱 시작점으로 -->
         <activity
             android:name=".LoginActivity"
             android:exported="true"
@@ -29,7 +28,6 @@
             </intent-filter>
         </activity>
 
-        <!-- 메인 액티비티 (로그인 성공 후 이동) -->
         <activity android:name=".MainActivity" />
 
     </application>

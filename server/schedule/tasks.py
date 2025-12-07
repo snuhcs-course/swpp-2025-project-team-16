@@ -1,9 +1,9 @@
 from datetime import datetime, timedelta
 from django.utils import timezone
 from django.db import transaction
-from schedule.models import Schedule, Feedback
-from schedule.utils.feedback import generate_feedback_from_schedule
+from schedule.models import Schedule
 from django.utils.timezone import make_aware
+from django.utils.timezone import localdate
 
 
 def get_schedule_datetime(schedule):
@@ -15,11 +15,6 @@ def get_schedule_datetime(schedule):
 
 @transaction.atomic
 def mark_missed_schedules():
-    """
-    완료되지 않은 지난 스케줄을 'missed' 상태로 업데이트하고
-    reps_done/duration_done은 0으로 설정.
-    이후 Feedback을 자동 생성.
-    """
     now = timezone.now()
     planned_schedules = Schedule.objects.filter(status='planned')
 
@@ -35,11 +30,3 @@ def mark_missed_schedules():
                 s.duration_done = timedelta(seconds=0)
 
             s.save()
-
-            # --- 피드백 생성 or 업데이트 ---
-            feedback_text = generate_feedback_from_schedule(s.user, s)
-            Feedback.objects.update_or_create(
-                user=s.user,
-                schedule=s,
-                defaults={"summary_text": feedback_text}
-            )

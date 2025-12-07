@@ -3,6 +3,9 @@ package com.fitquest.app.model
 import android.os.Parcelable
 import com.google.gson.annotations.SerializedName
 import kotlinx.parcelize.Parcelize
+import java.time.LocalDate
+import java.time.LocalDateTime
+import java.time.LocalTime
 
 @Parcelize
 data class Schedule(
@@ -10,13 +13,13 @@ data class Schedule(
     val user: Int? = null,
 
     @SerializedName("scheduled_date")
-    val scheduledDate: String,
+    val scheduledDate: LocalDate,
 
     @SerializedName("start_time")
-    val startTime: String,
+    val startTime: LocalTime,
 
     @SerializedName("end_time")
-    val endTime: String,
+    val endTime: LocalTime,
 
     val activity: String,
 
@@ -35,8 +38,8 @@ data class Schedule(
     val status: String? = null,
 
     @SerializedName("created_at")
-    val createdAt: String? = null,
+    val createdAt: LocalDateTime? = null,
 
     @SerializedName("updated_at")
-    val updatedAt: String? = null
+    val updatedAt: LocalDateTime? = null
 ) : Parcelable

@@ -3,29 +3,34 @@ package com.fitquest.app.ui.viewmodels
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import com.fitquest.app.model.WorkoutPlan
+import androidx.lifecycle.viewModelScope
+import com.fitquest.app.model.DailyWorkoutItem
+import com.fitquest.app.repository.ScheduleRepository
+import kotlinx.coroutines.launch
 
-/**
- * ViewModel for JourneyFragment
- */
-class JourneyViewModel : ViewModel() {
+class JourneyViewModel(
+    private val repository: ScheduleRepository
+) : ViewModel() {
 
-    private val _workoutPlans = MutableLiveData<List<WorkoutPlan>>()
-    val workoutPlans: LiveData<List<WorkoutPlan>> = _workoutPlans
+    private val _dailyWorkouts = MutableLiveData<List<DailyWorkoutItem>>()
+    val dailyWorkouts: LiveData<List<DailyWorkoutItem>> = _dailyWorkouts
 
-    private val _selectedWorkout = MutableLiveData<WorkoutPlan?>()
-    val selectedWorkout: LiveData<WorkoutPlan?> = _selectedWorkout
+    fun loadUpcomingSchedules() {
+        viewModelScope.launch {
+            val schedules = repository.getSchedules()
 
-    fun loadWorkoutPlans() {
-        // TODO: Backend - Fetch upcoming workout plans
-        // _workoutPlans.value = fetchedPlans
-    }
+            val upcoming = schedules.filter { it.status == "planned" }
 
-    fun selectWorkout(workout: WorkoutPlan) {
-        _selectedWorkout.value = workout
-    }
+            val grouped = upcoming.groupBy { it.scheduledDate }
 
-    fun clearSelection() {
-        _selectedWorkout.value = null
+            val dailyItems = grouped.map { (date, scheduleList) ->
+                DailyWorkoutItem(
+                    date = date,
+                    schedules = scheduleList.sortedBy { it.startTime }
+                )
+            }.sortedBy { it.date }
+
+            _dailyWorkouts.value = dailyItems
+        }
     }
 }

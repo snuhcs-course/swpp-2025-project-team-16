@@ -44,4 +44,6 @@
 
     <color name="highlight_new_schedule">#2600E0FF</color>
 
+    <color name="transparent">#00FFFFFF</color>
+
 </resources>

@@ -17,7 +17,7 @@ class TrackingLockManager {
         landmarks: List<NormalizedLandmark>,
         currentTimeMs: Long
     ): LockStateChange {
-        val lowerCnt = lowerBodyVisibleCount(landmarks)
+        val lowerCnt = bodyVisibleCount(landmarks)
         val visGood = (lowerCnt >= CoachConstants.LOWER_REQUIRED)
 
         if (trackingLocked) {
@@ -57,7 +57,7 @@ class TrackingLockManager {
         disarmUntilMs = 0L
     }
 
-    private fun lowerBodyVisibleCount(landmarks: List<NormalizedLandmark>): Int {
+    private fun bodyVisibleCount(landmarks: List<NormalizedLandmark>): Int {
         var ok = 0
         for (i in CoachConstants.LOWER_NEEDED) {
             val s = safeVis(landmarks[i])

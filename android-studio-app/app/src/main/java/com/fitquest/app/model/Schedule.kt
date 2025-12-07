@@ -3,9 +3,9 @@ package com.fitquest.app.model
 import android.os.Parcelable
 import com.google.gson.annotations.SerializedName
 import kotlinx.parcelize.Parcelize
-import org.threeten.bp.LocalDate
-import org.threeten.bp.LocalDateTime
-import org.threeten.bp.LocalTime
+import java.time.LocalDate
+import java.time.LocalDateTime
+import java.time.LocalTime
 
 @Parcelize
 data class Schedule(

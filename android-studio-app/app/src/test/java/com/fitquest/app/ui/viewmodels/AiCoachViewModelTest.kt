@@ -1,6 +1,7 @@
 package com.fitquest.app.ui.viewmodels
 
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
+import androidx.lifecycle.MutableLiveData
 import com.fitquest.app.MainDispatcherRule
 import com.fitquest.app.data.remote.SessionApiService
 import com.fitquest.app.model.EndSessionRequest
@@ -8,15 +9,8 @@ import com.fitquest.app.model.Session
 import com.fitquest.app.model.StartSessionRequest
 import com.fitquest.app.model.WorkoutResult
 import com.fitquest.app.repository.SessionRepository
-import com.fitquest.app.ui.coachutils.PoseLandmarkerHelper
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
-import kotlinx.coroutines.test.setMain
-import okhttp3.ResponseBody.Companion.toResponseBody
-import org.junit.After
 import org.junit.Assert.*
 import org.junit.Before
 import org.junit.Rule
@@ -25,118 +19,230 @@ import org.junit.runner.RunWith
 import org.mockito.Mock
 import org.mockito.Mockito
 import org.mockito.junit.MockitoJUnitRunner
-import retrofit2.Response
-/*
+
 @RunWith(MockitoJUnitRunner::class)
 class AiCoachViewModelTest {
 
-    // Rule to execute LiveData updates instantly
     @get:Rule
     val instantExecutorRule = InstantTaskExecutorRule()
+
     @get:Rule
-    val main = MainDispatcherRule()
+    val mainDispatcherRule = MainDispatcherRule()
 
     private lateinit var viewModel: AiCoachViewModel
 
     @Mock
-    private lateinit var repository: SessionApiService
+    private lateinit var repository: SessionRepository
 
-    private lateinit var viewModelFactory: AiCoachViewModelFactory
-
-    @OptIn(ExperimentalCoroutinesApi::class)
     @Before
     fun setUp() {
-        viewModelFactory=AiCoachViewModelFactory(repository)
-        viewModel = viewModelFactory.create(AiCoachViewModel::class.java)
+        viewModel = AiCoachViewModel(repository)
     }
+
     @Test
-    fun `initial state is correct`() {
-        assertFalse(viewModel.isTraining.value ?: true)
-        assertEquals(0, viewModel.repCount.value)
-        assertEquals(0, viewModel.points.value)
+    fun `setSessionPreparing sets preparing state and updates active session`() {
+        viewModel.setSessionPreparing(true)
+        assertTrue(viewModel.sessionPreparing.value!!)
+        assertTrue(viewModel.sessionActive.value!!)
+
+        viewModel.setSessionPreparing(false)
+        assertFalse(viewModel.sessionPreparing.value!!)
+        assertFalse(viewModel.sessionActive.value!!)
+    }
+
+    @Test
+    fun `beginTraining when already training`() = runTest {
+        viewModel.setSessionPreparing(false)
+
+        // 이미 training 중 상태로 세팅
+        val isTrainingField =
+            AiCoachViewModel::class.java.getDeclaredField("_isTraining")
+        isTrainingField.isAccessible = true
+        (isTrainingField.get(viewModel) as MutableLiveData<Boolean>).value = true
+
+        viewModel.beginTraining("squat", 0)
+
+        Mockito.verify(repository, Mockito.never()).startSession(Mockito.anyString(), Mockito.isNull())
+    }
+
+    @Test
+    fun `beginTraining when already in preparing state`() = runTest {
+        viewModel.setSessionPreparing(true)
+
+        viewModel.beginTraining("squat", 0)
+
+        Mockito.verify(repository, Mockito.never()).startSession(Mockito.anyString(), Mockito.isNull())
+    }
+
+    @Test
+    fun `beginTraining API failure handling`() = runTest {
+        Mockito.`when`(repository.startSession("squat", 0))
+            .thenReturn(Result.failure(Exception("Server error")))
+
+        viewModel.beginTraining("squat", 0)
+        advanceUntilIdle()
+
+        assertFalse(viewModel.isTraining.value!!)
+        assertFalse(viewModel.sessionPreparing.value!!)
+        assertTrue(viewModel.errorMessage.value!!.contains("Server error"))
+        assertEquals("Session start failed. Check connection.", viewModel.feedback.value)
+    }
+
+    @Test
+    fun `beginTraining with null scheduleId`() = runTest {
+        Mockito.`when`(repository.startSession("squat", null))
+            .thenReturn(Result.success(Session(id = 1, activity = "squat")))
+
+        viewModel.beginTraining("squat", null)
+        advanceUntilIdle()
+
+        Mockito.verify(repository).startSession("squat", null)
+    }
+
+    @Test
+    fun `beginTraining LiveData flow for success`() = runTest {
+        Mockito.`when`(repository.startSession("squat", 0))
+            .thenReturn(Result.success(Session(id = 1, activity = "squat")))
+
+        viewModel.beginTraining("squat", 0)
+
+        // 바로 preparing은 true
+        assertTrue(viewModel.sessionPreparing.value!!)
+
+        advanceUntilIdle()
+
+        assertFalse(viewModel.sessionPreparing.value!!)
+        assertTrue(viewModel.isTraining.value!!)
+    }
+
+    @Test
+    fun `pauseTraining with a null session ID`() = runTest {
+        viewModel.pauseTraining(WorkoutResult(0, 0, 0))
+
+        assertFalse(viewModel.isTraining.value!!)
+        assertEquals(
+            "Workout paused (No active session ID) 💪",
+            viewModel.feedback.value
+        )
+
+        Mockito.verify(repository, Mockito.never()).endSession(
+            Mockito.anyInt(),
+            Mockito.anyInt(),
+            Mockito.anyInt(),
+            Mockito.anyInt()
+        )
+    }
+
+    @Test
+    fun `pauseTraining API failure handling`() = runTest {
+        Mockito.`when`(repository.startSession("squat", 0))
+            .thenReturn(Result.success(Session(1, 1, "squat")))
+
+        Mockito.`when`(
+            repository.endSession(
+                Mockito.eq(1), Mockito.anyInt(), Mockito.anyInt(), Mockito.anyInt()
+            )
+        ).thenReturn(Result.failure(Exception("Sync failed")))
+
+        viewModel.beginTraining("squat", 0)
+        advanceUntilIdle()
+
+        viewModel.pauseTraining(WorkoutResult(10, 30, 30))
+        advanceUntilIdle()
+
+        assertFalse(viewModel.isTraining.value!!)
+        assertTrue(viewModel.errorMessage.value!!.contains("Sync failed"))
+        assertEquals("Workout saved locally, but sync failed.", viewModel.feedback.value)
+    }
+
+    @Test
+    fun `cancelCountdown functionality`() {
+        viewModel.setSessionPreparing(true)
+
+        viewModel.cancelCountdown()
+
+        assertFalse(viewModel.sessionPreparing.value!!)
+        assertFalse(viewModel.sessionActive.value!!)
         assertEquals("", viewModel.feedback.value)
-        assertEquals(0, viewModel.formScore.value)
-    }
-
-    @OptIn(ExperimentalCoroutinesApi::class)
-    @Test
-    fun `beginTraining updates LiveData correctly`() =runTest{
-        Mockito.`when`(repository.startSession(StartSessionRequest("squat"))).thenReturn(Response.success(Session(activity="squat")))
-        viewModel.beginTraining("squat",0)
-        advanceUntilIdle()
-        assertTrue(viewModel.isTraining.value ?: false)
-        assertEquals(0, viewModel.repCount.value)
-        assertEquals(0, viewModel.points.value)
-        assertEquals("Get ready! 🚀", viewModel.feedback.value)
-    }
-    @Test
-    fun `beginTraining updates LiveData correct`() =runTest{
-        Mockito.`when`(repository.startSession(StartSessionRequest("squat"))).thenReturn(Response.error(0,"error".toResponseBody()))
-        viewModel.beginTraining("squat",0)
-        assertFalse(viewModel.isTraining.value ?: false)
-        assertEquals(0, viewModel.repCount.value)
-        assertEquals(0, viewModel.points.value)
-        assertEquals("", viewModel.feedback.value)
-    }
-
-    @OptIn(ExperimentalCoroutinesApi::class)
-    @Test
-    fun `pauseTraining updates LiveData correctly`() =runTest{
-        // Start training first
-        Mockito.`when`(repository.startSession(StartSessionRequest("squat"))).thenReturn(Response.success(Session(activity="squat")))
-        Mockito.`when`(repository.endSession(0, EndSessionRequest(0, 0, 0))).thenReturn(Response.success(Session(activity="squat")))
-        viewModel.beginTraining("squat",0)
-        // Then pause
-        advanceUntilIdle()
-        viewModel.pauseTraining(WorkoutResult(0,0,0))
-        advanceUntilIdle()
-        assertFalse(viewModel.isTraining.value ?: true)
-        assertEquals("squat",viewModel.selectedExercise.value)
-        assertEquals("Session saved! Earned 0 XP! 💪", viewModel.feedback.value)
     }
 
     @Test
-    fun `updateRepCount updates reps and points`() =runTest{
-        Mockito.`when`(repository.startSession(StartSessionRequest("squat"))).thenReturn(Response.success(Session(activity="squat")))
-        viewModel.beginTraining("squat",0)
+    fun `updateRepCount for non REPS based exercises`() {
+        viewModel.beginTraining("plank", null)
+
         viewModel.updateRepCount(5)
+
         assertEquals(5, viewModel.repCount.value)
-        assertEquals(50, viewModel.points.value) // 5 * 10
-
-        viewModel.updateRepCount(12)
-        assertEquals(12, viewModel.repCount.value)
-        assertEquals(120, viewModel.points.value) // 12 * 10
+        assertEquals(0, viewModel.points.value) // plank는 시간 기반
     }
 
     @Test
-    fun `updateFormFeedback updates feedback and score`() {
-        viewModel.updateFormFeedback("Good form!", 95)
-        assertEquals("Good form!", viewModel.feedback.value)
-        assertEquals(95, viewModel.formScore.value)
+    fun `updateRepCount with zero and negative values`() {
+        viewModel.updateRepCount(0)
+        assertEquals(0, viewModel.repCount.value)
+        assertEquals(0, viewModel.points.value)
+
+        viewModel.updateRepCount(-5)
+        assertEquals(-5, viewModel.repCount.value)
+        assertEquals(0, viewModel.points.value)
     }
 
     @Test
-    fun `setDelegate updates currentDelegate`() {
-        viewModel.setDelegate(PoseLandmarkerHelper.DELEGATE_CPU)
-        assertEquals(PoseLandmarkerHelper.DELEGATE_CPU, viewModel.currentDelegate)
+    fun `sessionActive LiveData logic when training starts`() = runTest {
+        Mockito.`when`(repository.startSession("squat", 0))
+            .thenReturn(Result.success(Session(1, 1, "squat")))
+
+        viewModel.beginTraining("squat", 0)
+        advanceUntilIdle()
+
+        assertTrue(viewModel.sessionActive.value!!)
     }
 
     @Test
-    fun `setModel updates currentModel`() {
-        viewModel.setModel(PoseLandmarkerHelper.MODEL_POSE_LANDMARKER_LITE)
-        assertEquals(PoseLandmarkerHelper.MODEL_POSE_LANDMARKER_LITE, viewModel.currentModel)
+    fun `sessionActive LiveData logic when training pauses`() = runTest {
+        Mockito.`when`(repository.startSession("squat", 0))
+            .thenReturn(Result.success(Session(1, 1, "squat")))
+
+        Mockito.`when`(
+            repository.endSession(Mockito.eq(1), Mockito.anyInt(), Mockito.anyInt(), Mockito.anyInt())
+        ).thenReturn(Result.success(Session(1, 1, "squat")))
+
+        viewModel.beginTraining("squat", 0)
+        advanceUntilIdle()
+
+        viewModel.pauseTraining(WorkoutResult(0, 0, 0))
+        advanceUntilIdle()
+
+        assertFalse(viewModel.sessionActive.value!!)
     }
 
     @Test
-    fun `confidence setters update values`() {
-        viewModel.setMinPoseDetectionConfidence(0.6f)
-        assertEquals(0.6f, viewModel.currentMinPoseDetectionConfidence)
+    fun `Verify getErrorMessage LiveData emission on startSession failure`() = runTest {
+        Mockito.`when`(repository.startSession("squat", 0))
+            .thenReturn(Result.failure(Exception("No internet")))
 
-        viewModel.setMinPoseTrackingConfidence(0.7f)
-        assertEquals(0.7f, viewModel.currentMinPoseTrackingConfidence)
+        viewModel.beginTraining("squat", 0)
+        advanceUntilIdle()
 
-        viewModel.setMinPosePresenceConfidence(0.8f)
-        assertEquals(0.8f, viewModel.currentMinPosePresenceConfidence)
+        assertTrue(viewModel.errorMessage.value!!.contains("No internet"))
+    }
+
+    @Test
+    fun `Verify getErrorMessage LiveData emission on endSession failure`() = runTest {
+        Mockito.`when`(repository.startSession("squat", 0))
+            .thenReturn(Result.success(Session(1, 1, "squat")))
+
+        Mockito.`when`(
+            repository.endSession(Mockito.eq(1), Mockito.anyInt(), Mockito.anyInt(), Mockito.anyInt())
+        ).thenReturn(Result.failure(Exception("Server crash")))
+
+        viewModel.beginTraining("squat", 0)
+        advanceUntilIdle()
+
+        viewModel.pauseTraining(WorkoutResult(3, 10, 10))
+        advanceUntilIdle()
+
+        assertTrue(viewModel.errorMessage.value!!.contains("Server crash"))
     }
 }
 */

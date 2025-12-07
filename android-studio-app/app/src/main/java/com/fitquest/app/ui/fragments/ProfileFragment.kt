@@ -9,8 +9,6 @@ import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.fitquest.app.R
 import com.fitquest.app.data.remote.RetrofitClient
-import com.fitquest.app.data.remote.ServiceLocator
-import com.fitquest.app.data.remote.UserApiService
 import com.fitquest.app.databinding.FragmentProfileBinding
 import com.fitquest.app.databinding.ItemExercisedoneBinding
 import com.fitquest.app.databinding.LayoutHistoryDetailBinding
@@ -34,7 +32,7 @@ import com.google.android.material.button.MaterialButton
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
-import org.threeten.bp.LocalTime
+import java.time.LocalTime
 
 class ProfileFragment() : Fragment() {
 

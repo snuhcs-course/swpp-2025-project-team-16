@@ -1,85 +1,168 @@
 package com.fitquest.app.ui.viewmodels
 /*
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
-import com.fitquest.app.MainDispatcherRule
-import com.fitquest.app.data.remote.ScheduleApiService
-import com.fitquest.app.model.DailyWorkoutItem
-import com.fitquest.app.model.Exercise
 import com.fitquest.app.model.Schedule
 import com.fitquest.app.repository.ScheduleRepository
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.test.advanceUntilIdle
+import kotlinx.coroutines.test.UnconfinedTestDispatcher
+import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
-import org.junit.Assert.*
-import org.junit.Before
-import org.junit.Rule
-import org.junit.Test
-import org.mockito.Mock
+import kotlinx.coroutines.test.setMain
+import org.junit.*
 import org.mockito.Mockito
-import org.threeten.bp.LocalDate
-import org.threeten.bp.LocalTime
-import kotlin.collections.component1
-import kotlin.collections.component2
+import java.time.LocalDate
+import java.time.LocalTime
 
+@ExperimentalCoroutinesApi
 class JourneyViewModelTest {
 
     @get:Rule
-    val instantExecutorRule = InstantTaskExecutorRule()
-    @get:Rule
-    val main = MainDispatcherRule()
+    val instantTaskExecutorRule = InstantTaskExecutorRule()
 
+    private val testDispatcher = UnconfinedTestDispatcher()
+
+    private lateinit var repository: ScheduleRepository
     private lateinit var viewModel: JourneyViewModel
-    private lateinit var viewModelFactory: JourneyViewModelFactory
-
-    @Mock
-    private lateinit var mockJourneyRepository: ScheduleRepository
-
-    @Mock
-    private lateinit var mockApiService: ScheduleApiService
 
     @Before
     fun setUp() {
-        viewModelFactory= JourneyViewModelFactory(mockApiService)
-        viewModel = viewModelFactory.create(JourneyViewModel::class.java)
+        Dispatchers.setMain(testDispatcher)
+        repository = Mockito.mock(ScheduleRepository::class.java)
+        viewModel = JourneyViewModel(repository)
+    }
+
+    @After
+    fun tearDown() {
+        Dispatchers.resetMain()
     }
 
     @Test
-    fun `initial selectedWorkout is null`() {
-        assertNull(viewModel.dailyWorkouts.value)
-    }
+    fun `loadUpcomingSchedules returns only planned schedules`() = runTest {
+        // given
+        val today = LocalDate.now()
 
-    @OptIn(ExperimentalCoroutinesApi::class)
-    @Test
-    fun `selectWorkout updates selectedWorkout LiveData`()=runTest {
-        val exercise = Exercise("e1", "Push-up", "10 reps", "todo")
-        val workoutPlan = Schedule(
+        val plannedSchedule = Schedule(
             id = 1,
-            scheduledDate = LocalDate.now(),
+            scheduledDate = today,
             startTime = LocalTime.of(10, 0),
             endTime = LocalTime.of(11, 0),
-            activity = "Push-up"
+            activity = "squat",
+            repsTarget = 10,
+            status = "planned"
         )
-        val list=listOf(workoutPlan)
-        Mockito.`when`(mockJourneyRepository.getSchedules()).thenReturn(list)
 
+        val completedSchedule = Schedule(
+            id = 2,
+            scheduledDate = today,
+            startTime = LocalTime.of(12, 0),
+            endTime = LocalTime.of(13, 0),
+            activity = "lunge",
+            repsTarget = 10,
+            repsDone = 10,
+            status = "completed"
+        )
+
+        Mockito.`when`(repository.getSchedules())
+            .thenReturn(listOf(plannedSchedule, completedSchedule))
+
+        // when
         viewModel.loadUpcomingSchedules()
-        advanceUntilIdle()
-        val grouped = list.groupBy { it.scheduledDate }
-        val dailyItems = grouped.map { (date, scheduleList) ->
-            DailyWorkoutItem(
-                date = date,
-                schedules = scheduleList.sortedBy { it.startTime }
-            )
-        }.sortedBy { it.date }
-        assertEquals(dailyItems, viewModel.dailyWorkouts.value)
+
+        testDispatcher.scheduler.advanceUntilIdle()
+
+        // then
+        val result = viewModel.dailyWorkouts.value
+
+        Assert.assertNotNull(result)
+        Assert.assertEquals(1, result!!.size)
+        Assert.assertEquals(today, result[0].date)
+        Assert.assertEquals(1, result[0].schedules.size)
+        Assert.assertEquals(1, result[0].schedules[0].id)
+        Assert.assertEquals("planned", result[0].schedules[0].status)
     }
+
     @Test
-    fun `workoutPlans LiveData is observable`() {
-        val plans = viewModel.dailyWorkouts
-        assertNotNull(plans)
-        assertNull(plans.value)
+    fun `loadUpcomingSchedules groups schedules by date`() = runTest {
+        // given
+        val today = LocalDate.now()
+        val tomorrow = today.plusDays(1)
+
+        val todaySchedule = Schedule(
+            id = 1,
+            scheduledDate = today,
+            startTime = LocalTime.of(10, 0),
+            endTime = LocalTime.of(11, 0),
+            activity = "squat",
+            repsTarget = 10,
+            status = "planned"
+        )
+
+        val tomorrowSchedule = Schedule(
+            id = 2,
+            scheduledDate = tomorrow,
+            startTime = LocalTime.of(15, 0),
+            endTime = LocalTime.of(16, 0),
+            activity = "lunge",
+            repsTarget = 20,
+            status = "planned"
+        )
+
+        Mockito.`when`(repository.getSchedules())
+            .thenReturn(listOf(todaySchedule, tomorrowSchedule))
+
+        // when
+        viewModel.loadUpcomingSchedules()
+
+        testDispatcher.scheduler.advanceUntilIdle()
+
+        // then
+        val result = viewModel.dailyWorkouts.value
+
+        Assert.assertNotNull(result)
+        Assert.assertEquals(2, result!!.size)
+
+        Assert.assertEquals(today, result[0].date)
+        Assert.assertEquals(tomorrow, result[1].date)
+    }
+
+    @Test
+    fun `loadUpcomingSchedules sorts schedules by start time`() = runTest {
+        // given
+        val today = LocalDate.now()
+
+        val late = Schedule(
+            id = 1,
+            scheduledDate = today,
+            startTime = LocalTime.of(18, 0),
+            endTime = LocalTime.of(19, 0),
+            activity = "squat",
+            repsTarget = 10,
+            status = "planned"
+        )
+
+        val early = Schedule(
+            id = 2,
+            scheduledDate = today,
+            startTime = LocalTime.of(9, 0),
+            endTime = LocalTime.of(10, 0),
+            activity = "lunge",
+            repsTarget = 10,
+            status = "planned"
+        )
+
+        Mockito.`when`(repository.getSchedules())
+            .thenReturn(listOf(late, early))
+
+        // when
+        viewModel.loadUpcomingSchedules()
+
+        testDispatcher.scheduler.advanceUntilIdle()
+
+        // then
+        val schedules = viewModel.dailyWorkouts.value!![0].schedules
+
+        Assert.assertEquals(2, schedules[0].id)
+        Assert.assertEquals(1, schedules[1].id)
     }
 }
-
-
- */

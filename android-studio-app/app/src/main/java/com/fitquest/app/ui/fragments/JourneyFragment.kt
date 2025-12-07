@@ -9,8 +9,6 @@ import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.fitquest.app.data.remote.RetrofitClient
-import com.fitquest.app.data.remote.ScheduleApiService
-import com.fitquest.app.data.remote.ServiceLocator
 import com.fitquest.app.databinding.FragmentJourneyBinding
 import com.fitquest.app.databinding.ItemScheduleBinding
 import com.fitquest.app.databinding.LayoutJourneyDaydetailBinding
@@ -26,8 +24,8 @@ import com.fitquest.app.util.DateUtils.formatTime
 import com.fitquest.app.util.animateLogo
 import com.fitquest.app.util.messages.HeroMessages
 import com.google.android.material.bottomsheet.BottomSheetDialog
-import org.threeten.bp.LocalDateTime
-import org.threeten.bp.ZoneId
+import java.time.LocalDateTime
+import java.time.ZoneId
 
 class JourneyFragment() : Fragment() {
 

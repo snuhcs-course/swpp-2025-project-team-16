@@ -2,7 +2,6 @@ package com.fitquest.app
 
 import android.app.Application
 import android.content.Intent
-import com.jakewharton.threetenabp.AndroidThreeTen
 
 class MyApp : Application() {
 
@@ -14,8 +13,6 @@ class MyApp : Application() {
     override fun onCreate() {
         super.onCreate()
         instance = this
-
-        AndroidThreeTen.init(this)
 
         CurrentActivityHelper.init(this)
     }

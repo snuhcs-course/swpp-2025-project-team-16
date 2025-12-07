@@ -14,7 +14,8 @@ You need the project code **both on the remote server and your local machine**:
 **Option 1: Clone via Git**
 
 ```bash
-git clone https://github.com/snuhcs-course/swpp-2025-project-team-16.git
+git clone --recursive https://github.com/snuhcs-course/swpp-2025-project-team-16.git
+git submodule update --init --recursive
 
 ```
 
@@ -49,6 +50,10 @@ Create the conda environment:
 
 ```bash
 conda env create -f environment.yml
+conda activate vlm
+cd rtmpose3d
+python -m pip install -r requirements.txt
+python -m pip install -e .
 
 ```
 

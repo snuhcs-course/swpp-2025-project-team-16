@@ -159,6 +159,11 @@ class AiCoachViewModel(
         // Duration 기반 운동(Plank)은 count가 초 단위로 올라가지만, XP는 서버가 계산하도록 둡니다.
     }
 
+    fun updateFormFeedback(feedback: String, score: Int) {
+        _feedback.value = feedback
+        _formScore.value = score
+    }
+
     // ==========================
     // Pose Landmarker settings
     // (원래 MainViewModel가 하던 일)
